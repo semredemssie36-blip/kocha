@@ -36,6 +36,14 @@ function filterCategory(cat) {
   fetchNews()
 }
 
+function getNewsTitle(news) {
+  if (!news) return ''
+  const lang = langStore.currentLang
+  if (lang === 'am') return news.title_am || news.title_en || ''
+  if (lang === 'om') return news.title_om || news.title_en || news.title_am || ''
+  return news.title_en || news.title_am || ''
+}
+
 onMounted(() => {
   fetchNews()
 })
@@ -89,14 +97,14 @@ onMounted(() => {
         <div>
           <div class="h-48 bg-slate-100 relative flex items-center justify-center text-slate-500 overflow-hidden border-b border-slate-100">
             <img 
-              v-if="news.featured_image" 
-              :src="news.featured_image" 
-              :alt="getLocalizedField(news, 'title')" 
+              v-if="news.thumbnail_path || news.featured_image"
+              :src="news.thumbnail_path || news.featured_image" 
+              :alt="getNewsTitle(news)" 
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
             />
-            <div v-else class="text-slate-400 font-mono text-xs flex items-center gap-1.5">
-              <FileText class="w-5 h-5 text-slate-400" />
-              <span>Press Image</span>
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+              <TrendingUp class="w-8 h-8 mb-1 opacity-40 text-blue-600" />
+              <span class="text-[11px] font-semibold text-slate-400">Kombolcha Press</span>
             </div>
             <span class="absolute top-3.5 left-3.5 px-2.5 py-1 rounded bg-blue-700 text-white text-[11px] font-bold shadow-2xs">
               {{ news.category }}
@@ -116,7 +124,7 @@ onMounted(() => {
             </div>
 
             <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
-              {{ langStore.currentLang === 'am' ? news.title_am : (langStore.currentLang === 'om' ? news.title_om : news.title_en) }}
+              {{ getNewsTitle(news) }}
             </h3>
           </div>
         </div>
@@ -149,6 +157,13 @@ onMounted(() => {
         <h2 class="text-2xl font-extrabold text-slate-900 mt-4 leading-tight">
           {{ langStore.currentLang === 'am' ? selectedArticle.title_am : (langStore.currentLang === 'om' ? selectedArticle.title_om : selectedArticle.title_en) }}
         </h2>
+
+        <img 
+          v-if="selectedArticle.thumbnail_path || selectedArticle.featured_image" 
+          :src="selectedArticle.thumbnail_path || selectedArticle.featured_image" 
+          :alt="selectedArticle.title_en || selectedArticle.title_am" 
+          class="w-full h-56 sm:h-72 object-cover rounded-xl mt-4 border border-slate-200 shadow-xs" 
+        />
 
         <div class="flex items-center gap-4 text-xs text-slate-400 py-3 border-b border-slate-100 mt-2 mb-6">
           <span>Published on: {{ new Date(selectedArticle.published_at || selectedArticle.created_at).toLocaleDateString() }}</span>

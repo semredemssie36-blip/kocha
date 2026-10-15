@@ -34,10 +34,10 @@ onMounted(() => {
         Municipal Directory
       </div>
       <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-2">
-        {{ langStore.t('nav.offices_directory') }}
+        {{ langStore.t('nav.offices_directory') }} <span v-if="offices.length" class="text-blue-700 font-mono">({{ offices.length }})</span>
       </h1>
       <p class="text-slate-600 text-base max-w-2xl mb-6">
-        Official contact desks, physical locations, room numbers, and direct phone lines for all 22 Kombolcha municipal sector bureaus.
+        {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር የዘርፍ መምሪያዎች፣ ተቋማትና አገልግሎት መስጫ ቢሮዎች ይፋዊ አድራሻ፣ የክፍል ቁጥርና ስልክ መስመሮች።' : 'Official contact desks, physical locations, room numbers, and direct phone lines for Kombolcha municipal sector bureaus.' }}
       </p>
 
       <!-- Search Bar -->

@@ -104,10 +104,18 @@ class AdminContentController extends Controller
             'content_am' => 'required|string',
             'content_en' => 'nullable|string',
             'content_om' => 'nullable|string',
+            'summary_am' => 'nullable|string',
+            'summary_en' => 'nullable|string',
+            'summary_om' => 'nullable|string',
+            'thumbnail_path' => 'nullable|string',
             'status' => 'required|in:draft,pending,published',
         ]);
 
         $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
+
+        // Auto-generate summary from content if not provided
+        $summaryAm = $validated['summary_am'] ?? mb_substr(strip_tags($validated['content_am']), 0, 160) . '...';
+        $summaryEn = $validated['summary_en'] ?? (!empty($validated['content_en']) ? mb_substr(strip_tags($validated['content_en']), 0, 160) . '...' : null);
 
         $id = DB::table('news_articles')->insertGetId([
             'author_id' => $request->user()->id,
@@ -116,9 +124,13 @@ class AdminContentController extends Controller
             'title_om' => $validated['title_om'] ?? null,
             'slug' => $slug,
             'category' => $validated['category'],
+            'summary_am' => $summaryAm,
+            'summary_en' => $summaryEn,
+            'summary_om' => $validated['summary_om'] ?? null,
             'content_am' => $validated['content_am'],
             'content_en' => $validated['content_en'] ?? null,
             'content_om' => $validated['content_om'] ?? null,
+            'thumbnail_path' => $validated['thumbnail_path'] ?? null,
             'status' => $validated['status'],
             'published_at' => $validated['status'] === 'published' ? now() : null,
             'created_at' => now(),
@@ -138,17 +150,28 @@ class AdminContentController extends Controller
             'content_am' => 'required|string',
             'content_en' => 'nullable|string',
             'content_om' => 'nullable|string',
-            'status' => 'required|in:published,draft,archived',
+            'summary_am' => 'nullable|string',
+            'summary_en' => 'nullable|string',
+            'summary_om' => 'nullable|string',
+            'thumbnail_path' => 'nullable|string',
+            'status' => 'required|in:published,draft,pending,archived',
         ]);
+
+        $summaryAm = $validated['summary_am'] ?? mb_substr(strip_tags($validated['content_am']), 0, 160) . '...';
+        $summaryEn = $validated['summary_en'] ?? (!empty($validated['content_en']) ? mb_substr(strip_tags($validated['content_en']), 0, 160) . '...' : null);
 
         DB::table('news_articles')->where('id', $id)->update([
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
             'category' => $validated['category'],
+            'summary_am' => $summaryAm,
+            'summary_en' => $summaryEn,
+            'summary_om' => $validated['summary_om'] ?? null,
             'content_am' => $validated['content_am'],
             'content_en' => $validated['content_en'] ?? null,
             'content_om' => $validated['content_om'] ?? null,
+            'thumbnail_path' => $validated['thumbnail_path'] ?? null,
             'status' => $validated['status'],
             'updated_at' => now(),
         ]);
@@ -300,8 +323,11 @@ class AdminContentController extends Controller
             'title_om' => 'nullable|string',
             'type' => 'required|in:text,step',
             'summary_am' => 'nullable|string',
+            'summary_en' => 'nullable|string',
+            'summary_om' => 'nullable|string',
             'fee_amount' => 'nullable|numeric',
             'estimated_time_am' => 'nullable|string',
+            'estimated_time_en' => 'nullable|string',
         ]);
 
         $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
@@ -313,8 +339,11 @@ class AdminContentController extends Controller
             'slug' => $slug,
             'type' => $validated['type'],
             'summary_am' => $validated['summary_am'] ?? null,
+            'summary_en' => $validated['summary_en'] ?? null,
+            'summary_om' => $validated['summary_om'] ?? null,
             'fee_amount' => $validated['fee_amount'] ?? 0,
             'estimated_time_am' => $validated['estimated_time_am'] ?? '1-3 Business Days',
+            'estimated_time_en' => $validated['estimated_time_en'] ?? $validated['estimated_time_am'] ?? '1-3 Business Days',
             'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),
@@ -331,8 +360,11 @@ class AdminContentController extends Controller
             'title_om' => 'nullable|string',
             'type' => 'required|in:text,step',
             'summary_am' => 'nullable|string',
+            'summary_en' => 'nullable|string',
+            'summary_om' => 'nullable|string',
             'fee_amount' => 'nullable|numeric',
             'estimated_time_am' => 'nullable|string',
+            'estimated_time_en' => 'nullable|string',
         ]);
 
         DB::table('services')->where('id', $id)->update([
@@ -341,8 +373,11 @@ class AdminContentController extends Controller
             'title_om' => $validated['title_om'] ?? null,
             'type' => $validated['type'],
             'summary_am' => $validated['summary_am'] ?? null,
+            'summary_en' => $validated['summary_en'] ?? null,
+            'summary_om' => $validated['summary_om'] ?? null,
             'fee_amount' => $validated['fee_amount'] ?? 0,
             'estimated_time_am' => $validated['estimated_time_am'] ?? '1-3 Business Days',
+            'estimated_time_en' => $validated['estimated_time_en'] ?? $validated['estimated_time_am'] ?? '1-3 Business Days',
             'updated_at' => now(),
         ]);
 
@@ -534,6 +569,11 @@ class AdminContentController extends Controller
             'email' => 'nullable|email',
         ]);
 
+        $validated['name_en'] = !empty($validated['name_en']) ? $validated['name_en'] : $validated['name_am'];
+        $validated['name_om'] = !empty($validated['name_om']) ? $validated['name_om'] : ($validated['name_en'] ?? $validated['name_am']);
+        $validated['position_en'] = !empty($validated['position_en']) ? $validated['position_en'] : $validated['position_am'];
+        $validated['position_om'] = !empty($validated['position_om']) ? $validated['position_om'] : ($validated['position_en'] ?? $validated['position_am']);
+
         $id = DB::table('leadership_members')->insertGetId(array_merge($validated, [
             'created_at' => now(),
             'updated_at' => now(),
@@ -556,6 +596,11 @@ class AdminContentController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
         ]);
+
+        $validated['name_en'] = !empty($validated['name_en']) ? $validated['name_en'] : $validated['name_am'];
+        $validated['name_om'] = !empty($validated['name_om']) ? $validated['name_om'] : ($validated['name_en'] ?? $validated['name_am']);
+        $validated['position_en'] = !empty($validated['position_en']) ? $validated['position_en'] : $validated['position_am'];
+        $validated['position_om'] = !empty($validated['position_om']) ? $validated['position_om'] : ($validated['position_en'] ?? $validated['position_am']);
 
         DB::table('leadership_members')->where('id', $id)->update(array_merge($validated, [
             'updated_at' => now()
@@ -583,6 +628,9 @@ class AdminContentController extends Controller
             'room_number' => 'nullable|string',
         ]);
 
+        $validated['name_en'] = !empty($validated['name_en']) ? $validated['name_en'] : $validated['name_am'];
+        $validated['name_om'] = !empty($validated['name_om']) ? $validated['name_om'] : ($validated['name_en'] ?? $validated['name_am']);
+
         $slug = Str::slug($validated['name_en'] ?? $validated['name_am']) . '-' . rand(10, 99);
 
         $id = DB::table('offices')->insertGetId(array_merge($validated, [
@@ -606,6 +654,9 @@ class AdminContentController extends Controller
             'building_location_am' => 'nullable|string',
             'room_number' => 'nullable|string',
         ]);
+
+        $validated['name_en'] = !empty($validated['name_en']) ? $validated['name_en'] : $validated['name_am'];
+        $validated['name_om'] = !empty($validated['name_om']) ? $validated['name_om'] : ($validated['name_en'] ?? $validated['name_am']);
 
         DB::table('offices')->where('id', $id)->update(array_merge($validated, [
             'updated_at' => now()
@@ -813,5 +864,92 @@ class AdminContentController extends Controller
     {
         DB::table('hero_slides')->where('id', $id)->delete();
         return response()->json(['message' => 'Hero slide deleted']);
+    }
+
+    // Destinations & Tourism Spotlight Management
+    public function getDestinations()
+    {
+        $items = DB::table('destinations')->orderBy('order', 'asc')->orderBy('id', 'desc')->get();
+        return response()->json($items);
+    }
+
+    public function storeDestination(Request $request)
+    {
+        $validated = $request->validate([
+            'category' => 'required|string',
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'location_am' => 'nullable|string',
+            'location_en' => 'nullable|string',
+            'location_om' => 'nullable|string',
+            'summary_am' => 'nullable|string',
+            'summary_en' => 'nullable|string',
+            'summary_om' => 'nullable|string',
+            'image_path' => 'nullable|string',
+            'order' => 'nullable|integer',
+        ]);
+
+        $id = DB::table('destinations')->insertGetId([
+            'category' => $validated['category'],
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'location_am' => $validated['location_am'] ?? null,
+            'location_en' => $validated['location_en'] ?? null,
+            'location_om' => $validated['location_om'] ?? null,
+            'summary_am' => $validated['summary_am'] ?? null,
+            'summary_en' => $validated['summary_en'] ?? null,
+            'summary_om' => $validated['summary_om'] ?? null,
+            'image_path' => $validated['image_path'] ?? null,
+            'order' => $validated['order'] ?? 0,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Destination created successfully', 'id' => $id], 201);
+    }
+
+    public function updateDestination(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'category' => 'required|string',
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'location_am' => 'nullable|string',
+            'location_en' => 'nullable|string',
+            'location_om' => 'nullable|string',
+            'summary_am' => 'nullable|string',
+            'summary_en' => 'nullable|string',
+            'summary_om' => 'nullable|string',
+            'image_path' => 'nullable|string',
+            'order' => 'nullable|integer',
+        ]);
+
+        DB::table('destinations')->where('id', $id)->update([
+            'category' => $validated['category'],
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'location_am' => $validated['location_am'] ?? null,
+            'location_en' => $validated['location_en'] ?? null,
+            'location_om' => $validated['location_om'] ?? null,
+            'summary_am' => $validated['summary_am'] ?? null,
+            'summary_en' => $validated['summary_en'] ?? null,
+            'summary_om' => $validated['summary_om'] ?? null,
+            'image_path' => $validated['image_path'] ?? null,
+            'order' => $validated['order'] ?? 0,
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Destination updated successfully']);
+    }
+
+    public function deleteDestination($id)
+    {
+        DB::table('destinations')->where('id', $id)->delete();
+        return response()->json(['message' => 'Destination deleted']);
     }
 }

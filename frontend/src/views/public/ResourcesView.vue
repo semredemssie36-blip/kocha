@@ -74,6 +74,10 @@ const getDescription = (doc) => {
 }
 
 const downloadDocument = (doc) => {
+  if (doc.file_path) {
+    window.open(doc.file_path, '_blank')
+    return
+  }
   // Trigger simulated official PDF download
   const blob = new Blob([`Kombolcha City Administration Official Document\nTitle: ${getTitle(doc)}\nReference: ${doc.id}\nYear: ${doc.year}`], { type: 'text/plain' })
   const url = window.URL.createObjectURL(blob)

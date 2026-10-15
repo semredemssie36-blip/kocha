@@ -407,4 +407,15 @@ class PublicApiController extends Controller
             ->get();
         return response()->json($slides);
     }
+
+    // Destinations & Tourism Spotlight
+    public function getDestinations(Request $request)
+    {
+        $query = DB::table('destinations')->where('is_active', true);
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+        $items = $query->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
+        return response()->json($items);
+    }
 }

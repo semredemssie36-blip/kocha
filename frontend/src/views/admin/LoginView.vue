@@ -43,7 +43,7 @@ async function handleLogin() {
         <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30">
           <Building2 class="w-7 h-7" />
         </div>
-        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Staff Portal Login</h2>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Login</h2>
         <p class="text-xs text-slate-500 mt-1">Kombolcha Metropolitan Administration CMS</p>
       </div>
 

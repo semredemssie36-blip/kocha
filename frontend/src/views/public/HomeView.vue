@@ -54,9 +54,9 @@ const slides = ref([
     title_am: 'በቴክኖሎጂ የታገዘ ፈጣንና ግልጽ የከተማ አስተዳደር አገልግሎት',
     title_en: 'Smart Municipal Governance & Citizen-First Public Services',
     title_om: 'Bulchiinsa Magaalaa Saffisaa fi Iftoomina Qabu',
-    desc_am: 'የ 4ቱ ክፍለ ከተሞችና 22ቱ መምሪያዎች ይፋዊ መመሪያዎች፣ የቀበሌ መታወቂያ እና ፈቃድ አሰጣጥ ያለ ወረፋ።',
-    desc_en: 'Connecting 4 Sub-Cities and 22 municipal directorates with transparent civic workflows and zero delays.',
-    desc_om: 'Tajaajilaalee kutaalee magaalaa 4 fi waajjiraalee sekteeraa 22 salphaatti argadhaa.',
+    desc_am: 'የክፍለ ከተሞችና የመምሪያዎች ይፋዊ መመሪያዎች፣ የቀበሌ መታወቂያ እና ፈቃድ አሰጣጥ ያለ ወረፋ።',
+    desc_en: 'Connecting Sub-Cities and municipal directorates with transparent civic workflows and zero delays.',
+    desc_om: 'Tajaajilaalee kutaalee magaalaa fi waajjiraalee sekteeraa salphaatti argadhaa.',
     cta_am: 'የዜጎች አገልግሎቶችን ይመልከቱ',
     cta_en: 'Access Citizen Services',
     cta_om: 'Tajaajilaalee Lammiilee',
@@ -68,9 +68,26 @@ const slides = ref([
 const newsList = ref([])
 const tendersList = ref([])
 const pollData = ref(null)
+const mayorData = ref({})
 const selectedOption = ref(null)
 const hasVoted = ref(false)
 const voting = ref(false)
+
+const getMayorName = () => {
+  if (!mayorData.value) return 'Mayor of Kombolcha'
+  const lang = langStore.currentLang
+  if (lang === 'am') return mayorData.value.name_am || 'ክቡር አቶ ከድር አህመድ'
+  if (lang === 'om') return mayorData.value.name_om || mayorData.value.name_en || 'Kabajamoo Obbo Kadiir Ahimad'
+  return mayorData.value.name_en || 'Hon. Kedir Ahmed'
+}
+
+const getMayorKeynote = () => {
+  if (!mayorData.value) return ''
+  const lang = langStore.currentLang
+  if (lang === 'am') return mayorData.value.welcome_message_am || ''
+  if (lang === 'om') return mayorData.value.welcome_message_om || mayorData.value.welcome_message_en || ''
+  return mayorData.value.welcome_message_en || ''
+}
 
 const activeSlide = computed(() => slides.value[currentSlide.value] || slides.value[0])
 
@@ -114,14 +131,16 @@ const prevSlide = () => {
 
 const fetchHomeData = async () => {
   try {
-    const [newsRes, tendersRes, pollRes, slidesRes] = await Promise.all([
+    const [newsRes, tendersRes, pollRes, slidesRes, mayorRes] = await Promise.all([
       api.get('/news'),
       api.get('/tenders'),
       api.getPoll(),
-      api.get('/hero-slides').catch(() => ({ data: [] }))
+      api.get('/hero-slides').catch(() => ({ data: [] })),
+      api.getMayor().catch(() => ({ data: {} }))
     ])
     newsList.value = (newsRes.data?.data || newsRes.data || []).slice(0, 3)
     tendersList.value = (tendersRes.data || []).slice(0, 2)
+    mayorData.value = mayorRes.data || {}
     if (pollRes.data && pollRes.data.poll) {
       pollData.value = pollRes.data
       hasVoted.value = pollRes.data.has_voted
@@ -216,27 +235,27 @@ onUnmounted(() => {
 
 <template>
   <div class="bg-white text-slate-800">
-    <!-- Clean Municipal Hero Banner Section (Full-Cover High-Res Photography Slider) -->
-    <section class="w-full max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10 bg-white">
-      <div class="relative w-full rounded-3xl overflow-hidden border border-slate-200 shadow-xl min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] xl:min-h-[740px] flex items-center">
-        <!-- Background Photography -->
-        <div 
-          v-for="(slide, index) in slides" 
-          :key="index"
-          class="absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out pointer-events-none"
-          :class="currentSlide === index ? 'opacity-100 z-0' : 'opacity-0 -z-10'"
-        >
-          <img 
-            :src="slide.image" 
-            :alt="slide.title_en"
-            class="w-full h-full object-cover object-center"
-          />
-          <!-- Dignified Gradient Scrim to guarantee high text contrast without being pure dark -->
-          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-transparent"></div>
-        </div>
+    <!-- Full-Bleed Municipal Hero Banner Section (Edge-to-Edge Cover Photography Slider) -->
+    <section class="relative w-full bg-slate-950 overflow-hidden min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] xl:min-h-[760px] flex items-center">
+      <!-- Background Photography -->
+      <div 
+        v-for="(slide, index) in slides" 
+        :key="index"
+        class="absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out pointer-events-none"
+        :class="currentSlide === index ? 'opacity-100 z-0' : 'opacity-0 -z-10'"
+      >
+        <img 
+          :src="slide.image" 
+          :alt="slide.title_en"
+          class="w-full h-full object-cover object-center"
+        />
+        <!-- Dignified Gradient Scrim to guarantee high text contrast without being pure dark -->
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-transparent"></div>
+      </div>
 
-        <!-- Slide Overlay Content -->
-        <div class="relative z-10 p-8 sm:p-12 lg:p-16 max-w-3xl text-white">
+      <!-- Slide Overlay Content (Aligned with standard site container) -->
+      <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-16 sm:py-20 lg:py-24">
+        <div class="max-w-3xl text-white">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/40 text-blue-200 text-xs font-bold tracking-wider uppercase mb-4 border border-blue-400/30">
             <Landmark class="w-3.5 h-3.5 text-blue-300" />
             <span>{{ getSlideTag() }}</span>
@@ -309,7 +328,9 @@ onUnmounted(() => {
             <MapPin class="w-6 h-6" />
           </div>
           <div>
-            <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors">4 Sub-Cities</h3>
+            <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors">
+              {{ langStore.currentLang === 'am' ? 'ክፍለ ከተሞች' : (langStore.currentLang === 'om' ? 'Kutaalee Magaalaa' : 'Sub-Cities') }}
+            </h3>
             <p class="text-xs text-slate-500 mt-1">Abishager, Borkena, Hasenager, Biraro</p>
           </div>
         </router-link>
@@ -322,7 +343,9 @@ onUnmounted(() => {
             <Building2 class="w-6 h-6" />
           </div>
           <div>
-            <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors">22 Sector Offices</h3>
+            <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors">
+              {{ langStore.currentLang === 'am' ? 'የመምሪያዎች ማውጫ' : (langStore.currentLang === 'om' ? 'Galmee Waajjiraalee' : 'Sector Offices') }}
+            </h3>
             <p class="text-xs text-slate-500 mt-1">Direct directory, rooms & phone lines</p>
           </div>
         </router-link>
@@ -361,18 +384,25 @@ onUnmounted(() => {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <!-- Portrait -->
           <div class="lg:col-span-4 flex flex-col items-center text-center">
-            <div class="w-44 h-44 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-4">
+            <div class="w-44 h-44 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-4 bg-slate-100 relative flex items-center justify-center">
+              <div v-if="!mayorData.portrait_path" class="w-full h-full bg-slate-100 flex flex-col items-center justify-center animate-pulse text-slate-300">
+                <Building2 class="w-12 h-12 opacity-30 text-blue-700" />
+              </div>
               <img 
-                src="/assets/mayor_portrait.jpg" 
-                alt="Hon. Kedir Ahmed - Mayor of Kombolcha" 
+                v-else
+                :src="mayorData.portrait_path" 
+                :alt="getMayorName()" 
                 class="w-full h-full object-cover object-top"
               />
             </div>
             <h3 class="text-lg font-black text-slate-900">
-              {{ langStore.currentLang === 'am' ? 'ክቡር አቶ ከድር አህመድ' : (langStore.currentLang === 'om' ? 'Kabajamoo Obbo Kadiir Ahimad' : 'Hon. Kedir Ahmed') }}
+              {{ getMayorName() }}
             </h3>
             <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mt-0.5">
               {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Mayor of Kombolcha City') }}
+            </p>
+            <p v-if="mayorData.term_start" class="text-xs text-slate-400 font-mono mt-1">
+              {{ mayorData.term_start }} - {{ mayorData.term_end || 'Present' }}
             </p>
           </div>
 
@@ -384,10 +414,10 @@ onUnmounted(() => {
             </div>
 
             <blockquote class="text-base sm:text-lg font-medium text-slate-700 italic leading-relaxed border-l-4 border-blue-700 pl-4 py-1">
-              "{{ langStore.currentLang === 'am' 
+              "{{ getMayorKeynote() || (langStore.currentLang === 'am' 
                 ? 'እንኳን ወደ ታሪካዊቷ፣ የኢንዱስትሪና የንግድ እምብርት ወደ ሆነችው ውቧ ኮምቦልቻ ከተማ አስተዳደር ዲጂታል ፖርታል በደህና መጡ! ከተማችንን ለነዋሪዎቿ ምቹ፣ ለባለሀብቶች ተመራጭ፣ በቴክኖሎጂ የታገዘ ፈጣን አገልግሎት የምትሰጥ ለማድረግ በቁርጠኝነት እየሰራን ነው።'
                 : 'Welcome to the official portal of Kombolcha City Administration. We are resolutely focused on building a resilient, prosperous metropolis powered by transparent digital governance, vibrant industrial growth, and citizen-first municipal service delivery.'
-              }}"
+              ) }}"
             </blockquote>
 
             <div class="pt-2">

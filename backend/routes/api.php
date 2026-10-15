@@ -55,6 +55,7 @@ Route::get('/search', [PublicApiController::class, 'globalSearch']);
 // Photo & Video Gallery
 Route::get('/gallery', [PublicApiController::class, 'getGallery']);
 Route::get('/hero-slides', [PublicApiController::class, 'getHeroSlides']);
+Route::get('/destinations', [PublicApiController::class, 'getDestinations']);
 
 
 /*
@@ -62,7 +63,7 @@ Route::get('/hero-slides', [PublicApiController::class, 'getHeroSlides']);
 | Admin Staff Authentication & Protected CRUD APIs (Sanctum)
 |--------------------------------------------------------------------------
 */
-Route::post('/admin/login', [AdminAuthController::class, 'login']);
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/logout', [AdminAuthController::class, 'logout']);
@@ -138,4 +139,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/hero-slides', [AdminContentController::class, 'storeHeroSlide']);
     Route::put('/admin/hero-slides/{id}', [AdminContentController::class, 'updateHeroSlide']);
     Route::delete('/admin/hero-slides/{id}', [AdminContentController::class, 'deleteHeroSlide']);
+
+    // Destinations & Tourism Management
+    Route::get('/admin/destinations', [AdminContentController::class, 'getDestinations']);
+    Route::post('/admin/destinations', [AdminContentController::class, 'storeDestination']);
+    Route::put('/admin/destinations/{id}', [AdminContentController::class, 'updateDestination']);
+    Route::delete('/admin/destinations/{id}', [AdminContentController::class, 'deleteDestination']);
 });

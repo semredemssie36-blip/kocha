@@ -33,10 +33,10 @@ onMounted(() => {
         Civic Administration Hub
       </div>
       <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-2">
-        {{ langStore.t('nav.sub_cities') }}
+        {{ langStore.t('nav.sub_cities') }} <span v-if="subCities.length" class="text-blue-700 font-mono">({{ subCities.length }})</span>
       </h1>
       <p class="text-slate-600 text-base max-w-2xl">
-        Kombolcha is decentralized into 4 metropolitan sub-cities providing local vital statistics, Kebele services, and community administration.
+        {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝባዊ አገልግሎቶችን በቅርበት ለመስጠት በክፍለ ከተሞች የተዋቀረ ነው።' : 'Kombolcha is decentralized into metropolitan sub-cities providing local vital statistics, Kebele services, and community administration.' }}
       </p>
     </div>
 

@@ -45,7 +45,8 @@ import {
   Image as ImageIcon,
   Video,
   Film,
-  Play
+  Play,
+  Compass
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -62,7 +63,7 @@ const stats = ref({
   published_news: 0,
   pending_drafts: 0,
   active_tenders: 0,
-  offices_count: 22,
+  offices_count: 0,
   unread_messages: 0,
   projects_count: 0,
   monthly_views: '24,520'
@@ -84,6 +85,7 @@ const mayorData = ref({})
 const leadershipList = ref([])
 const galleryList = ref([])
 const heroSlidesList = ref([])
+const destinationsList = ref([])
 const siteSettings = ref({
   site_name_en: 'Kombolcha City Administration',
   site_name_am: 'የኮምቦልቻ ከተማ አስተዳደር',
@@ -94,7 +96,7 @@ const siteSettings = ref({
 // Loading & Modal States
 const loading = ref(false)
 const uploadingFile = ref(false)
-const modalType = ref('') // 'news', 'tender', 'vacancy', 'service', 'project', 'resource', 'staff', 'office', 'leadership', 'hero_slide', 'gallery'
+const modalType = ref('') // 'news', 'tender', 'vacancy', 'service', 'project', 'resource', 'staff', 'office', 'leadership', 'hero_slide', 'gallery', 'destination'
 const submitting = ref(false)
 const alertToast = ref('')
 
@@ -103,6 +105,21 @@ const newsForm = reactive({
   title_am: '', title_en: '', title_om: '', category: 'General',
   content_am: '', content_en: '', content_om: '', status: 'published',
   thumbnail_path: ''
+})
+
+const destinationForm = reactive({
+  category: 'nature',
+  title_am: '',
+  title_en: '',
+  title_om: '',
+  location_am: '',
+  location_en: '',
+  location_om: '',
+  summary_am: '',
+  summary_en: '',
+  summary_om: '',
+  image_path: '',
+  order: 0
 })
 
 const heroSlideForm = reactive({
@@ -155,7 +172,7 @@ const vacancyForm = reactive({
 
 const serviceForm = reactive({
   title_am: '', title_en: '', title_om: '', type: 'step',
-  summary_am: '', fee_amount: 50, estimated_time_am: '3 Business Days'
+  summary_am: '', summary_en: '', fee_amount: 50, estimated_time_am: '3 Business Days'
 })
 
 const projectForm = reactive({
@@ -188,7 +205,7 @@ function showToast(msg) {
 async function fetchAllAdminData() {
   loading.value = true
   try {
-    const [statsRes, newsRes, tendersRes, vacanciesRes, projectsRes, resourcesRes, officesRes, msgsRes, mayorRes, leadershipRes, settingsRes, galleryRes, slidesRes, servicesRes] = await Promise.all([
+    const [statsRes, newsRes, tendersRes, vacanciesRes, projectsRes, resourcesRes, officesRes, msgsRes, mayorRes, leadershipRes, settingsRes, galleryRes, slidesRes, servicesRes, destinationsRes] = await Promise.all([
       api.get('/admin/stats'),
       api.get('/news'),
       api.get('/tenders'),
@@ -202,7 +219,8 @@ async function fetchAllAdminData() {
       api.get('/admin/settings').catch(() => ({ data: {} })),
       api.get('/admin/gallery').catch(() => ({ data: [] })),
       api.get('/admin/hero-slides').catch(() => ({ data: [] })),
-      api.get('/services').catch(() => ({ data: [] }))
+      api.get('/services').catch(() => ({ data: [] })),
+      api.get('/admin/destinations').catch(() => ({ data: [] }))
     ])
     stats.value = { ...stats.value, ...statsRes.data }
     newsList.value = newsRes.data?.data || newsRes.data || []
@@ -211,12 +229,14 @@ async function fetchAllAdminData() {
     projectsList.value = projectsRes.data || []
     resourcesList.value = resourcesRes.data || []
     officesList.value = officesRes.data || []
+    stats.value.offices_count = officesList.value.length
     servicesList.value = servicesRes.data || []
     messagesList.value = msgsRes.data?.data || msgsRes.data || []
     mayorData.value = mayorRes.data || {}
     leadershipList.value = leadershipRes.data || []
     galleryList.value = galleryRes.data || []
     heroSlidesList.value = slidesRes.data || []
+    destinationsList.value = destinationsRes.data || []
     if (settingsRes.data && Object.keys(settingsRes.data).length) {
       siteSettings.value = { ...siteSettings.value, ...settingsRes.data }
     }
@@ -233,6 +253,97 @@ async function fetchAllAdminData() {
 
 const editingId = ref(null)
 
+function openNewModal(type) {
+  editingId.value = null
+  modalType.value = type
+  if (type === 'news') {
+    newsForm.title_am = ''
+    newsForm.title_en = ''
+    newsForm.title_om = ''
+    newsForm.category = 'General'
+    newsForm.content_am = ''
+    newsForm.content_en = ''
+    newsForm.content_om = ''
+    newsForm.status = 'published'
+    newsForm.thumbnail_path = ''
+  } else if (type === 'tender') {
+    tenderForm.reference_number = ''
+    tenderForm.title_am = ''
+    tenderForm.title_en = ''
+    tenderForm.title_om = ''
+    tenderForm.category = 'Works'
+    tenderForm.bid_bond_amount = 50000
+    tenderForm.closing_datetime = ''
+    tenderForm.status = 'open'
+  } else if (type === 'vacancy') {
+    vacancyForm.title_am = ''
+    vacancyForm.title_en = ''
+    vacancyForm.title_om = ''
+    vacancyForm.position_code = ''
+    vacancyForm.employment_type = 'Full-Time'
+    vacancyForm.salary_grade = 'PS-09'
+    vacancyForm.requirements_am = ''
+    vacancyForm.deadline = ''
+  } else if (type === 'service') {
+    serviceForm.title_am = ''
+    serviceForm.title_en = ''
+    serviceForm.title_om = ''
+    serviceForm.type = 'step'
+    serviceForm.summary_am = ''
+    serviceForm.summary_en = ''
+    serviceForm.fee_amount = 50
+    serviceForm.estimated_time_am = '3 Business Days'
+  } else if (type === 'project') {
+    projectForm.title_am = ''
+    projectForm.title_en = ''
+    projectForm.title_om = ''
+    projectForm.budget_etb = 10000000
+    projectForm.contractor_name = ''
+    projectForm.progress_percent = 10
+    projectForm.status = 'in_progress'
+  } else if (type === 'resource') {
+    resourceForm.title_am = ''
+    resourceForm.title_en = ''
+    resourceForm.title_om = ''
+    resourceForm.category = 'Directives'
+    resourceForm.year = 2026
+    resourceForm.file_path = ''
+    resourceForm.file_size_formatted = '2.4 MB'
+  } else if (type === 'office') {
+    officeForm.name_am = ''
+    officeForm.name_en = ''
+    officeForm.name_om = ''
+    officeForm.phone = ''
+    officeForm.email = ''
+    officeForm.building_location_am = ''
+    officeForm.room_number = ''
+  } else if (type === 'leadership') {
+    leadershipForm.type = 'cabinet'
+    leadershipForm.name_am = ''
+    leadershipForm.name_en = ''
+    leadershipForm.name_om = ''
+    leadershipForm.position_am = ''
+    leadershipForm.position_en = ''
+    leadershipForm.position_om = ''
+    leadershipForm.photo_path = ''
+    leadershipForm.phone = ''
+    leadershipForm.email = ''
+  } else if (type === 'destination') {
+    destinationForm.category = 'nature'
+    destinationForm.title_am = ''
+    destinationForm.title_en = ''
+    destinationForm.title_om = ''
+    destinationForm.location_am = ''
+    destinationForm.location_en = ''
+    destinationForm.location_om = ''
+    destinationForm.summary_am = ''
+    destinationForm.summary_en = ''
+    destinationForm.summary_om = ''
+    destinationForm.image_path = ''
+    destinationForm.order = 0
+  }
+}
+
 function editItem(type, item) {
   editingId.value = item.id
   modalType.value = type
@@ -245,6 +356,7 @@ function editItem(type, item) {
     newsForm.content_en = item.content_en || ''
     newsForm.content_om = item.content_om || ''
     newsForm.status = item.status || 'published'
+    newsForm.thumbnail_path = item.thumbnail_path || ''
   } else if (type === 'tender') {
     tenderForm.reference_number = item.reference_number || ''
     tenderForm.title_am = item.title_am || ''
@@ -269,6 +381,7 @@ function editItem(type, item) {
     serviceForm.title_om = item.title_om || ''
     serviceForm.type = item.type || 'text'
     serviceForm.summary_am = item.summary_am || ''
+    serviceForm.summary_en = item.summary_en || ''
     serviceForm.fee_amount = item.fee_amount || 0
     serviceForm.estimated_time_am = item.estimated_time_am || ''
   } else if (type === 'project') {
@@ -332,6 +445,19 @@ function editItem(type, item) {
     galleryForm.caption_en = item.caption_en || ''
     galleryForm.caption_om = item.caption_om || ''
     galleryForm.order = item.order || 0
+  } else if (type === 'destination') {
+    destinationForm.category = item.category || 'nature'
+    destinationForm.title_am = item.title_am || ''
+    destinationForm.title_en = item.title_en || ''
+    destinationForm.title_om = item.title_om || ''
+    destinationForm.location_am = item.location_am || ''
+    destinationForm.location_en = item.location_en || ''
+    destinationForm.location_om = item.location_om || ''
+    destinationForm.summary_am = item.summary_am || ''
+    destinationForm.summary_en = item.summary_en || ''
+    destinationForm.summary_om = item.summary_om || ''
+    destinationForm.image_path = item.image_path || ''
+    destinationForm.order = item.order || 0
   }
 }
 
@@ -384,6 +510,10 @@ async function submitActiveModal() {
       if (isEdit) await api.put(`/admin/gallery/${id}`, galleryForm)
       else await api.post('/admin/gallery', galleryForm)
       showToast(isEdit ? 'Gallery media updated successfully!' : 'Gallery media added successfully!')
+    } else if (modalType.value === 'destination') {
+      if (isEdit) await api.put(`/admin/destinations/${id}`, destinationForm)
+      else await api.post('/admin/destinations', destinationForm)
+      showToast(isEdit ? 'Destination spotlight updated!' : 'New destination spotlight created!')
     }
     modalType.value = ''
     editingId.value = null
@@ -580,7 +710,7 @@ onMounted(() => {
             ]"
           >
             <Film class="w-4 h-4" />
-            <span>Media Gallery (3.10)</span>
+            <span>Media Gallery</span>
           </button>
           <button 
             @click="activeSection = 'news'"
@@ -640,12 +770,15 @@ onMounted(() => {
           <button 
             @click="activeSection = 'offices'"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
+              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
               activeSection === 'offices' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
             ]"
           >
-            <Building2 class="w-4 h-4" />
-            <span>22 Offices & Directory</span>
+            <div class="flex items-center gap-3">
+              <Building2 class="w-4 h-4 shrink-0" />
+              <span>Offices & Directory</span>
+            </div>
+            <span v-if="officesList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ officesList.length }}</span>
           </button>
 
           <!-- Civic Services Category -->
@@ -681,6 +814,19 @@ onMounted(() => {
           >
             <FolderOpen class="w-4 h-4" />
             <span>Resources & Directives</span>
+          </button>
+          <button 
+            @click="activeSection = 'destinations'"
+            :class="[
+              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'destinations' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            ]"
+          >
+            <div class="flex items-center gap-3">
+              <Compass class="w-4 h-4 shrink-0" />
+              <span>Tourism & Destinations</span>
+            </div>
+            <span v-if="destinationsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ destinationsList.length }}</span>
           </button>
 
           <!-- Citizen Interaction Category -->
@@ -920,12 +1066,12 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- MEDIA GALLERY MANAGEMENT (3.10) -->
+        <!-- MEDIA GALLERY MANAGEMENT -->
         <div v-else-if="activeSection === 'gallery'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Media Gallery Manager (3.10)</h2>
-              <p class="text-xs text-slate-500">3.10.1 Adding Images & Videos, category assignment, and multilingual captions.</p>
+              <h2 class="text-2xl font-black text-slate-900">Media Gallery Manager</h2>
+              <p class="text-xs text-slate-500">Manage high-resolution photography and video documentaries with category tagging and multilingual captions.</p>
             </div>
             <button @click="editingId = null; modalType = 'gallery'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
@@ -975,10 +1121,10 @@ onMounted(() => {
         <div v-else-if="activeSection === 'news'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">News Articles & Press Releases (3.5.1)</h2>
+              <h2 class="text-2xl font-black text-slate-900">News Articles & Press Releases</h2>
               <p class="text-xs text-slate-500">Publish and manage trilingual municipal announcements.</p>
             </div>
-            <button @click="modalType = 'news'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-blue-600/20">
+            <button @click="openNewModal('news')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-blue-600/20">
               <Plus class="w-4 h-4" />
               <span>Create Press Release</span>
             </button>
@@ -987,13 +1133,19 @@ onMounted(() => {
           <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
             <div class="divide-y divide-slate-100">
               <div v-for="item in newsList" :key="item.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
-                <div>
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">{{ item.category }}</span>
-                    <span class="text-xs text-slate-400 font-mono">{{ new Date(item.created_at).toLocaleDateString() }}</span>
+                <div class="flex items-center gap-4">
+                  <img 
+                    :src="item.thumbnail_path || '/assets/hero_industry.jpg'" 
+                    class="w-16 h-12 object-cover rounded-lg border border-slate-200 shrink-0 shadow-2xs" 
+                  />
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">{{ item.category }}</span>
+                      <span class="text-xs text-slate-400 font-mono">{{ new Date(item.created_at).toLocaleDateString() }}</span>
+                    </div>
+                    <h4 class="font-bold text-base text-slate-900">{{ item.title_en || item.title_am }}</h4>
+                    <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ item.title_am }}</p>
                   </div>
-                  <h4 class="font-bold text-base text-slate-900">{{ item.title_en || item.title_am }}</h4>
-                  <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ item.title_am }}</p>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700">{{ item.status }}</span>
@@ -1013,10 +1165,10 @@ onMounted(() => {
         <div v-else-if="activeSection === 'tenders'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Procurement & Tenders Management (3.5.4)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Public Procurement & Tenders</h2>
               <p class="text-xs text-slate-500">Create public bids with live countdowns and bid bond requirements.</p>
             </div>
-            <button @click="editingId = null; modalType = 'tender'" class="px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('tender')" class="px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Post New Tender</span>
             </button>
@@ -1048,10 +1200,10 @@ onMounted(() => {
         <div v-else-if="activeSection === 'vacancies'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Civil Service Vacancies (3.5.3)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Civil Service Vacancies & Careers</h2>
               <p class="text-xs text-slate-500">Post employment openings, salary scales, and application guidelines.</p>
             </div>
-            <button @click="editingId = null; modalType = 'vacancy'" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('vacancy')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Post Job Vacancy</span>
             </button>
@@ -1082,38 +1234,82 @@ onMounted(() => {
         <!-- 5. MAYOR PROFILE & KEYNOTE -->
         <div v-else-if="activeSection === 'mayor'" class="space-y-6 max-w-4xl">
           <div>
-            <h2 class="text-2xl font-black text-slate-900">Mayor Profile & Keynote Message (3.4.1)</h2>
-            <p class="text-xs text-slate-500">Update the Mayor's welcome letter, vision, and executive biography.</p>
+            <h2 class="text-2xl font-black text-slate-900">Office of the Mayor & Keynote</h2>
+            <p class="text-xs text-slate-500">Update the Mayor's official portrait, welcome letter, vision, and executive biography.</p>
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
-            <div class="flex items-center gap-6 pb-6 border-b border-slate-100">
-              <img src="/assets/mayor_portrait.jpg" alt="Mayor" class="w-24 h-24 object-cover object-top rounded-2xl border-2 border-blue-600" />
-              <div>
-                <h3 class="text-lg font-black text-slate-900">{{ mayorData.name_en || mayorData.name_am }}</h3>
-                <p class="text-xs text-slate-500">Current Term: {{ mayorData.term_start }} - {{ mayorData.term_end }}</p>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-6 pb-6 border-b border-slate-100">
+              <img v-if="mayorData.portrait_path" :src="mayorData.portrait_path" alt="Mayor" class="w-28 h-28 object-cover object-top rounded-2xl border-2 border-blue-600 shadow-md shrink-0" />
+              <div v-else class="w-28 h-28 rounded-2xl border-2 border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 shrink-0">
+                <Users class="w-10 h-10 opacity-30 text-blue-600" />
+                <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase">No Photo</span>
+              </div>
+              <div class="flex-1 space-y-2">
+                <h3 class="text-xl font-black text-slate-900">{{ mayorData.name_en || mayorData.name_am }}</h3>
+                <p class="text-xs text-slate-500 font-mono">Current Term: {{ mayorData.term_start || '2021' }} - {{ mayorData.term_end || 'Present' }}</p>
+
+                <!-- Mayor Photo Upload Input -->
+                <div class="pt-2">
+                  <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Update Mayoral Portrait</label>
+                  <div class="flex items-center gap-3 max-w-md">
+                    <input 
+                      v-model="mayorData.portrait_path" 
+                      type="text" 
+                      placeholder="/uploads/... or click Upload Photo" 
+                      class="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono" 
+                    />
+                    <label class="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                      <Upload class="w-4 h-4" />
+                      <span>{{ uploadingFile ? 'Uploading...' : 'Upload Photo' }}</span>
+                      <input type="file" @change="uploadFileFor($event, mayorData, 'portrait_path')" class="hidden" accept="image/*" />
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mayor Name (Amharic)</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mayor Full Name (Amharic - አማርኛ) *</label>
                 <input v-model="mayorData.name_am" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mayor Name (English)</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mayor Full Name (English)</label>
                 <input v-model="mayorData.name_en" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
               </div>
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Term Start Year</label>
+                <input v-model="mayorData.term_start" type="text" placeholder="2021" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Term End Year</label>
+                <input v-model="mayorData.term_end" type="text" placeholder="Present" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keynote Welcome Message (Amharic)</label>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keynote Welcome Message (Amharic - የእንኳን ደህና መጡ መልእክት) *</label>
               <textarea v-model="mayorData.welcome_message_am" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keynote Welcome Message (English)</label>
               <textarea v-model="mayorData.welcome_message_en" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Executive Biography (Amharic)</label>
+                <textarea v-model="mayorData.biography_am" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Executive Biography (English)</label>
+                <textarea v-model="mayorData.biography_en" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              </div>
             </div>
 
             <button @click="updateMayorProfile" class="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer shadow-md">
@@ -1126,26 +1322,42 @@ onMounted(() => {
         <div v-else-if="activeSection === 'leadership'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Cabinet & City Council Members (3.4.2 & 3.4.4)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Cabinet & City Council Members</h2>
               <p class="text-xs text-slate-500">Manage municipal cabinet portfolios and council committee heads.</p>
             </div>
-            <button @click="modalType = 'leadership'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('leadership')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Add Member</span>
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-if="leadershipList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
+            No leadership members cataloged yet.
+          </div>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="m in leadershipList" :key="m.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
               <div>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="m.type === 'cabinet' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'">
-                  {{ m.type }}
-                </span>
-                <h4 class="font-extrabold text-base text-slate-900 mt-2">{{ m.name_en || m.name_am }}</h4>
-                <p class="text-xs font-semibold text-blue-600 mt-0.5">{{ m.position_en || m.position_am }}</p>
-                <div class="text-xs text-slate-500 font-mono mt-3">{{ m.phone }} | {{ m.email }}</div>
+                <div class="flex items-center gap-4 mb-3">
+                  <img 
+                    v-if="m.photo_path"
+                    :src="m.photo_path" 
+                    :alt="m.name_en || m.name_am" 
+                    class="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-2xs shrink-0" 
+                  />
+                  <div v-else class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                    <Users class="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="m.type === 'cabinet' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'">
+                      {{ m.type }}
+                    </span>
+                    <h4 class="font-extrabold text-base text-slate-900 mt-1 leading-snug">{{ m.name_en || m.name_am }}</h4>
+                  </div>
+                </div>
+                <p class="text-xs font-semibold text-blue-600">{{ m.position_en || m.position_am }}</p>
+                <div class="text-xs text-slate-500 font-mono mt-2">{{ m.phone || 'N/A' }} | {{ m.email || 'N/A' }}</div>
               </div>
-              <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button @click="editItem('leadership', m)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Member">
                   <Edit class="w-4 h-4" />
                 </button>
@@ -1161,10 +1373,10 @@ onMounted(() => {
         <div v-else-if="activeSection === 'offices'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">22 Municipal Offices & Directory (3.4.4)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Municipal Offices & Public Directory <span v-if="officesList.length" class="text-blue-600 font-mono text-xl">({{ officesList.length }})</span></h2>
               <p class="text-xs text-slate-500">Maintain official directory, building locations, room numbers and direct phone lines.</p>
             </div>
-            <button @click="editingId = null; modalType = 'office'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('office')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Add Office</span>
             </button>
@@ -1197,22 +1409,42 @@ onMounted(() => {
         <div v-else-if="activeSection === 'services'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Service Management (3.6)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Municipal Citizen Services</h2>
               <p class="text-xs text-slate-500">Configure text service guidelines and step-by-step civic procedural walkthroughs.</p>
             </div>
-            <button @click="editingId = null; modalType = 'service'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('service')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Add Service</span>
             </button>
           </div>
 
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="p-6">
-              <h4 class="font-bold text-sm text-slate-800 mb-2">Step-by-Step Kebele ID Card Issuance (Active)</h4>
-              <p class="text-xs text-slate-500 mb-4">4 Steps: Document preparation, 50 ETB payment, Biometric capture, Card collection.</p>
-              <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">Step Service</span>
-                <span class="text-xs font-mono text-slate-500">Estimated: 3 Business Days | Fee: 50.00 ETB</span>
+          <div v-if="servicesList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
+            No citizen services cataloged yet.
+          </div>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div v-for="srv in servicesList" :key="srv.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase" :class="srv.type === 'step' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'">
+                    {{ srv.type === 'step' ? 'Step-by-Step Walkthrough' : 'Direct Guide' }}
+                  </span>
+                  <div class="flex items-center gap-1">
+                    <button @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Service">
+                      <Edit class="w-4 h-4" />
+                    </button>
+                    <button @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Service">
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <h4 class="font-extrabold text-base text-slate-900 leading-snug">{{ srv.title_en || srv.title_am }}</h4>
+                <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ srv.title_am }}</p>
+                <p class="text-xs text-slate-600 mt-2 line-clamp-2">{{ srv.summary_en || srv.summary_am }}</p>
+              </div>
+
+              <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-mono">
+                <span>Fee: {{ srv.fee_amount ? srv.fee_amount + ' ETB' : 'Free' }}</span>
+                <span>Time: {{ srv.estimated_time_am || '1-3 Days' }}</span>
               </div>
             </div>
           </div>
@@ -1222,10 +1454,10 @@ onMounted(() => {
         <div v-else-if="activeSection === 'projects'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Mega Infrastructure Projects (3.8)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Infrastructure & Urban Development Projects</h2>
               <p class="text-xs text-slate-500">Track construction progress %, contractors, and capital allocations.</p>
             </div>
-            <button @click="editingId = null; modalType = 'project'" class="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('project')" class="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Add Project</span>
             </button>
@@ -1280,10 +1512,10 @@ onMounted(() => {
         <div v-else-if="activeSection === 'resources'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Resource Management & Directives (3.9)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Public Directives & Document Library</h2>
               <p class="text-xs text-slate-500">Upload official bylaws, directives, annual budgets, and master plan maps.</p>
             </div>
-            <button @click="editingId = null; modalType = 'resource'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('resource')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
               <Plus class="w-4 h-4" />
               <span>Catalog Directive</span>
             </button>
@@ -1311,10 +1543,66 @@ onMounted(() => {
           </div>
         </div>
 
+        <!-- DESTINATIONS & TOURISM SPOTLIGHT -->
+        <div v-else-if="activeSection === 'destinations'" class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-black text-slate-900">Tourism, Culture & Investment Destinations</h2>
+              <p class="text-xs text-slate-500">Manage attractions, parks, industrial hubs, airports, and cultural bazaars for the public /explore portal.</p>
+            </div>
+            <button @click="openNewModal('destination')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+              <Plus class="w-4 h-4" />
+              <span>Add Destination</span>
+            </button>
+          </div>
+
+          <div v-if="destinationsList.length === 0" class="p-12 text-center bg-white rounded-3xl border border-slate-200">
+            <Compass class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <h3 class="text-base font-bold text-slate-700">No destinations registered</h3>
+            <p class="text-xs text-slate-500 mt-1">Click "Add Destination" above to catalog your first attraction.</p>
+          </div>
+
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="dest in destinationsList" :key="dest.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+              <div>
+                <div class="h-44 bg-slate-100 relative overflow-hidden">
+                  <img v-if="dest.image_path" :src="dest.image_path" :alt="dest.title_en || dest.title_am" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-slate-400 bg-slate-50">
+                    <Compass class="w-10 h-10" />
+                  </div>
+                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-slate-800 text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                    {{ dest.category }}
+                  </span>
+                </div>
+                <div class="p-5">
+                  <h4 class="font-bold text-base text-slate-900 mb-1">{{ dest.title_en || dest.title_am }}</h4>
+                  <div v-if="dest.title_am && dest.title_en" class="text-xs text-slate-500 font-medium mb-2">{{ dest.title_am }}</div>
+                  <div v-if="dest.location_en || dest.location_am" class="flex items-center gap-1.5 text-xs text-slate-600 mb-2">
+                    <MapPin class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>{{ dest.location_en || dest.location_am }}</span>
+                  </div>
+                  <p class="text-xs text-slate-600 line-clamp-3">{{ dest.summary_en || dest.summary_am }}</p>
+                </div>
+              </div>
+              <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] font-mono text-slate-400">Order: {{ dest.order || 0 }}</span>
+                <div class="flex items-center gap-2">
+                  <button @click="editItem('destination', dest)" class="p-2 text-blue-600 hover:bg-blue-100/50 rounded-xl cursor-pointer" title="Edit Destination">
+                    <Edit class="w-4 h-4" />
+                  </button>
+                  <button @click="deleteItem('/admin/destinations', dest.id, dest.title_en || dest.title_am)" class="p-2 text-rose-500 hover:bg-rose-100/50 rounded-xl cursor-pointer" title="Delete Destination">
+                    <Trash2 class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 11. CITIZEN FEEDBACK INBOX -->
         <div v-else-if="activeSection === 'messages'" class="space-y-6">
           <div>
-            <h2 class="text-2xl font-black text-slate-900">Citizen Feedback & Grievances Desk (3.11)</h2>
+            <h2 class="text-2xl font-black text-slate-900">Citizen Feedback & Inquiries Desk</h2>
             <p class="text-xs text-slate-500">Live submissions received via the public Contact Us portal.</p>
           </div>
 
@@ -1352,7 +1640,7 @@ onMounted(() => {
         <div v-else-if="activeSection === 'staff'" class="space-y-6">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Municipal Staff Accounts (4. Roles & Permissions)</h2>
+              <h2 class="text-2xl font-black text-slate-900">Municipal Staff & Roles</h2>
               <p class="text-xs text-slate-500">Super Admin access control for editors and communications officers.</p>
             </div>
             <button @click="modalType = 'staff'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
@@ -1398,7 +1686,7 @@ onMounted(() => {
         <!-- 13. SETTINGS & MAINTENANCE MODE -->
         <div v-else-if="activeSection === 'settings'" class="space-y-6 max-w-4xl">
           <div>
-            <h2 class="text-2xl font-black text-slate-900">Portal Configuration & Maintenance Mode (3.17)</h2>
+            <h2 class="text-2xl font-black text-slate-900">Portal System Settings & Maintenance</h2>
             <p class="text-xs text-slate-500">Configure public emergency notice banner and site maintenance toggle.</p>
           </div>
 
@@ -1406,7 +1694,7 @@ onMounted(() => {
             <!-- Maintenance Mode Toggle -->
             <div class="flex items-center justify-between p-4 rounded-2xl bg-amber-50 border border-amber-200">
               <div>
-                <h4 class="font-extrabold text-amber-900 text-sm">Maintenance Mode (3.17)</h4>
+                <h4 class="font-extrabold text-amber-900 text-sm">Emergency Maintenance Mode</h4>
                 <p class="text-xs text-amber-700">When enabled, the public portal displays an emergency maintenance holding screen while admin CMS remains accessible.</p>
               </div>
               <input type="checkbox" v-model="siteSettings.is_maintenance" class="w-6 h-6 text-amber-600 rounded cursor-pointer" />
@@ -1583,6 +1871,215 @@ onMounted(() => {
             </div>
           </div>
 
+          <!-- Service Fields -->
+          <div v-else-if="modalType === 'service'" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Type</label>
+                <select v-model="serviceForm.type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold">
+                  <option value="step">Step-by-Step Procedure Walkthrough</option>
+                  <option value="text">Direct Civic Guide / Text Service</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Administrative Fee (ETB)</label>
+                <input v-model.number="serviceForm.fee_amount" type="number" min="0" placeholder="0 for Free" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Title (Amharic - አማርኛ) *</label>
+              <input v-model="serviceForm.title_am" type="text" required placeholder="ለምሳሌ፡ የነዋሪነት የቀበሌ መታወቂያ ካርድ አሰጣጥ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Title (English)</label>
+              <input v-model="serviceForm.title_en" type="text" placeholder="e.g. Resident Kebele Identification Card Issuance" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Title (Afaan Oromoo)</label>
+              <input v-model="serviceForm.title_om" type="text" placeholder="Waraqaa Eenyummaa Lammiilee Gandaa Kennuu" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Estimated Processing Time</label>
+              <input v-model="serviceForm.estimated_time_am" type="text" placeholder="ለምሳሌ፡ 3 የስራ ቀናት (3 Business Days)" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Summary / Citizen Instructions (Amharic) *</label>
+              <textarea v-model="serviceForm.summary_am" rows="3" required placeholder="የአገልግሎት አሰጣጥ ሂደት፣ አስፈላጊ ቅድመ-ሁኔታዎችና መመሪያዎች..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Summary / Citizen Instructions (English)</label>
+              <textarea v-model="serviceForm.summary_en" rows="3" placeholder="Sequential guidelines and required preconditions..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+            </div>
+          </div>
+
+          <!-- Municipal Office Fields -->
+          <div v-else-if="modalType === 'office'" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Office Name (Amharic - አማርኛ) *</label>
+              <input v-model="officeForm.name_am" type="text" required placeholder="ለምሳሌ፡ የፋይናንስ መምሪያ ወይም የመንገዶች ባለስልጣን" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Office Name (English)</label>
+              <input v-model="officeForm.name_en" type="text" placeholder="e.g. Finance Directorate / Roads Authority" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Office Name (Afaan Oromoo)</label>
+              <input v-model="officeForm.name_om" type="text" placeholder="e.g. Waajjira Faayinaansii" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Municipal Direct Phone *</label>
+                <input v-model="officeForm.phone" type="text" placeholder="+251 33 551 0045" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Municipal Email</label>
+                <input v-model="officeForm.email" type="email" placeholder="office@kombolchacity.gov.et" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Building Location</label>
+                <input v-model="officeForm.building_location_am" type="text" placeholder="ለምሳሌ፡ ዋና ማዘጋጃ ቤት፣ ህንፃ 2 ወለል 1" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Room / Office Number</label>
+                <input v-model="officeForm.room_number" type="text" placeholder="ለምሳሌ፡ 201 ወይም 104" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Leadership Member Fields -->
+          <div v-else-if="modalType === 'leadership'" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Portfolio Body / Category</label>
+              <select v-model="leadershipForm.type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold">
+                <option value="cabinet">Cabinet Executive (የከንቲባ ካቢኔ አባል)</option>
+                <option value="council">City Council Standing Committee (የከተማ ምክር ቤት ቋሚ ኮሚቴ)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name (Amharic - አማርኛ) *</label>
+                <input v-model="leadershipForm.name_am" type="text" required placeholder="ለምሳሌ፡ ዶ/ር ተስፋዬ ብርሃኑ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name (English)</label>
+                <input v-model="leadershipForm.name_en" type="text" placeholder="e.g. Dr. Tesfaye Berhanu" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name (Afaan Oromoo)</label>
+              <input v-model="leadershipForm.name_om" type="text" placeholder="e.g. Dr. Tasfaayee Birhaanuu" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Position / Municipal Role (Amharic) *</label>
+              <input v-model="leadershipForm.position_am" type="text" required placeholder="ለምሳሌ፡ ምክትል ከንቲባ እና የንግድና ኢንዱስትሪ መምሪያ ኃላፊ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Position / Municipal Role (English)</label>
+              <input v-model="leadershipForm.position_en" type="text" placeholder="e.g. Deputy Mayor & Head of Trade & Industry" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Position / Municipal Role (Afaan Oromoo)</label>
+              <input v-model="leadershipForm.position_om" type="text" placeholder="Itti Aanaa Kantiibaa fi Hogganaa Daldalaa fi Indaastirii" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <!-- Member Photo Upload -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Member Portrait Photograph</label>
+              <div class="flex items-center gap-3">
+                <input 
+                  v-model="leadershipForm.photo_path" 
+                  type="text" 
+                  placeholder="/uploads/... or click Upload Photo" 
+                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" 
+                />
+                <label class="px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                  <Upload class="w-4 h-4" />
+                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload Photo' }}</span>
+                  <input type="file" @change="uploadFileFor($event, leadershipForm, 'photo_path')" class="hidden" accept="image/*" />
+                </label>
+              </div>
+              <img v-if="leadershipForm.photo_path" :src="leadershipForm.photo_path" class="mt-2 h-16 w-16 object-cover rounded-xl border border-slate-200 shadow-2xs" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Direct Phone</label>
+                <input v-model="leadershipForm.phone" type="text" placeholder="+251 33 551 0023" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Municipal Email</label>
+                <input v-model="leadershipForm.email" type="email" placeholder="leadership@kombolchacity.gov.et" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Resource / Directives Fields -->
+          <div v-else-if="modalType === 'resource'" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Document Category</label>
+                <select v-model="resourceForm.category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold">
+                  <option value="Directives">Directives (ይፋዊ መመሪያዎች)</option>
+                  <option value="Master Plan">Master Plan (የከተማ ማስተር ፕላን)</option>
+                  <option value="Bylaws">Bylaws & Regulations (ደንቦች)</option>
+                  <option value="Forms">Citizen Forms (የዜጎች ቅጾች)</option>
+                  <option value="Annual Reports">Annual Reports & Budgets (ዓመታዊ ሪፖርቶች)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Publication Year</label>
+                <input v-model.number="resourceForm.year" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Document Title (Amharic - አማርኛ) *</label>
+              <input v-model="resourceForm.title_am" type="text" required placeholder="ለምሳሌ፡ የከተማ መሬት ይዞታ ምዝገባ እና የካርታ አሰጣጥ መመሪያ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Document Title (English)</label>
+              <input v-model="resourceForm.title_en" type="text" placeholder="e.g. Urban Land Tenure Registration and Cadastre Directive" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Document Title (Afaan Oromoo)</label>
+              <input v-model="resourceForm.title_om" type="text" placeholder="Qajeelfama Galmee Qabiyyee Lafa Magaalaa" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <!-- PDF Document File Upload -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Document File (PDF / Doc) *</label>
+              <div class="flex items-center gap-3">
+                <input 
+                  v-model="resourceForm.file_path" 
+                  type="text" 
+                  required 
+                  placeholder="/documents/directive.pdf or upload" 
+                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" 
+                />
+                <label class="px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                  <Upload class="w-4 h-4" />
+                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload PDF' }}</span>
+                  <input type="file" @change="uploadFileFor($event, resourceForm, 'file_path')" class="hidden" accept=".pdf,.doc,.docx" />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">File Size Label</label>
+              <input v-model="resourceForm.file_size_formatted" type="text" placeholder="e.g. 2.4 MB" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            </div>
+          </div>
+
           <!-- Hero Slide Fields -->
           <div v-else-if="modalType === 'hero_slide'" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1666,7 +2163,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Gallery Media Fields (3.10.1 Adding Images & Videos) -->
+          <!-- Gallery Media Fields -->
           <div v-else-if="modalType === 'gallery'" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -1769,6 +2266,103 @@ onMounted(() => {
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Display Order</label>
               <input v-model.number="galleryForm.order" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+          </div>
+
+          <!-- Destination Spotlight Fields -->
+          <div v-else-if="modalType === 'destination'" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Destination Category *</label>
+                <select v-model="destinationForm.category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                  <option value="nature">Nature & Tourism (የተፈጥሮና ቱሪዝም መስህቦች)</option>
+                  <option value="industry">Industry & Investment (ኢንዱስትሪና ኢንቨስትመንት)</option>
+                  <option value="culture">Culture & Commerce (ባህልና ንግድ)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Display Order</label>
+                <input v-model.number="destinationForm.order" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <!-- Destination Photo / Image Upload -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Attraction Landscape Photo or URL</label>
+              <div class="flex items-center gap-3">
+                <input 
+                  v-model="destinationForm.image_path" 
+                  type="text" 
+                  placeholder="/assets/destinations/... or upload photo" 
+                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" 
+                />
+                <label class="px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                  <Upload class="w-4 h-4" />
+                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload Photo' }}</span>
+                  <input 
+                    type="file" 
+                    @change="uploadFileFor($event, destinationForm, 'image_path')" 
+                    class="hidden" 
+                    accept="image/*" 
+                  />
+                </label>
+              </div>
+            </div>
+
+            <!-- Photo Preview -->
+            <div v-if="destinationForm.image_path" class="rounded-xl overflow-hidden border border-slate-200 shadow-xs max-w-sm h-36 bg-slate-100">
+              <img :src="destinationForm.image_path" alt="Destination Preview" class="w-full h-full object-cover" />
+            </div>
+
+            <!-- Titles in 3 Languages -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Title (የስፍራው ስም በአማርኛ) *</label>
+              <input v-model="destinationForm.title_am" type="text" required placeholder="ለምሳሌ፡ የይጎፍ ተራራ የተፈጥሮ ደንና የመስህብ ስፍራ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Title</label>
+                <input v-model="destinationForm.title_en" type="text" placeholder="e.g. Mount Yegof Nature Reserve & Forest" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Title</label>
+                <input v-model="destinationForm.title_om" type="text" placeholder="Maqaa Afaan Oromootiin" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <!-- Locations in 3 Languages -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location (አማርኛ)</label>
+                <input v-model="destinationForm.location_am" type="text" placeholder="ለምሳሌ፡ ደቡብ ኮሪደር፣ ኮምቦልቻ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location (English)</label>
+                <input v-model="destinationForm.location_en" type="text" placeholder="e.g. Bordering Kombolcha South Corridor" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location (Afaan Oromoo)</label>
+                <input v-model="destinationForm.location_om" type="text" placeholder="Bakka" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <!-- Summaries in 3 Languages -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Description (ዝርዝር መግለጫ)</label>
+              <textarea v-model="destinationForm.summary_am" rows="2" placeholder="የመዳረሻው ዝርዝር መግለጫ..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Description</label>
+                <textarea v-model="destinationForm.summary_en" rows="2" placeholder="Comprehensive summary for visitors and investors..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Description</label>
+                <textarea v-model="destinationForm.summary_om" rows="2" placeholder="Ibsa guutuu..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              </div>
             </div>
           </div>
 

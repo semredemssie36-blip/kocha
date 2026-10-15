@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useLanguageStore } from '@/stores/language'
 import { api } from '@/services/api'
 import { 
@@ -14,12 +15,19 @@ import {
   Calendar
 } from 'lucide-vue-next'
 
+const route = useRoute()
+const router = useRouter()
 const langStore = useLanguageStore()
 const loading = ref(true)
 const mayor = ref(null)
 const activeTab = ref('cabinet')
 const cabinetMembers = ref([])
 const councilMembers = ref([])
+
+function setTab(tab) {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
 
 const fetchMayorData = async () => {
   loading.value = true
@@ -78,7 +86,24 @@ const getMemberPosition = (m) => {
 }
 
 onMounted(() => {
+  if (route.query.tab && ['cabinet', 'council'].includes(route.query.tab)) {
+    activeTab.value = route.query.tab
+    setTimeout(() => {
+      const el = document.getElementById('leadership-section')
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }, 200)
+  }
   fetchMayorData()
+})
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && ['cabinet', 'council'].includes(newTab)) {
+    activeTab.value = newTab
+    setTimeout(() => {
+      const el = document.getElementById('leadership-section')
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
 })
 </script>
 
@@ -111,12 +136,17 @@ onMounted(() => {
         <!-- Mayor Image / Badge Column: Clean Crisp Official Border -->
         <div class="lg:col-span-4 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-8 flex flex-col items-center justify-center text-center relative">
           <!-- Official Mayor Portrait -->
-          <div class="w-48 h-48 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-md mb-6 relative">
+          <div class="w-48 h-48 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-md mb-6 relative bg-slate-100 flex items-center justify-center">
             <img 
-              src="/assets/mayor_portrait.jpg" 
-              alt="Hon. Kedir Ahmed - Mayor of Kombolcha" 
+              v-if="mayor.portrait_path"
+              :src="mayor.portrait_path" 
+              :alt="getMayorName()" 
               class="w-full h-full object-cover object-top"
             />
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+              <Award class="w-12 h-12 mb-1 opacity-40 text-blue-600" />
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mayoral Office</span>
+            </div>
             <div class="absolute bottom-2 right-2 px-2.5 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black tracking-widest uppercase">
               {{ langStore.currentLang === 'am' ? 'በስራ ላይ' : 'Active' }}
             </div>
@@ -177,7 +207,7 @@ onMounted(() => {
     </div>
 
     <!-- Leadership Section: Cabinet & Council Tabs -->
-    <div class="mb-8">
+    <div id="leadership-section" class="mb-8 scroll-mt-24">
       <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-6">
         <div>
           <h2 class="text-2xl font-black text-slate-900">
@@ -191,7 +221,7 @@ onMounted(() => {
         <!-- Tab Switcher -->
         <div class="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl">
           <button 
-            @click="activeTab = 'cabinet'"
+            @click="setTab('cabinet')"
             :class="[
               'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
               activeTab === 'cabinet' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
@@ -200,7 +230,7 @@ onMounted(() => {
             {{ langStore.currentLang === 'am' ? 'የከተማው ካቢኔ (Executive)' : 'Cabinet Council' }}
           </button>
           <button 
-            @click="activeTab = 'council'"
+            @click="setTab('council')"
             :class="[
               'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
               activeTab === 'council' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
@@ -219,8 +249,16 @@ onMounted(() => {
           class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
         >
           <div>
-            <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-black text-lg mb-4">
-              <Users class="w-8 h-8 text-blue-600" />
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-4 bg-slate-100 relative shrink-0">
+              <img 
+                v-if="member.photo_path" 
+                :src="member.photo_path" 
+                :alt="getMemberName(member)" 
+                class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-300" 
+              />
+              <div v-else class="w-full h-full flex flex-col items-center justify-center bg-blue-50 text-blue-600">
+                <Users class="w-10 h-10 opacity-40" />
+              </div>
             </div>
 
             <h3 class="text-lg font-bold text-slate-900 mb-1">

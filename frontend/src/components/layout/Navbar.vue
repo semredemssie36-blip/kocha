@@ -16,12 +16,38 @@ import {
   Layers,
   MapPin,
   Image,
-  Phone
+  Phone,
+  ShieldAlert,
+  PhoneCall,
+  Flame,
+  Droplets,
+  Zap,
+  Activity,
+  LogIn
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
 const route = useRoute()
 const router = useRouter()
+
+const isAuthenticated = computed(() => {
+  return !!localStorage.getItem('kombolcha_admin_token')
+})
+
+const emergencyNumbers = [
+  { name_en: 'Police', name_am: 'ፖሊስ', name_om: 'Poolisii', phone: '991', icon: ShieldAlert, color: 'text-red-700 bg-red-50 border-red-200 hover:bg-red-100' },
+  { name_en: 'Fire & Rescue', name_am: 'እሳት አደጋ', name_om: 'Balaa Ibiddii', phone: '939', icon: Flame, color: 'text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100' },
+  { name_en: 'Ambulance', name_am: 'አምቡላንስ', name_om: 'Ambulaansii', phone: '907', icon: Activity, color: 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100' },
+  { name_en: 'Water Leak', name_am: 'የውሃ ጥገና', name_om: 'Tajaajila Bishaanii', phone: '+251 33 551 0145', icon: Droplets, color: 'text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100' },
+  { name_en: 'Power Grid', name_am: 'መብራት ኃይል', name_om: 'Tajaajila Ibsaa', phone: '905', icon: Zap, color: 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100' },
+]
+
+const getEmergencyName = (item) => {
+  const lang = langStore.currentLang
+  if (lang === 'am') return item.name_am
+  if (lang === 'om') return item.name_om
+  return item.name_en
+}
 
 const mobileMenuOpen = ref(false)
 const langDropdownOpen = ref(false)
@@ -84,16 +110,31 @@ onUnmounted(() => {
     <!-- Top Utility Bar (White background, social icons, Internal Board, Language selector) -->
     <div class="bg-white border-b border-slate-200 py-1.5 px-4 sm:px-8 xl:px-12 text-xs text-slate-600">
       <div class="w-full max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3">
-        <!-- Left: Municipal Tagline & Operating Hours -->
-        <div class="flex items-center gap-3">
-          <span class="flex items-center gap-1.5 text-slate-800 font-bold">
-            <Building2 class="w-3.5 h-3.5 text-[#0b3c5d]" />
-            {{ langStore.t('common.city_tagline') }}
-          </span>
-          <span class="hidden md:inline text-slate-300">|</span>
-          <span class="hidden md:flex items-center gap-1 text-slate-500 font-medium">
-            {{ langStore.t('common.working_days') }}
-          </span>
+        <!-- Left: 24/7 Emergency Dispatch Hotlines -->
+        <div class="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5 max-w-full">
+          <div class="flex items-center gap-1.5 shrink-0 pr-1 text-slate-900 font-extrabold">
+            <PhoneCall class="w-3.5 h-3.5 text-red-600 shrink-0" />
+            <span class="uppercase tracking-wider text-[11px] whitespace-nowrap">
+              {{ langStore.currentLang === 'am' ? 'የ 24/7 ድንገተኛ ጥሪዎች' : (langStore.currentLang === 'om' ? 'Sarara Balaa (24/7)' : '24/7 Hotlines') }}:
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <a 
+              v-for="item in emergencyNumbers" 
+              :key="item.phone"
+              :href="'tel:' + item.phone"
+              :class="[
+                'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border text-[11px] font-bold transition-colors shrink-0 shadow-2xs',
+                item.color
+              ]"
+              :title="getEmergencyName(item) + ': ' + item.phone"
+            >
+              <component :is="item.icon" class="w-3 h-3 shrink-0" />
+              <span class="hidden sm:inline">{{ getEmergencyName(item) }}:</span>
+              <span class="font-mono font-black">{{ item.phone }}</span>
+            </a>
+          </div>
         </div>
 
         <!-- Right: Social Media, Internal Board & Language Dropdown -->
@@ -259,22 +300,22 @@ onUnmounted(() => {
             >
               <div class="bg-white rounded-lg shadow-xl border border-slate-200 py-1.5 text-slate-800 text-xs">
                 <router-link to="/government/mayor" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Mayor
+                  {{ langStore.currentLang === 'am' ? 'ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa' : 'Mayor') }}
                 </router-link>
-                <router-link to="/government/sub-cities" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Cabinet Profile
+                <router-link to="/government/mayor?tab=cabinet" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
+                  {{ langStore.currentLang === 'am' ? 'የካቢኔ መገለጫ' : (langStore.currentLang === 'om' ? 'Ibsa Kaabinee' : 'Cabinet Profile') }}
                 </router-link>
                 <router-link to="/about?tab=administration" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  City Structure
+                  {{ langStore.currentLang === 'am' ? 'የከተማው መዋቅር' : (langStore.currentLang === 'om' ? 'Caasaa Magaalaa' : 'City Structure') }}
+                </router-link>
+                <router-link to="/government/mayor?tab=council" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
+                  {{ langStore.currentLang === 'am' ? 'የከተማው ምክር ቤት' : (langStore.currentLang === 'om' ? 'Manni Maree Magaalaa' : 'Council') }}
                 </router-link>
                 <router-link to="/government/sub-cities" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Council
-                </router-link>
-                <router-link to="/government/sub-cities" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Sub City Information
+                  {{ langStore.currentLang === 'am' ? 'የክፍለ ከተሞች መረጃ' : (langStore.currentLang === 'om' ? 'Oodeeffannoo Kutaalee Magaalaa' : 'Sub City Information') }}
                 </router-link>
                 <router-link to="/government/offices" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Offices Directory
+                  {{ langStore.currentLang === 'am' ? 'የመምሪያዎች ማውጫ' : (langStore.currentLang === 'om' ? 'Galmee Waajjiraalee' : 'Offices Directory') }}
                 </router-link>
               </div>
             </div>
@@ -405,12 +446,13 @@ onUnmounted(() => {
             <Search class="w-4 h-4" />
           </button>
 
-          <!-- Admin Portal Link -->
+          <!-- Login Button -->
           <router-link 
-            to="/admin/login" 
+            :to="isAuthenticated ? '/admin' : '/admin/login'" 
             class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/25 rounded-md transition-all shadow-2xs"
           >
-            Admin Portal
+            <LogIn class="w-3.5 h-3.5" />
+            <span>{{ isAuthenticated ? 'Dashboard' : (langStore.currentLang === 'am' ? 'ግባ' : (langStore.currentLang === 'om' ? 'Seensa' : 'Login')) }}</span>
           </router-link>
 
           <!-- Mobile Hamburger Toggle -->
@@ -497,12 +539,12 @@ onUnmounted(() => {
           <ChevronDown class="w-4 h-4 transition-transform" :class="{ 'rotate-180': mobileDropdownOpen.government }" />
         </button>
         <div v-show="mobileDropdownOpen.government" class="pl-4 space-y-1 bg-black/10 py-1 rounded">
-          <router-link @click="mobileMenuOpen = false" to="/government/mayor" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Mayor</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/sub-cities" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Cabinet Profile</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=administration" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">City Structure</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/sub-cities" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Council</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/sub-cities" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Sub City Information</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/offices" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Offices Directory</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/mayor" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa' : 'Mayor') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/mayor?tab=cabinet" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የካቢኔ መገለጫ' : (langStore.currentLang === 'om' ? 'Ibsa Kaabinee' : 'Cabinet Profile') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=administration" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የከተማው መዋቅር' : (langStore.currentLang === 'om' ? 'Caasaa Magaalaa' : 'City Structure') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/mayor?tab=council" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የከተማው ምክር ቤት' : (langStore.currentLang === 'om' ? 'Manni Maree Magaalaa' : 'Council') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/sub-cities" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የክፍለ ከተሞች መረጃ' : (langStore.currentLang === 'om' ? 'Oodeeffannoo Kutaalee Magaalaa' : 'Sub City Information') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/offices" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የመምሪያዎች ማውጫ' : (langStore.currentLang === 'om' ? 'Galmee Waajjiraalee' : 'Offices Directory') }}</router-link>
         </div>
       </div>
 
@@ -547,8 +589,13 @@ onUnmounted(() => {
         Contact
       </router-link>
 
-      <router-link @click="mobileMenuOpen = false" to="/admin/login" class="block px-3 py-2 rounded font-medium text-amber-300 hover:bg-white/10">
-        Admin Portal
+      <router-link 
+        @click="mobileMenuOpen = false" 
+        :to="isAuthenticated ? '/admin' : '/admin/login'" 
+        class="flex items-center gap-2 px-3 py-2 rounded font-medium bg-blue-600/30 text-white mt-2 border border-blue-400/30"
+      >
+        <LogIn class="w-4 h-4" />
+        <span>{{ isAuthenticated ? 'Dashboard' : (langStore.currentLang === 'am' ? 'ግባ (Login)' : (langStore.currentLang === 'om' ? 'Seensa (Login)' : 'Login')) }}</span>
       </router-link>
     </div>
   </header>
