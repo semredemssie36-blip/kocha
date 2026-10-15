@@ -1,0 +1,817 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+class AdminContentController extends Controller
+{
+    // Dashboard Stats Overview
+    public function getDashboardStats()
+    {
+        $totalNews = DB::table('news_articles')->count();
+        $publishedNews = DB::table('news_articles')->where('status', 'published')->count();
+        $pendingDrafts = DB::table('news_articles')->where('status', 'pending')->count();
+        
+        $activeTenders = DB::table('tenders')->where('status', 'open')->count();
+        $totalOffices = DB::table('offices')->count();
+        $unreadMessages = DB::table('contact_messages')->where('status', 'unread')->count();
+        $totalProjects = DB::table('projects')->count();
+
+        return response()->json([
+            'news_count' => $totalNews,
+            'published_news' => $publishedNews,
+            'pending_drafts' => $pendingDrafts,
+            'active_tenders' => $activeTenders,
+            'offices_count' => $totalOffices,
+            'unread_messages' => $unreadMessages,
+            'projects_count' => $totalProjects,
+        ]);
+    }
+
+    // Citizen Inquiries Management
+    public function getContactMessages(Request $request)
+    {
+        $query = DB::table('contact_messages');
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+        $messages = $query->orderBy('created_at', 'desc')->paginate(15);
+        return response()->json($messages);
+    }
+
+    public function updateMessageStatus(Request $request, $id)
+    {
+        $request->validate(['status' => 'required|in:unread,read,resolved,archived']);
+        DB::table('contact_messages')->where('id', $id)->update([
+            'status' => $request->status,
+            'updated_at' => now()
+        ]);
+        return response()->json(['message' => 'Status updated']);
+    }
+
+    // Staff Users Management (Super Admin only)
+    public function getStaffUsers()
+    {
+        $users = User::select('id', 'name', 'email', 'role', 'phone', 'is_active', 'created_at')->get();
+        return response()->json($users);
+    }
+
+    public function createStaffUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:super_admin,editor,author',
+            'phone' => 'nullable|string|max:30',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'phone' => $request->phone,
+            'is_active' => true,
+        ]);
+
+        return response()->json(['message' => 'Staff user created successfully', 'user' => $user], 201);
+    }
+
+    public function toggleStaffStatus($id)
+    {
+        $user = User::findOrFail($id);
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return response()->json(['message' => 'Status updated', 'is_active' => $user->is_active]);
+    }
+
+    // News Article Create / Update
+    public function storeNews(Request $request)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'category' => 'required|string',
+            'content_am' => 'required|string',
+            'content_en' => 'nullable|string',
+            'content_om' => 'nullable|string',
+            'status' => 'required|in:draft,pending,published',
+        ]);
+
+        $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
+
+        $id = DB::table('news_articles')->insertGetId([
+            'author_id' => $request->user()->id,
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'slug' => $slug,
+            'category' => $validated['category'],
+            'content_am' => $validated['content_am'],
+            'content_en' => $validated['content_en'] ?? null,
+            'content_om' => $validated['content_om'] ?? null,
+            'status' => $validated['status'],
+            'published_at' => $validated['status'] === 'published' ? now() : null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Article saved successfully', 'id' => $id], 201);
+    }
+
+    public function updateNews(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'category' => 'required|string',
+            'content_am' => 'required|string',
+            'content_en' => 'nullable|string',
+            'content_om' => 'nullable|string',
+            'status' => 'required|in:published,draft,archived',
+        ]);
+
+        DB::table('news_articles')->where('id', $id)->update([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'category' => $validated['category'],
+            'content_am' => $validated['content_am'],
+            'content_en' => $validated['content_en'] ?? null,
+            'content_om' => $validated['content_om'] ?? null,
+            'status' => $validated['status'],
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Article updated successfully']);
+    }
+
+    public function deleteNews($id)
+    {
+        DB::table('news_articles')->where('id', $id)->delete();
+        return response()->json(['message' => 'Article deleted successfully']);
+    }
+
+    // Tenders Management
+    public function storeTender(Request $request)
+    {
+        $validated = $request->validate([
+            'reference_number' => 'required|string',
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'category' => 'required|string',
+            'bid_bond_amount' => 'nullable|numeric',
+            'closing_datetime' => 'required|date',
+            'status' => 'required|in:open,closed,cancelled',
+        ]);
+
+        $id = DB::table('tenders')->insertGetId([
+            'reference_number' => $validated['reference_number'],
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'category' => $validated['category'],
+            'bid_bond_amount' => $validated['bid_bond_amount'] ?? 0,
+            'closing_datetime' => $validated['closing_datetime'],
+            'status' => $validated['status'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Tender published successfully', 'id' => $id], 201);
+    }
+
+    public function updateTender(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'reference_number' => 'required|string',
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'category' => 'required|string',
+            'bid_bond_amount' => 'nullable|numeric',
+            'closing_datetime' => 'required|date',
+            'status' => 'required|in:open,closed,cancelled',
+        ]);
+
+        DB::table('tenders')->where('id', $id)->update([
+            'reference_number' => $validated['reference_number'],
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'category' => $validated['category'],
+            'bid_bond_amount' => $validated['bid_bond_amount'] ?? 0,
+            'closing_datetime' => $validated['closing_datetime'],
+            'status' => $validated['status'],
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Tender updated successfully']);
+    }
+
+    public function deleteTender($id)
+    {
+        DB::table('tenders')->where('id', $id)->delete();
+        return response()->json(['message' => 'Tender deleted successfully']);
+    }
+
+    // Vacancies Management
+    public function storeVacancy(Request $request)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'position_code' => 'nullable|string',
+            'employment_type' => 'required|string',
+            'salary_grade' => 'nullable|string',
+            'requirements_am' => 'required|string',
+            'deadline' => 'required|date',
+        ]);
+
+        $id = DB::table('vacancies')->insertGetId([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'position_code' => $validated['position_code'] ?? 'KMB-CIV-2026',
+            'employment_type' => $validated['employment_type'],
+            'salary_grade' => $validated['salary_grade'] ?? 'Government Scale',
+            'requirements_am' => $validated['requirements_am'],
+            'deadline' => $validated['deadline'],
+            'status' => 'open',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Vacancy posted successfully', 'id' => $id], 201);
+    }
+
+    public function updateVacancy(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'position_code' => 'nullable|string',
+            'employment_type' => 'required|string',
+            'salary_grade' => 'nullable|string',
+            'requirements_am' => 'required|string',
+            'deadline' => 'required|date',
+        ]);
+
+        DB::table('vacancies')->where('id', $id)->update([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'position_code' => $validated['position_code'] ?? 'KMB-CIV-2026',
+            'employment_type' => $validated['employment_type'],
+            'salary_grade' => $validated['salary_grade'] ?? 'Government Scale',
+            'requirements_am' => $validated['requirements_am'],
+            'deadline' => $validated['deadline'],
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Vacancy updated successfully']);
+    }
+
+    public function deleteVacancy($id)
+    {
+        DB::table('vacancies')->where('id', $id)->delete();
+        return response()->json(['message' => 'Vacancy deleted successfully']);
+    }
+
+    // Services Management
+    public function storeService(Request $request)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'type' => 'required|in:text,step',
+            'summary_am' => 'nullable|string',
+            'fee_amount' => 'nullable|numeric',
+            'estimated_time_am' => 'nullable|string',
+        ]);
+
+        $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
+
+        $id = DB::table('services')->insertGetId([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'slug' => $slug,
+            'type' => $validated['type'],
+            'summary_am' => $validated['summary_am'] ?? null,
+            'fee_amount' => $validated['fee_amount'] ?? 0,
+            'estimated_time_am' => $validated['estimated_time_am'] ?? '1-3 Business Days',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Service created successfully', 'id' => $id], 201);
+    }
+
+    public function updateService(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'type' => 'required|in:text,step',
+            'summary_am' => 'nullable|string',
+            'fee_amount' => 'nullable|numeric',
+            'estimated_time_am' => 'nullable|string',
+        ]);
+
+        DB::table('services')->where('id', $id)->update([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'type' => $validated['type'],
+            'summary_am' => $validated['summary_am'] ?? null,
+            'fee_amount' => $validated['fee_amount'] ?? 0,
+            'estimated_time_am' => $validated['estimated_time_am'] ?? '1-3 Business Days',
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Service updated successfully']);
+    }
+
+    public function deleteService($id)
+    {
+        DB::table('services')->where('id', $id)->delete();
+        return response()->json(['message' => 'Service deleted successfully']);
+    }
+
+    // Infrastructure Projects Management
+    public function storeProject(Request $request)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'budget_etb' => 'nullable|numeric',
+            'contractor_name' => 'nullable|string',
+            'progress_percent' => 'required|integer|min:0|max:100',
+            'status' => 'required|in:planning,in_progress,completed,halted',
+        ]);
+
+        $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
+
+        $id = DB::table('projects')->insertGetId([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'slug' => $slug,
+            'budget_etb' => $validated['budget_etb'] ?? 0,
+            'contractor_name' => $validated['contractor_name'] ?? null,
+            'progress_percent' => $validated['progress_percent'],
+            'status' => $validated['status'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Project saved successfully', 'id' => $id], 201);
+    }
+
+    public function updateProject(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'budget_etb' => 'nullable|numeric',
+            'contractor_name' => 'nullable|string',
+            'progress_percent' => 'required|integer|min:0|max:100',
+            'status' => 'required|in:planning,in_progress,completed,halted',
+        ]);
+
+        DB::table('projects')->where('id', $id)->update([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'budget_etb' => $validated['budget_etb'] ?? 0,
+            'contractor_name' => $validated['contractor_name'] ?? null,
+            'progress_percent' => $validated['progress_percent'],
+            'status' => $validated['status'],
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Project updated successfully']);
+    }
+
+    public function updateProjectProgress(Request $request, $id)
+    {
+        $request->validate(['progress_percent' => 'required|integer|min:0|max:100']);
+        DB::table('projects')->where('id', $id)->update([
+            'progress_percent' => $request->progress_percent,
+            'status' => $request->progress_percent == 100 ? 'completed' : 'in_progress',
+            'updated_at' => now(),
+        ]);
+        return response()->json(['message' => 'Progress updated']);
+    }
+
+    public function deleteProject($id)
+    {
+        DB::table('projects')->where('id', $id)->delete();
+        return response()->json(['message' => 'Project deleted successfully']);
+    }
+
+    // Resources & Directives Management
+    public function storeResource(Request $request)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'category' => 'required|string',
+            'year' => 'required|integer',
+            'file_path' => 'nullable|string',
+            'file_size_formatted' => 'nullable|string',
+        ]);
+
+        $id = DB::table('resources')->insertGetId([
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'category' => $validated['category'],
+            'year' => $validated['year'],
+            'file_path' => $validated['file_path'] ?: ('/documents/kombolcha_directive_' . rand(10, 99) . '.pdf'),
+            'file_size_formatted' => $validated['file_size_formatted'] ?? '2.1 MB',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Resource directive cataloged successfully', 'id' => $id], 201);
+    }
+
+    public function updateResource(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'title_am' => 'required|string',
+            'title_en' => 'nullable|string',
+            'title_om' => 'nullable|string',
+            'category' => 'required|string',
+            'year' => 'required|integer',
+            'file_path' => 'nullable|string',
+            'file_size_formatted' => 'nullable|string',
+        ]);
+
+        $updateData = [
+            'title_am' => $validated['title_am'],
+            'title_en' => $validated['title_en'] ?? null,
+            'title_om' => $validated['title_om'] ?? null,
+            'category' => $validated['category'],
+            'year' => $validated['year'],
+            'file_size_formatted' => $validated['file_size_formatted'] ?? '2.1 MB',
+            'updated_at' => now(),
+        ];
+        if (!empty($validated['file_path'])) {
+            $updateData['file_path'] = $validated['file_path'];
+        }
+
+        DB::table('resources')->where('id', $id)->update($updateData);
+
+        return response()->json(['message' => 'Resource directive updated successfully']);
+    }
+
+    public function deleteResource($id)
+    {
+        DB::table('resources')->where('id', $id)->delete();
+        return response()->json(['message' => 'Resource deleted successfully']);
+    }
+
+    // Mayor & Executive Profile Management
+    public function updateMayorProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'welcome_message_am' => 'required|string',
+            'welcome_message_en' => 'nullable|string',
+            'welcome_message_om' => 'nullable|string',
+            'biography_am' => 'nullable|string',
+            'biography_en' => 'nullable|string',
+            'biography_om' => 'nullable|string',
+            'portrait_path' => 'nullable|string',
+            'term_start' => 'nullable|string',
+            'term_end' => 'nullable|string',
+        ]);
+
+        DB::table('mayors')->where('is_current', true)->update(array_merge($validated, [
+            'updated_at' => now()
+        ]));
+
+        return response()->json(['message' => 'Mayor profile and keynote updated successfully']);
+    }
+
+    // Leadership Members Management
+    public function storeLeadershipMember(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:cabinet,council',
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'position_am' => 'required|string',
+            'position_en' => 'nullable|string',
+            'position_om' => 'nullable|string',
+            'photo_path' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+        ]);
+
+        $id = DB::table('leadership_members')->insertGetId(array_merge($validated, [
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]));
+
+        return response()->json(['message' => 'Leadership member added successfully', 'id' => $id], 201);
+    }
+
+    public function updateLeadershipMember(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:cabinet,council',
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'position_am' => 'required|string',
+            'position_en' => 'nullable|string',
+            'position_om' => 'nullable|string',
+            'photo_path' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+        ]);
+
+        DB::table('leadership_members')->where('id', $id)->update(array_merge($validated, [
+            'updated_at' => now()
+        ]));
+
+        return response()->json(['message' => 'Leadership member updated successfully']);
+    }
+
+    public function deleteLeadershipMember($id)
+    {
+        DB::table('leadership_members')->where('id', $id)->delete();
+        return response()->json(['message' => 'Member deleted successfully']);
+    }
+
+    // Municipal Offices Management
+    public function storeOffice(Request $request)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+            'building_location_am' => 'nullable|string',
+            'room_number' => 'nullable|string',
+        ]);
+
+        $slug = Str::slug($validated['name_en'] ?? $validated['name_am']) . '-' . rand(10, 99);
+
+        $id = DB::table('offices')->insertGetId(array_merge($validated, [
+            'slug' => $slug,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]));
+
+        return response()->json(['message' => 'Municipal office registered successfully', 'id' => $id], 201);
+    }
+
+    public function updateOffice(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+            'building_location_am' => 'nullable|string',
+            'room_number' => 'nullable|string',
+        ]);
+
+        DB::table('offices')->where('id', $id)->update(array_merge($validated, [
+            'updated_at' => now()
+        ]));
+
+        return response()->json(['message' => 'Municipal office updated successfully']);
+    }
+
+    public function deleteOffice($id)
+    {
+        DB::table('offices')->where('id', $id)->delete();
+        return response()->json(['message' => 'Office deleted successfully']);
+    }
+
+    // Site Settings & Maintenance Mode
+    public function getSiteSettings()
+    {
+        $settings = DB::table('site_settings')->first();
+        return response()->json($settings);
+    }
+
+    public function updateSiteSettings(Request $request)
+    {
+        $data = $request->only([
+            'site_name_am', 'site_name_en', 'site_name_om',
+            'contact_phone', 'contact_email', 'emergency_notice_am',
+            'emergency_notice_en', 'is_maintenance'
+        ]);
+        $data['updated_at'] = now();
+
+        $exists = DB::table('site_settings')->first();
+        if ($exists) {
+            DB::table('site_settings')->where('id', $exists->id)->update($data);
+        } else {
+            $data['created_at'] = now();
+            DB::table('site_settings')->insert($data);
+        }
+
+        return response()->json(['message' => 'Site settings and maintenance configuration updated']);
+    }
+
+    // Media File & Image/Video Upload Handler
+    public function uploadMedia(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|max:51200' // 50MB max for video & high-res photos
+        ]);
+
+        $file = $request->file('file');
+        $uploadDir = public_path('uploads');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $extension = $file->getClientOriginalExtension();
+        $filename = time() . '_' . Str::random(10) . '.' . $extension;
+        $file->move($uploadDir, $filename);
+
+        $path = '/uploads/' . $filename;
+        $url = url($path);
+
+        return response()->json([
+            'message' => 'File uploaded successfully',
+            'filename' => $filename,
+            'path' => $path,
+            'url' => $url,
+            'original_name' => $file->getClientOriginalName()
+        ], 201);
+    }
+
+    // Gallery Items Management (Images & Videos)
+    public function getGallery()
+    {
+        $items = DB::table('gallery_items')
+            ->orderBy('order', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json($items);
+    }
+
+    public function storeGalleryItem(Request $request)
+    {
+        $request->validate([
+            'media_path_or_url' => 'required|string',
+            'media_type' => 'required|in:image,video',
+            'caption_am' => 'required|string|max:255',
+            'caption_en' => 'nullable|string|max:255',
+            'caption_om' => 'nullable|string|max:255',
+        ]);
+
+        $id = DB::table('gallery_items')->insertGetId([
+            'media_type' => $request->media_type,
+            'media_path_or_url' => $request->media_path_or_url,
+            'thumbnail_url' => $request->thumbnail_url ?: ($request->media_type === 'image' ? $request->media_path_or_url : '/assets/hero_industry.jpg'),
+            'category' => $request->category ?: 'urban',
+            'caption_am' => $request->caption_am,
+            'caption_en' => $request->caption_en,
+            'caption_om' => $request->caption_om,
+            'order' => $request->order ?: 0,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        return response()->json(['message' => 'Gallery media item created successfully', 'id' => $id], 201);
+    }
+
+    public function updateGalleryItem(Request $request, $id)
+    {
+        $request->validate([
+            'media_path_or_url' => 'required|string',
+            'media_type' => 'required|in:image,video',
+            'caption_am' => 'required|string|max:255',
+        ]);
+
+        DB::table('gallery_items')->where('id', $id)->update([
+            'media_type' => $request->media_type,
+            'media_path_or_url' => $request->media_path_or_url,
+            'thumbnail_url' => $request->thumbnail_url ?: ($request->media_type === 'image' ? $request->media_path_or_url : '/assets/hero_industry.jpg'),
+            'category' => $request->category ?: 'urban',
+            'caption_am' => $request->caption_am,
+            'caption_en' => $request->caption_en,
+            'caption_om' => $request->caption_om,
+            'order' => $request->order ?: 0,
+            'updated_at' => now()
+        ]);
+
+        return response()->json(['message' => 'Gallery media item updated successfully']);
+    }
+
+    public function deleteGalleryItem($id)
+    {
+        DB::table('gallery_items')->where('id', $id)->delete();
+        return response()->json(['message' => 'Gallery media item deleted']);
+    }
+
+    // Hero Carousel Slides Management
+    public function getHeroSlides()
+    {
+        $slides = DB::table('hero_slides')->orderBy('order', 'asc')->get();
+        return response()->json($slides);
+    }
+
+    public function storeHeroSlide(Request $request)
+    {
+        $request->validate([
+            'title_am' => 'required|string|max:255',
+            'image_path' => 'required|string',
+        ]);
+
+        $id = DB::table('hero_slides')->insertGetId([
+            'title_am' => $request->title_am,
+            'title_en' => $request->title_en,
+            'title_om' => $request->title_om,
+            'subtitle_am' => $request->subtitle_am ?: $request->desc_am,
+            'subtitle_en' => $request->subtitle_en ?: $request->desc_en,
+            'subtitle_om' => $request->subtitle_om ?: $request->desc_om,
+            'button_text_am' => $request->button_text_am ?: $request->cta_am,
+            'button_text_en' => $request->button_text_en ?: $request->cta_en,
+            'button_text_om' => $request->button_text_om ?: $request->cta_om,
+            'button_url' => $request->button_url ?: ($request->cta_link ?: '/explore'),
+            'image_path' => $request->image_path,
+            'tag_am' => $request->tag_am,
+            'tag_en' => $request->tag_en,
+            'tag_om' => $request->tag_om,
+            'order' => $request->order ?: 0,
+            'is_active' => $request->has('is_active') ? (bool)$request->is_active : true,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        return response()->json(['message' => 'Hero slide created successfully', 'id' => $id], 201);
+    }
+
+    public function updateHeroSlide(Request $request, $id)
+    {
+        $request->validate([
+            'title_am' => 'required|string|max:255',
+            'image_path' => 'required|string',
+        ]);
+
+        DB::table('hero_slides')->where('id', $id)->update([
+            'title_am' => $request->title_am,
+            'title_en' => $request->title_en,
+            'title_om' => $request->title_om,
+            'subtitle_am' => $request->subtitle_am ?: $request->desc_am,
+            'subtitle_en' => $request->subtitle_en ?: $request->desc_en,
+            'subtitle_om' => $request->subtitle_om ?: $request->desc_om,
+            'button_text_am' => $request->button_text_am ?: $request->cta_am,
+            'button_text_en' => $request->button_text_en ?: $request->cta_en,
+            'button_text_om' => $request->button_text_om ?: $request->cta_om,
+            'button_url' => $request->button_url ?: ($request->cta_link ?: '/explore'),
+            'image_path' => $request->image_path,
+            'tag_am' => $request->tag_am,
+            'tag_en' => $request->tag_en,
+            'tag_om' => $request->tag_om,
+            'order' => $request->order ?: 0,
+            'is_active' => $request->has('is_active') ? (bool)$request->is_active : true,
+            'updated_at' => now()
+        ]);
+
+        return response()->json(['message' => 'Hero slide updated successfully']);
+    }
+
+    public function deleteHeroSlide($id)
+    {
+        DB::table('hero_slides')->where('id', $id)->delete();
+        return response()->json(['message' => 'Hero slide deleted']);
+    }
+}

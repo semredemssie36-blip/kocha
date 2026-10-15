@@ -1,0 +1,60 @@
+export default {
+  common: {
+    city_name: 'Kombolcha City Administration',
+    city_tagline: 'The Industrial and Logistics Hub',
+    search_placeholder: 'Search information, news, services, or offices...',
+    read_more: 'Read More',
+    view_all: 'View All',
+    download_pdf: 'Download PDF Document',
+    emergency_title: 'Emergency Hotlines',
+    quick_links: 'Quick Links',
+    sub_cities: 'Sub-Cities',
+    offices: 'Municipal Offices',
+    contact_us: 'Contact Us',
+    working_hours: 'Working Hours',
+    working_days: 'Monday - Friday (8:00 AM - 5:30 PM)',
+    all_rights_reserved: 'All rights reserved'
+  },
+  nav: {
+    home: 'Home',
+    about: 'About City',
+    about_history: 'History & Heritage',
+    about_vision: 'Vision & Mission',
+    about_demographics: 'People & Geography',
+    government: 'Government',
+    mayor: "Mayor's Office",
+    cabinet: 'Cabinet Members',
+    council: 'City Council',
+    sub_cities: 'Sub-Cities (4)',
+    offices_directory: 'Offices Directory (22)',
+    services: 'Citizen Services',
+    media: 'Media Center',
+    news: 'Latest News',
+    events: 'Events & Programs',
+    tenders: 'Procurement & Tenders',
+    vacancies: 'Job Vacancies',
+    projects: 'Mega Projects',
+    resources: 'Resource Center',
+    explore: 'Explore City',
+    gallery: 'Photo & Video Gallery',
+    contact: 'Contact Us',
+    internal_board: 'Internal Board'
+  },
+  tenders: {
+    closing_in: 'Closing Countdown',
+    days: 'Days',
+    hours: 'Hours',
+    minutes: 'Minutes',
+    seconds: 'Seconds',
+    tender_no: 'Tender Ref No',
+    status_open: 'Open',
+    status_closed: 'Closed'
+  },
+  services: {
+    text_service: 'Informational Guide',
+    step_service: 'Step-by-Step Guide',
+    steps_count: 'Steps',
+    estimated_time: 'Estimated Time',
+    fee: 'Required Fee'
+  }
+}

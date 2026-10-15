@@ -1,0 +1,60 @@
+export default {
+  common: {
+    city_name: 'የኮምቦልቻ ከተማ አስተዳደር',
+    city_tagline: 'የኢንዱስትሪ እና ሎጂስቲክስ ማዕከል',
+    search_placeholder: 'መረጃ፣ ዜና፣ አገልግሎት ወይም ቢሮ ይፈልጉ...',
+    read_more: 'ተጨማሪ ያንብቡ',
+    view_all: 'ሁሉንም ይመልከቱ',
+    download_pdf: 'ሰነድ አውርድ (PDF)',
+    emergency_title: 'የአስቸኳይ ጊዜ ስልክ መስመሮች',
+    quick_links: 'ፈጣን ማስፈንጠሪያዎች',
+    sub_cities: 'ክፍለ ከተሞች',
+    offices: 'የመንግስት ቢሮዎች',
+    contact_us: 'ያግኙን',
+    working_hours: 'የስራ ሰዓት',
+    working_days: 'ከሰኞ - አርብ (ከጠዋቱ 2:00 - 11:30)',
+    all_rights_reserved: 'መብቱ በህግ የተጠበቀ ነው'
+  },
+  nav: {
+    home: 'መነሻ ገጽ',
+    about: 'ስለ ከተማዋ',
+    about_history: 'ታሪክና አመሰራረት',
+    about_vision: 'ራዕይ እና ተልዕኮ',
+    about_demographics: 'ህዝብ እና መልክዓ ምድር',
+    government: 'መንግስት እና አስተዳደር',
+    mayor: 'የከንቲባ ጽ/ቤት',
+    cabinet: 'የካቢኔ አባላት',
+    council: 'የከተማ ምክር ቤት',
+    sub_cities: 'ክፍለ ከተሞች (4)',
+    offices_directory: 'የቢሮዎች ማውጫ (22)',
+    services: 'የዜጎች አገልግሎት',
+    media: 'ሚዲያ እና ዜና',
+    news: 'የቅርብ ጊዜ ዜናዎች',
+    events: 'ክስተቶች እና መድረኮች',
+    tenders: 'የግዥ እና ጨረታ ማስታወቂያ',
+    vacancies: 'ክፍት የስራ ቦታዎች',
+    projects: 'የልማት ፕሮጀክቶች',
+    resources: 'የሰነድ ማዕከል',
+    explore: 'ጎብኙ',
+    gallery: 'የፎቶ እና ቪዲዮ ማህደር',
+    contact: 'ያግኙን',
+    internal_board: 'የውስጥ ቦርድ'
+  },
+  tenders: {
+    closing_in: 'የጨረታው ማብቂያ ቀሪ ጊዜ',
+    days: 'ቀናት',
+    hours: 'ሰዓታት',
+    minutes: 'ደቂቃዎች',
+    seconds: 'ሰከንዶች',
+    tender_no: 'የጨረታ ቁጥር',
+    status_open: 'ክፍት',
+    status_closed: 'የተዘጋ'
+  },
+  services: {
+    text_service: 'መመሪያ አገልግሎት',
+    step_service: 'ደረጃ በደረጃ አገልግሎት',
+    steps_count: 'ደረጃዎች',
+    estimated_time: 'የሚፈጀው ጊዜ',
+    fee: 'ክፍያ'
+  }
+}

@@ -1,0 +1,60 @@
+export default {
+  common: {
+    city_name: 'Bulchiinsa Magaalaa Kombolchaa',
+    city_tagline: 'Wiirtuu Indaastirii fi Loojistiksii',
+    search_placeholder: 'Oduu, tajaajila ykn waajjira barbaadaa...',
+    read_more: 'Dabalata dubbisaa',
+    view_all: 'Hundumaa ilaalaa',
+    download_pdf: 'Sanada Buufadhaa (PDF)',
+    emergency_title: 'Sarara Bilbila Yeroo Balaa',
+    quick_links: 'Geessituuwwan Ariifachiisoo',
+    sub_cities: 'Kutaa Magaalota',
+    offices: 'Waajjiraalee Mootummaa',
+    contact_us: 'Nu Qunnamaa',
+    working_hours: 'Sa\'aatii Hojii',
+    working_days: 'Wiixata - Jimaata (Ganama 2:00 - 11:30)',
+    all_rights_reserved: 'Mirgi Qopheessaa Seeraan Kan Eegame'
+  },
+  nav: {
+    home: 'Fuula Duraa',
+    about: 'Waa\'ee Magaalaa',
+    about_history: 'Seenaa fi Hundeeffama',
+    about_vision: 'Mul\'ata fi Ergama',
+    about_demographics: 'Ummata fi Teessuma',
+    government: 'Mootummaa fi Bulchiinsa',
+    mayor: 'Waajjira Kantiibaa',
+    cabinet: 'Miseensota Kaabinee',
+    council: 'Manni Maree Magaalaa',
+    sub_cities: 'Kutaa Magaalota (4)',
+    offices_directory: 'Galmee Waajjiraalee (22)',
+    services: 'Tajaajila Lammiilee',
+    media: 'Miidiyaa fi Oduu',
+    news: 'Oduuwwan Haaraa',
+    events: 'Qophiiwwan fi Sagantaalee',
+    tenders: 'Beeksisa Caalbaasii',
+    vacancies: 'Bankaalee Hojii Qulqullinaa',
+    projects: 'Pirojektoota Misoomaa',
+    resources: 'Wiirtuu Sanadootaa',
+    explore: 'Daawwadhaa',
+    gallery: 'Suuraa fi Viidiyoo',
+    contact: 'Nu Qunnamaa',
+    internal_board: 'Boordii Keessaa'
+  },
+  tenders: {
+    closing_in: 'Yeroo Caalbaasiin Itti Cufamu',
+    days: 'Guyyoota',
+    hours: 'Sa\'aatiiwwan',
+    minutes: 'Daqiiqawwan',
+    seconds: 'Sekondiiwwan',
+    tender_no: 'Lakkoofsa Caalbaasii',
+    status_open: 'Bantamaa',
+    status_closed: 'Cufamaa'
+  },
+  services: {
+    text_service: 'Qajeelfama Tajaajilaa',
+    step_service: 'Tajaajila Sadarkaa Sadarkaadhaan',
+    steps_count: 'Sadarkaalee',
+    estimated_time: 'Yeroo Fudhatu',
+    fee: 'Kaffaltii Barbaadamu'
+  }
+}
