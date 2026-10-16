@@ -114,7 +114,21 @@ onMounted(() => {
             </span>
           </div>
 
-          <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all">
+          <a 
+            v-if="tender.document_pdf_path"
+            :href="tender.document_pdf_path" 
+            target="_blank"
+            download
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+          >
+            <Download class="w-4 h-4" />
+            <span>Download Bid Dossier (PDF)</span>
+          </a>
+          <button 
+            v-else
+            @click="alert('The official bid dossier document is available in person at the Kombolcha Finance & Public Procurement Directorate.')"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-200 transition-all cursor-pointer"
+          >
             <Download class="w-4 h-4" />
             <span>Download Bid Dossier (PDF)</span>
           </button>

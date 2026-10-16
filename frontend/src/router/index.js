@@ -117,4 +117,26 @@ const router = createRouter({
   }
 })
 
+// Navigation & Authentication Guards
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('kombolcha_admin_token')
+
+  // Set document title dynamically
+  if (to.meta.title) {
+    document.title = `${to.meta.title} | Kombolcha Metropolitan Administration`
+  }
+
+  // 1. If user is already authenticated and visits /admin/login, redirect to /admin dashboard
+  if (to.path === '/admin/login' && token) {
+    return next('/admin')
+  }
+
+  // 2. If route requires authentication and user is not logged in, redirect to /admin/login
+  if (to.meta.requiresAuth && !token) {
+    return next('/admin/login')
+  }
+
+  next()
+})
+
 export default router

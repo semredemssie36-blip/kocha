@@ -58,7 +58,7 @@ class AdminContentController extends Controller
     // Staff Users Management (Super Admin only)
     public function getStaffUsers()
     {
-        $users = User::select('id', 'name', 'email', 'role', 'phone', 'is_active', 'created_at')->get();
+        $users = User::select('id', 'name', 'email', 'role', 'phone', 'avatar_path', 'is_active', 'created_at')->get();
         return response()->json($users);
     }
 
@@ -91,6 +91,24 @@ class AdminContentController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Status updated', 'is_active' => $user->is_active]);
+    }
+
+    public function adminResetStaffPassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Invalidate all existing sessions
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => "Password for {$user->name} ({$user->email}) has been successfully reset. Any previous active sessions have been revoked."
+        ]);
     }
 
     // News Article Create / Update
@@ -197,6 +215,7 @@ class AdminContentController extends Controller
             'bid_bond_amount' => 'nullable|numeric',
             'closing_datetime' => 'required|date',
             'status' => 'required|in:open,closed,cancelled',
+            'document_pdf_path' => 'nullable|string',
         ]);
 
         $id = DB::table('tenders')->insertGetId([
@@ -208,6 +227,7 @@ class AdminContentController extends Controller
             'bid_bond_amount' => $validated['bid_bond_amount'] ?? 0,
             'closing_datetime' => $validated['closing_datetime'],
             'status' => $validated['status'],
+            'document_pdf_path' => $validated['document_pdf_path'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -226,6 +246,7 @@ class AdminContentController extends Controller
             'bid_bond_amount' => 'nullable|numeric',
             'closing_datetime' => 'required|date',
             'status' => 'required|in:open,closed,cancelled',
+            'document_pdf_path' => 'nullable|string',
         ]);
 
         DB::table('tenders')->where('id', $id)->update([
@@ -237,6 +258,7 @@ class AdminContentController extends Controller
             'bid_bond_amount' => $validated['bid_bond_amount'] ?? 0,
             'closing_datetime' => $validated['closing_datetime'],
             'status' => $validated['status'],
+            'document_pdf_path' => $validated['document_pdf_path'] ?? null,
             'updated_at' => now(),
         ]);
 
@@ -675,6 +697,9 @@ class AdminContentController extends Controller
     public function getSiteSettings()
     {
         $settings = DB::table('site_settings')->first();
+        if ($settings) {
+            $settings->is_maintenance = (bool)$settings->is_maintenance;
+        }
         return response()->json($settings);
     }
 
@@ -683,8 +708,13 @@ class AdminContentController extends Controller
         $data = $request->only([
             'site_name_am', 'site_name_en', 'site_name_om',
             'contact_phone', 'contact_email', 'emergency_notice_am',
-            'emergency_notice_en', 'is_maintenance'
+            'emergency_notice_en', 'emergency_notice_om'
         ]);
+
+        if ($request->has('is_maintenance')) {
+            $data['is_maintenance'] = $request->boolean('is_maintenance') ? 1 : 0;
+        }
+
         $data['updated_at'] = now();
 
         $exists = DB::table('site_settings')->first();
@@ -695,7 +725,15 @@ class AdminContentController extends Controller
             DB::table('site_settings')->insert($data);
         }
 
-        return response()->json(['message' => 'Site settings and maintenance configuration updated']);
+        $updated = DB::table('site_settings')->first();
+        if ($updated) {
+            $updated->is_maintenance = (bool)$updated->is_maintenance;
+        }
+
+        return response()->json([
+            'message' => 'Site settings and maintenance configuration updated',
+            'settings' => $updated
+        ]);
     }
 
     // Media File & Image/Video Upload Handler
@@ -886,6 +924,14 @@ class AdminContentController extends Controller
             'summary_am' => 'nullable|string',
             'summary_en' => 'nullable|string',
             'summary_om' => 'nullable|string',
+            'description_am' => 'nullable|string',
+            'description_en' => 'nullable|string',
+            'description_om' => 'nullable|string',
+            'visiting_hours' => 'nullable|string',
+            'contact_phone' => 'nullable|string',
+            'contact_email' => 'nullable|string',
+            'admission_fee' => 'nullable|string',
+            'features' => 'nullable|string',
             'image_path' => 'nullable|string',
             'order' => 'nullable|integer',
         ]);
@@ -901,6 +947,14 @@ class AdminContentController extends Controller
             'summary_am' => $validated['summary_am'] ?? null,
             'summary_en' => $validated['summary_en'] ?? null,
             'summary_om' => $validated['summary_om'] ?? null,
+            'description_am' => $validated['description_am'] ?? null,
+            'description_en' => $validated['description_en'] ?? null,
+            'description_om' => $validated['description_om'] ?? null,
+            'visiting_hours' => $validated['visiting_hours'] ?? null,
+            'contact_phone' => $validated['contact_phone'] ?? null,
+            'contact_email' => $validated['contact_email'] ?? null,
+            'admission_fee' => $validated['admission_fee'] ?? null,
+            'features' => $validated['features'] ?? null,
             'image_path' => $validated['image_path'] ?? null,
             'order' => $validated['order'] ?? 0,
             'is_active' => true,
@@ -924,6 +978,14 @@ class AdminContentController extends Controller
             'summary_am' => 'nullable|string',
             'summary_en' => 'nullable|string',
             'summary_om' => 'nullable|string',
+            'description_am' => 'nullable|string',
+            'description_en' => 'nullable|string',
+            'description_om' => 'nullable|string',
+            'visiting_hours' => 'nullable|string',
+            'contact_phone' => 'nullable|string',
+            'contact_email' => 'nullable|string',
+            'admission_fee' => 'nullable|string',
+            'features' => 'nullable|string',
             'image_path' => 'nullable|string',
             'order' => 'nullable|integer',
         ]);
@@ -939,6 +1001,14 @@ class AdminContentController extends Controller
             'summary_am' => $validated['summary_am'] ?? null,
             'summary_en' => $validated['summary_en'] ?? null,
             'summary_om' => $validated['summary_om'] ?? null,
+            'description_am' => $validated['description_am'] ?? null,
+            'description_en' => $validated['description_en'] ?? null,
+            'description_om' => $validated['description_om'] ?? null,
+            'visiting_hours' => $validated['visiting_hours'] ?? null,
+            'contact_phone' => $validated['contact_phone'] ?? null,
+            'contact_email' => $validated['contact_email'] ?? null,
+            'admission_fee' => $validated['admission_fee'] ?? null,
+            'features' => $validated['features'] ?? null,
             'image_path' => $validated['image_path'] ?? null,
             'order' => $validated['order'] ?? 0,
             'updated_at' => now(),

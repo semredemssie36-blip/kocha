@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { Building2, Lock, Mail, ArrowRight, AlertCircle, Loader2 } from 'lucide-vue-next'
@@ -9,6 +9,14 @@ const email = ref('admin@kombolchacity.gov.et')
 const password = ref('Admin@2026!')
 const errorMessage = ref('')
 const loading = ref(false)
+
+// If user already has an active session, redirect immediately to dashboard
+onMounted(() => {
+  const token = localStorage.getItem('kombolcha_admin_token')
+  if (token) {
+    router.replace('/admin')
+  }
+})
 
 async function handleLogin() {
   errorMessage.value = ''
@@ -23,7 +31,8 @@ async function handleLogin() {
     localStorage.setItem('kombolcha_admin_token', res.data.token)
     localStorage.setItem('kombolcha_admin_user', JSON.stringify(res.data.user))
 
-    router.push('/admin')
+    // Use router.replace so the login page is not in the browser history stack
+    router.replace('/admin')
   } catch (err) {
     if (err.response && err.response.data && err.response.data.message) {
       errorMessage.value = err.response.data.message
@@ -62,7 +71,7 @@ async function handleLogin() {
               v-model="email" 
               type="email" 
               required 
-              placeholder="admin@kombolchacity.gov.et" 
+              placeholder="example@gmail.com" 
               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" 
             />
           </div>
@@ -88,7 +97,7 @@ async function handleLogin() {
           class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-          <span v-else>Sign In to Dashboard</span>
+          <span v-else>Sign In it </span>
           <ArrowRight v-if="!loading" class="w-4 h-4" />
         </button>
       </form>

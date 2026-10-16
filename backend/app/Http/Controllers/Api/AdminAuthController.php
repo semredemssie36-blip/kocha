@@ -45,6 +45,8 @@ class AdminAuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'phone' => $user->phone,
+                'avatar_path' => $user->avatar_path,
                 'department_id' => $user->department_id,
             ]
         ]);
@@ -60,6 +62,62 @@ class AdminAuthController extends Controller
     {
         return response()->json([
             'user' => $request->user()
+        ]);
+    }
+
+    /**
+     * Actor profile update (Name, Email, Phone, Avatar)
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:30',
+            'avatar_path' => 'nullable|string',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'phone' => $user->phone,
+                'avatar_path' => $user->avatar_path,
+                'department_id' => $user->department_id,
+            ]
+        ]);
+    }
+
+    /**
+     * Actor self password change (Requires current password verification)
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'The current password you provided is incorrect.'
+            ], 422);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Your password has been changed successfully.'
         ]);
     }
 }

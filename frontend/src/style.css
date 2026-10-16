@@ -31,3 +31,19 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Sidebar Dark Scrollbar */
+.dark-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+

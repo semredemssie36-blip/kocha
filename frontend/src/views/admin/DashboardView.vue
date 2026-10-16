@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { 
@@ -22,6 +22,14 @@ import {
   Phone,
   Clock,
   ShieldCheck,
+  Shield,
+  Lock,
+  PenTool,
+  BookOpen,
+  User,
+  KeyRound,
+  Camera,
+  Key,
   Send,
   Eye,
   RefreshCw,
@@ -71,6 +79,67 @@ const stats = ref({
 
 const currentUser = ref(JSON.parse(localStorage.getItem('kombolcha_admin_user') || '{}'))
 
+// RBAC Roles & Capabilities
+const role = computed(() => currentUser.value?.role || 'author')
+const isSuperAdmin = computed(() => role.value === 'super_admin')
+const isEditor = computed(() => role.value === 'editor' || isSuperAdmin.value)
+const isAuthor = computed(() => role.value === 'author')
+
+const roleLabel = computed(() => {
+  if (role.value === 'super_admin') return 'Super Administrator'
+  if (role.value === 'editor') return 'Communications Editor'
+  if (role.value === 'author') return 'Content Author / Journalist'
+  return role.value
+})
+
+const roleBadgeClass = computed(() => {
+  if (role.value === 'super_admin') return 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+  if (role.value === 'editor') return 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+  return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+})
+
+const can = computed(() => ({
+  createNews: true,
+  editNews: true,
+  deleteNews: isEditor.value,
+
+  uploadMedia: true,
+  editMedia: true,
+  deleteMedia: isEditor.value,
+
+  createResources: true,
+  editResources: true,
+  deleteResources: isEditor.value,
+
+  manageHeroSlides: isEditor.value,
+  manageDestinations: isEditor.value,
+  manageTenders: isEditor.value,
+  manageVacancies: isEditor.value,
+  manageServices: isEditor.value,
+  manageProjects: isEditor.value,
+  viewInquiries: isEditor.value,
+
+  manageMayor: isEditor.value,
+  manageLeadership: isEditor.value,
+  manageOffices: isEditor.value,
+  deleteGovernance: isSuperAdmin.value,
+
+  manageStaff: isSuperAdmin.value,
+  manageSettings: isSuperAdmin.value,
+  canDelete: isEditor.value
+}))
+
+// Section navigation guard: redirect if role has no permission
+watch(activeSection, (sec) => {
+  if (isAuthor.value && !['dashboard', 'news', 'gallery', 'resources'].includes(sec)) {
+    activeSection.value = 'news'
+    showToast('Permission restricted: Navigated to your authorized workspace.')
+  } else if (!isSuperAdmin.value && ['staff', 'settings'].includes(sec)) {
+    activeSection.value = 'dashboard'
+    showToast('Super Administrator privilege required.')
+  }
+})
+
 // Data Collections
 const newsList = ref([])
 const tendersList = ref([])
@@ -79,6 +148,163 @@ const servicesList = ref([])
 const projectsList = ref([])
 const resourcesList = ref([])
 const officesList = ref([])
+
+// Offices Search & Pagination Controls
+const officeSearch = ref('')
+const officePage = ref(1)
+const officePerPage = ref(8)
+
+const filteredOffices = computed(() => {
+  if (!officeSearch.value.trim()) return officesList.value
+  const q = officeSearch.value.toLowerCase().trim()
+  return officesList.value.filter(off => 
+    (off.name_en && off.name_en.toLowerCase().includes(q)) ||
+    (off.name_am && off.name_am.includes(q)) ||
+    (off.phone && off.phone.includes(q)) ||
+    (off.room_number && off.room_number.toLowerCase().includes(q)) ||
+    (off.building_location_am && off.building_location_am.includes(q))
+  )
+})
+
+const totalOfficePages = computed(() => Math.ceil(filteredOffices.value.length / officePerPage.value) || 1)
+
+const paginatedOffices = computed(() => {
+  const start = (officePage.value - 1) * officePerPage.value
+  return filteredOffices.value.slice(start, start + officePerPage.value)
+})
+
+watch(officeSearch, () => {
+  officePage.value = 1
+})
+
+// News Search & Pagination
+const newsSearch = ref('')
+const newsPage = ref(1)
+const newsPerPage = ref(8)
+const filteredNews = computed(() => {
+  if (!newsSearch.value.trim()) return newsList.value
+  const q = newsSearch.value.toLowerCase().trim()
+  return newsList.value.filter(n =>
+    (n.title_en && n.title_en.toLowerCase().includes(q)) ||
+    (n.title_am && n.title_am.includes(q)) ||
+    (n.category && n.category.toLowerCase().includes(q)) ||
+    (n.status && n.status.toLowerCase().includes(q))
+  )
+})
+const totalNewsPages = computed(() => Math.ceil(filteredNews.value.length / newsPerPage.value) || 1)
+const paginatedNews = computed(() => {
+  const start = (newsPage.value - 1) * newsPerPage.value
+  return filteredNews.value.slice(start, start + newsPerPage.value)
+})
+watch(newsSearch, () => { newsPage.value = 1 })
+
+// Citizen Messages Search & Pagination
+const messagesSearch = ref('')
+const messagesPage = ref(1)
+const messagesPerPage = ref(6)
+const filteredMessages = computed(() => {
+  if (!messagesSearch.value.trim()) return messagesList.value
+  const q = messagesSearch.value.toLowerCase().trim()
+  return messagesList.value.filter(m =>
+    (m.sender_name && m.sender_name.toLowerCase().includes(q)) ||
+    (m.sender_phone && m.sender_phone.includes(q)) ||
+    (m.sender_email && m.sender_email.toLowerCase().includes(q)) ||
+    (m.subject && m.subject.toLowerCase().includes(q)) ||
+    (m.message && m.message.toLowerCase().includes(q)) ||
+    (m.status && m.status.toLowerCase().includes(q))
+  )
+})
+const totalMessagesPages = computed(() => Math.ceil(filteredMessages.value.length / messagesPerPage.value) || 1)
+const paginatedMessages = computed(() => {
+  const start = (messagesPage.value - 1) * messagesPerPage.value
+  return filteredMessages.value.slice(start, start + messagesPerPage.value)
+})
+watch(messagesSearch, () => { messagesPage.value = 1 })
+
+// Tenders Search & Pagination
+const tendersSearch = ref('')
+const tendersPage = ref(1)
+const tendersPerPage = ref(8)
+const filteredTenders = computed(() => {
+  if (!tendersSearch.value.trim()) return tendersList.value
+  const q = tendersSearch.value.toLowerCase().trim()
+  return tendersList.value.filter(t =>
+    (t.reference_number && t.reference_number.toLowerCase().includes(q)) ||
+    (t.title_en && t.title_en.toLowerCase().includes(q)) ||
+    (t.title_am && t.title_am.includes(q)) ||
+    (t.category && t.category.toLowerCase().includes(q))
+  )
+})
+const totalTendersPages = computed(() => Math.ceil(filteredTenders.value.length / tendersPerPage.value) || 1)
+const paginatedTenders = computed(() => {
+  const start = (tendersPage.value - 1) * tendersPerPage.value
+  return filteredTenders.value.slice(start, start + tendersPerPage.value)
+})
+watch(tendersSearch, () => { tendersPage.value = 1 })
+
+// Vacancies Search & Pagination
+const vacanciesSearch = ref('')
+const vacanciesPage = ref(1)
+const vacanciesPerPage = ref(8)
+const filteredVacancies = computed(() => {
+  if (!vacanciesSearch.value.trim()) return vacanciesList.value
+  const q = vacanciesSearch.value.toLowerCase().trim()
+  return vacanciesList.value.filter(v =>
+    (v.position_code && v.position_code.toLowerCase().includes(q)) ||
+    (v.title_en && v.title_en.toLowerCase().includes(q)) ||
+    (v.title_am && v.title_am.includes(q)) ||
+    (v.employment_type && v.employment_type.toLowerCase().includes(q))
+  )
+})
+const totalVacanciesPages = computed(() => Math.ceil(filteredVacancies.value.length / vacanciesPerPage.value) || 1)
+const paginatedVacancies = computed(() => {
+  const start = (vacanciesPage.value - 1) * vacanciesPerPage.value
+  return filteredVacancies.value.slice(start, start + vacanciesPerPage.value)
+})
+watch(vacanciesSearch, () => { vacanciesPage.value = 1 })
+
+// Resources Search & Pagination
+const resourcesSearch = ref('')
+const resourcesPage = ref(1)
+const resourcesPerPage = ref(8)
+const filteredResources = computed(() => {
+  if (!resourcesSearch.value.trim()) return resourcesList.value
+  const q = resourcesSearch.value.toLowerCase().trim()
+  return resourcesList.value.filter(r =>
+    (r.title_en && r.title_en.toLowerCase().includes(q)) ||
+    (r.title_am && r.title_am.includes(q)) ||
+    (r.category && r.category.toLowerCase().includes(q)) ||
+    (r.year && r.year.toString().includes(q))
+  )
+})
+const totalResourcesPages = computed(() => Math.ceil(filteredResources.value.length / resourcesPerPage.value) || 1)
+const paginatedResources = computed(() => {
+  const start = (resourcesPage.value - 1) * resourcesPerPage.value
+  return filteredResources.value.slice(start, start + resourcesPerPage.value)
+})
+watch(resourcesSearch, () => { resourcesPage.value = 1 })
+
+// Media Gallery Search & Pagination
+const gallerySearch = ref('')
+const galleryPage = ref(1)
+const galleryPerPage = ref(8)
+const filteredGallery = computed(() => {
+  if (!gallerySearch.value.trim()) return galleryList.value
+  const q = gallerySearch.value.toLowerCase().trim()
+  return galleryList.value.filter(g =>
+    (g.caption_en && g.caption_en.toLowerCase().includes(q)) ||
+    (g.caption_am && g.caption_am.includes(q)) ||
+    (g.category && g.category.toLowerCase().includes(q)) ||
+    (g.media_type && g.media_type.toLowerCase().includes(q))
+  )
+})
+const totalGalleryPages = computed(() => Math.ceil(filteredGallery.value.length / galleryPerPage.value) || 1)
+const paginatedGallery = computed(() => {
+  const start = (galleryPage.value - 1) * galleryPerPage.value
+  return filteredGallery.value.slice(start, start + galleryPerPage.value)
+})
+watch(gallerySearch, () => { galleryPage.value = 1 })
+
 const messagesList = ref([])
 const staffList = ref([])
 const mayorData = ref({})
@@ -118,6 +344,14 @@ const destinationForm = reactive({
   summary_am: '',
   summary_en: '',
   summary_om: '',
+  description_am: '',
+  description_en: '',
+  description_om: '',
+  visiting_hours: '',
+  contact_phone: '',
+  contact_email: '',
+  admission_fee: '',
+  features: '',
   image_path: '',
   order: 0
 })
@@ -162,7 +396,8 @@ async function uploadFileFor(event, targetObj, fieldName) {
 
 const tenderForm = reactive({
   reference_number: '', title_am: '', title_en: '', title_om: '',
-  category: 'Works', bid_bond_amount: 50000, closing_datetime: '', status: 'open'
+  category: 'Works', bid_bond_amount: 50000, closing_datetime: '', status: 'open',
+  document_pdf_path: ''
 })
 
 const vacancyForm = reactive({
@@ -205,43 +440,61 @@ function showToast(msg) {
 async function fetchAllAdminData() {
   loading.value = true
   try {
-    const [statsRes, newsRes, tendersRes, vacanciesRes, projectsRes, resourcesRes, officesRes, msgsRes, mayorRes, leadershipRes, settingsRes, galleryRes, slidesRes, servicesRes, destinationsRes] = await Promise.all([
-      api.get('/admin/stats'),
-      api.get('/news'),
-      api.get('/tenders'),
-      api.get('/vacancies'),
-      api.get('/projects'),
-      api.get('/resources'),
-      api.get('/offices'),
-      api.get('/admin/messages'),
-      api.get('/mayor'),
-      api.get('/leadership'),
-      api.get('/admin/settings').catch(() => ({ data: {} })),
-      api.get('/admin/gallery').catch(() => ({ data: [] })),
-      api.get('/admin/hero-slides').catch(() => ({ data: [] })),
-      api.get('/services').catch(() => ({ data: [] })),
-      api.get('/admin/destinations').catch(() => ({ data: [] }))
+    // 1. Base endpoints accessible to all authenticated staff (author, editor, super_admin)
+    const [statsRes, newsRes, resourcesRes, galleryRes] = await Promise.all([
+      api.get('/admin/stats').catch(() => ({ data: {} })),
+      api.get('/news').catch(() => ({ data: [] })),
+      api.get('/resources').catch(() => ({ data: [] })),
+      api.get('/admin/gallery').catch(() => ({ data: [] }))
     ])
+
     stats.value = { ...stats.value, ...statsRes.data }
     newsList.value = newsRes.data?.data || newsRes.data || []
-    tendersList.value = tendersRes.data || []
-    vacanciesList.value = vacanciesRes.data || []
-    projectsList.value = projectsRes.data || []
     resourcesList.value = resourcesRes.data || []
-    officesList.value = officesRes.data || []
-    stats.value.offices_count = officesList.value.length
-    servicesList.value = servicesRes.data || []
-    messagesList.value = msgsRes.data?.data || msgsRes.data || []
-    mayorData.value = mayorRes.data || {}
-    leadershipList.value = leadershipRes.data || []
     galleryList.value = galleryRes.data || []
-    heroSlidesList.value = slidesRes.data || []
-    destinationsList.value = destinationsRes.data || []
-    if (settingsRes.data && Object.keys(settingsRes.data).length) {
-      siteSettings.value = { ...siteSettings.value, ...settingsRes.data }
+
+    // 2. Editorial & Operational endpoints (editor, super_admin)
+    if (isEditor.value) {
+      const [tendersRes, vacanciesRes, projectsRes, officesRes, msgsRes, mayorRes, leadershipRes, slidesRes, servicesRes, destinationsRes] = await Promise.all([
+        api.get('/tenders').catch(() => ({ data: [] })),
+        api.get('/vacancies').catch(() => ({ data: [] })),
+        api.get('/projects').catch(() => ({ data: [] })),
+        api.get('/offices').catch(() => ({ data: [] })),
+        api.get('/admin/messages').catch(() => ({ data: [] })),
+        api.get('/mayor').catch(() => ({ data: {} })),
+        api.get('/leadership').catch(() => ({ data: [] })),
+        api.get('/admin/hero-slides').catch(() => ({ data: [] })),
+        api.get('/services').catch(() => ({ data: [] })),
+        api.get('/admin/destinations').catch(() => ({ data: [] }))
+      ])
+
+      tendersList.value = tendersRes.data || []
+      vacanciesList.value = vacanciesRes.data || []
+      projectsList.value = projectsRes.data || []
+      officesList.value = officesRes.data || []
+      stats.value.offices_count = officesList.value.length
+      messagesList.value = msgsRes.data?.data || msgsRes.data || []
+      mayorData.value = mayorRes.data || {}
+      leadershipList.value = leadershipRes.data || []
+      heroSlidesList.value = slidesRes.data || []
+      servicesList.value = servicesRes.data || []
+      destinationsList.value = destinationsRes.data || []
     }
-    if (currentUser.value.role === 'super_admin') {
-      const staffRes = await api.get('/admin/staff')
+
+    // 3. Super Admin Only endpoints
+    if (isSuperAdmin.value) {
+      const [settingsRes, staffRes] = await Promise.all([
+        api.get('/admin/settings').catch(() => ({ data: {} })),
+        api.get('/admin/staff').catch(() => ({ data: [] }))
+      ])
+
+      if (settingsRes.data && Object.keys(settingsRes.data).length) {
+        siteSettings.value = {
+          ...siteSettings.value,
+          ...settingsRes.data,
+          is_maintenance: Boolean(settingsRes.data.is_maintenance)
+        }
+      }
       staffList.value = staffRes.data || []
     }
   } catch (err) {
@@ -275,6 +528,7 @@ function openNewModal(type) {
     tenderForm.bid_bond_amount = 50000
     tenderForm.closing_datetime = ''
     tenderForm.status = 'open'
+    tenderForm.document_pdf_path = ''
   } else if (type === 'vacancy') {
     vacancyForm.title_am = ''
     vacancyForm.title_en = ''
@@ -339,6 +593,14 @@ function openNewModal(type) {
     destinationForm.summary_am = ''
     destinationForm.summary_en = ''
     destinationForm.summary_om = ''
+    destinationForm.description_am = ''
+    destinationForm.description_en = ''
+    destinationForm.description_om = ''
+    destinationForm.visiting_hours = ''
+    destinationForm.contact_phone = ''
+    destinationForm.contact_email = ''
+    destinationForm.admission_fee = ''
+    destinationForm.features = ''
     destinationForm.image_path = ''
     destinationForm.order = 0
   }
@@ -366,6 +628,7 @@ function editItem(type, item) {
     tenderForm.bid_bond_amount = item.bid_bond_amount || 0
     tenderForm.closing_datetime = item.closing_datetime ? item.closing_datetime.replace(' ', 'T').substring(0, 16) : ''
     tenderForm.status = item.status || 'open'
+    tenderForm.document_pdf_path = item.document_pdf_path || ''
   } else if (type === 'vacancy') {
     vacancyForm.title_am = item.title_am || ''
     vacancyForm.title_en = item.title_en || ''
@@ -456,6 +719,14 @@ function editItem(type, item) {
     destinationForm.summary_am = item.summary_am || ''
     destinationForm.summary_en = item.summary_en || ''
     destinationForm.summary_om = item.summary_om || ''
+    destinationForm.description_am = item.description_am || ''
+    destinationForm.description_en = item.description_en || ''
+    destinationForm.description_om = item.description_om || ''
+    destinationForm.visiting_hours = item.visiting_hours || ''
+    destinationForm.contact_phone = item.contact_phone || ''
+    destinationForm.contact_email = item.contact_email || ''
+    destinationForm.admission_fee = item.admission_fee || ''
+    destinationForm.features = item.features || ''
     destinationForm.image_path = item.image_path || ''
     destinationForm.order = item.order || 0
   }
@@ -527,13 +798,21 @@ async function submitActiveModal() {
 
 // Delete Helpers with automatic live refresh
 async function deleteItem(endpoint, id, name) {
+  if (!can.value.canDelete) {
+    alert('Permission Denied: Authors are not authorized to delete records. Only Editors and Administrators have delete privileges.')
+    return
+  }
+  if (['/admin/offices', '/admin/leadership', '/admin/projects'].some(ep => endpoint.startsWith(ep)) && !isSuperAdmin.value) {
+    alert('Permission Denied: Only Super Administrators can delete municipal offices, leadership profiles, or infrastructure projects.')
+    return
+  }
   if (!confirm(`Are you sure you want to delete "${name}"? This action removes it permanently from the database and public portal.`)) return
   try {
     await api.delete(`${endpoint}/${id}`)
     showToast(`"${name}" deleted successfully.`)
     await fetchAllAdminData()
   } catch (err) {
-    alert('Failed to delete item.')
+    alert(err.response?.data?.message || 'Failed to delete item.')
   }
 }
 
@@ -560,10 +839,25 @@ async function updateMayorProfile() {
 
 async function updateSettings() {
   try {
-    await api.post('/admin/settings', siteSettings.value)
-    showToast('Municipal portal settings & maintenance mode updated!')
+    const isMaint = Boolean(siteSettings.value.is_maintenance)
+    const res = await api.post('/admin/settings', {
+      site_name_en: siteSettings.value.site_name_en,
+      site_name_am: siteSettings.value.site_name_am,
+      emergency_notice_en: siteSettings.value.emergency_notice_en,
+      is_maintenance: isMaint
+    })
+    if (res.data?.settings) {
+      siteSettings.value = {
+        ...siteSettings.value,
+        ...res.data.settings,
+        is_maintenance: Boolean(res.data.settings.is_maintenance)
+      }
+    }
+    showToast(siteSettings.value.is_maintenance ? 'Emergency Maintenance Mode is now ACTIVE on public portal!' : 'Maintenance mode DISABLED. Portal is now fully public.')
   } catch (err) {
-    alert('Error updating settings.')
+    console.error('Settings update error:', err)
+    const msg = err.response?.data?.message || 'Error updating settings.'
+    alert(msg)
   }
 }
 
@@ -577,22 +871,163 @@ async function updateProgress(project, newPct) {
   }
 }
 
+// Profile & Self-Security Management (Authors, Editors, Super Admins)
+const profileModalOpen = ref(false)
+const profileActiveTab = ref('details') // 'details' | 'password'
+const profileLoading = ref(false)
+const profileForm = reactive({
+  name: '',
+  email: '',
+  phone: '',
+  avatar_path: '',
+})
+const passwordForm = reactive({
+  current_password: '',
+  new_password: '',
+  new_password_confirmation: '',
+})
+
+function openProfileModal() {
+  profileForm.name = currentUser.value?.name || ''
+  profileForm.email = currentUser.value?.email || ''
+  profileForm.phone = currentUser.value?.phone || ''
+  profileForm.avatar_path = currentUser.value?.avatar_path || ''
+  passwordForm.current_password = ''
+  passwordForm.new_password = ''
+  passwordForm.new_password_confirmation = ''
+  profileActiveTab.value = 'details'
+  profileModalOpen.value = true
+}
+
+async function handleSaveProfile() {
+  profileLoading.value = true
+  try {
+    const res = await api.put('/admin/profile', profileForm)
+    currentUser.value = { ...currentUser.value, ...res.data.user }
+    localStorage.setItem('kombolcha_admin_user', JSON.stringify(currentUser.value))
+    showToast('Profile information updated successfully!')
+    profileModalOpen.value = false
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to update profile.')
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+async function handleChangePassword() {
+  if (passwordForm.new_password !== passwordForm.new_password_confirmation) {
+    alert('New password and confirmation do not match.')
+    return
+  }
+  profileLoading.value = true
+  try {
+    const res = await api.put('/admin/password', passwordForm)
+    showToast(res.data.message || 'Password updated successfully!')
+    passwordForm.current_password = ''
+    passwordForm.new_password = ''
+    passwordForm.new_password_confirmation = ''
+    profileModalOpen.value = false
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to update password.')
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+// Staff Password Reset Management (Super Admin Override)
+const resetStaffModalOpen = ref(false)
+const targetStaffUser = ref(null)
+const resetStaffForm = reactive({
+  password: '',
+  password_confirmation: '',
+})
+const resetStaffLoading = ref(false)
+
+function openResetStaffPasswordModal(user) {
+  targetStaffUser.value = user
+  resetStaffForm.password = ''
+  resetStaffForm.password_confirmation = ''
+  resetStaffModalOpen.value = true
+}
+
+function generateRandomPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*'
+  let pw = 'Kmb@'
+  for (let i = 0; i < 8; i++) {
+    pw += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  resetStaffForm.password = pw
+  resetStaffForm.password_confirmation = pw
+}
+
+async function handleAdminResetPassword() {
+  if (!targetStaffUser.value) return
+  if (resetStaffForm.password !== resetStaffForm.password_confirmation) {
+    alert('Password and confirmation do not match.')
+    return
+  }
+  resetStaffLoading.value = true
+  try {
+    const res = await api.patch(`/admin/staff/${targetStaffUser.value.id}/reset-password`, resetStaffForm)
+    showToast(res.data.message || `Password for ${targetStaffUser.value.name} reset successfully!`)
+    resetStaffModalOpen.value = false
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to reset staff password.')
+  } finally {
+    resetStaffLoading.value = false
+  }
+}
+
 async function logout() {
   try { await api.post('/admin/logout') } catch (e) {}
   localStorage.removeItem('kombolcha_admin_token')
   localStorage.removeItem('kombolcha_admin_user')
-  router.push('/admin/login')
+  router.replace('/admin/login')
+}
+
+// Notification Dropdown State & Actions
+const notificationDropdownOpen = ref(false)
+
+function handleNotificationClick(msg) {
+  notificationDropdownOpen.value = false
+  activeSection.value = 'messages'
+}
+
+async function markAllInquiriesRead() {
+  const unread = messagesList.value.filter(m => m.status === 'unread')
+  for (const m of unread) {
+    m.status = 'read'
+    api.patch(`/admin/inquiries/${m.id}/status`, { status: 'read' }).catch(() => {})
+  }
+  stats.value.unread_messages = 0
+  showToast('All notifications marked as read')
+}
+
+function handleGlobalClick(e) {
+  if (!e.target.closest('.notification-menu-container')) {
+    notificationDropdownOpen.value = false
+  }
 }
 
 onMounted(() => {
+  const token = localStorage.getItem('kombolcha_admin_token')
+  if (!token) {
+    router.replace('/admin/login')
+    return
+  }
   fetchAllAdminData()
+  window.addEventListener('click', handleGlobalClick)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleGlobalClick)
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
+  <div class="h-screen flex flex-col overflow-hidden bg-slate-100 font-sans text-slate-800">
     <!-- Top Bar matching diagram -->
-    <header class="bg-slate-900 border-b border-slate-800 text-white px-6 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
+    <header class="bg-slate-900 border-b border-slate-800 text-white px-6 py-3 flex items-center justify-between shrink-0 z-30 shadow-md">
       <!-- Left: Logo & Portal Title -->
       <div class="flex items-center gap-3">
         <img src="/assets/city_logo.png" alt="Seal" class="w-10 h-10 object-contain rounded-full border border-blue-400/40" />
@@ -642,24 +1077,133 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- Notifications Bell -->
-        <button class="relative p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer">
-          <Bell class="w-4 h-4" />
-          <span v-if="stats.unread_messages > 0" class="absolute -top-1 -right-1 px-1 min-w-4 h-4 rounded-md bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
-            {{ stats.unread_messages }}
-          </span>
-        </button>
+        <!-- Notifications Bell & Interactive Dropdown Menu -->
+        <div class="relative notification-menu-container">
+          <button 
+            @click.stop="notificationDropdownOpen = !notificationDropdownOpen"
+            class="relative p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+            title="System & Citizen Notifications"
+          >
+            <Bell class="w-4 h-4" />
+            <span v-if="stats.unread_messages > 0" class="absolute -top-1 -right-1 px-1 min-w-4 h-4 rounded-md bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+              {{ stats.unread_messages }}
+            </span>
+          </button>
+
+          <!-- Notification Dropdown Panel -->
+          <div 
+            v-if="notificationDropdownOpen" 
+            class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-800"
+          >
+            <!-- Dropdown Header -->
+            <div class="p-3.5 px-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <Bell class="w-4 h-4 text-blue-600" />
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Notifications</h4>
+                <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold">
+                  {{ stats.unread_messages }} New
+                </span>
+              </div>
+              <button 
+                v-if="stats.unread_messages > 0"
+                @click="markAllInquiriesRead"
+                class="text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+              >
+                Mark all read
+              </button>
+            </div>
+
+            <!-- Notifications Content List -->
+            <div class="max-h-80 overflow-y-auto divide-y divide-slate-100">
+              <template v-if="messagesList.length > 0">
+                <div 
+                  v-for="msg in messagesList.slice(0, 5)" 
+                  :key="msg.id"
+                  @click="handleNotificationClick(msg)"
+                  class="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3 group"
+                  :class="msg.status === 'unread' ? 'bg-blue-50/40' : ''"
+                >
+                  <div 
+                    class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                    :class="msg.status === 'unread' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'"
+                  >
+                    <MessageSquare class="w-4 h-4" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1 mb-0.5">
+                      <p class="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                        {{ msg.sender_name }}
+                      </p>
+                      <span class="text-[10px] text-slate-400 font-mono shrink-0">
+                        {{ msg.target_sub_city || 'Central' }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-600 truncate font-medium">
+                      {{ msg.subject || msg.message }}
+                    </p>
+                    <p class="text-[10px] text-slate-400 truncate mt-1">
+                      {{ msg.message }}
+                    </p>
+                  </div>
+                </div>
+              </template>
+
+              <!-- No Notifications Empty State -->
+              <div v-else class="p-8 text-center text-slate-400">
+                <Bell class="w-8 h-8 mx-auto mb-2 opacity-30 text-slate-400" />
+                <p class="text-xs font-bold text-slate-600">No new notifications</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">You're all caught up with portal inquiries and alerts.</p>
+              </div>
+            </div>
+
+            <!-- Dropdown Footer -->
+            <div class="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+              <button 
+                @click="notificationDropdownOpen = false; activeSection = 'messages'"
+                class="w-full py-1.5 px-3 rounded-xl bg-white hover:bg-slate-100 text-blue-700 text-xs font-bold border border-slate-200 transition shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Go to Citizen Inquiries Inbox</span>
+                <ChevronRight class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Staff Profile & Logout Dropdown -->
         <div class="flex items-center gap-3 pl-2 border-l border-slate-800">
-          <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-            {{ (currentUser.name || 'Admin').substring(0, 2).toUpperCase() }}
-          </div>
-          <div class="hidden lg:block text-left">
-            <div class="text-xs font-bold text-white leading-tight">{{ currentUser.name || 'Municipal Admin' }}</div>
-            <div class="text-[10px] text-blue-400 font-mono capitalize">{{ currentUser.role || 'Staff' }}</div>
-          </div>
-          <button @click="logout" title="Sign Out" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors">
+          <button 
+            @click="openProfileModal" 
+            title="Manage My Profile & Password"
+            class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer group text-left"
+          >
+            <div 
+              class="w-8 h-8 rounded-xl text-white flex items-center justify-center font-bold text-xs shadow-xs overflow-hidden shrink-0 border border-slate-700"
+              :class="isSuperAdmin ? 'bg-purple-600' : (isEditor ? 'bg-blue-600' : 'bg-emerald-600')"
+            >
+              <img v-if="currentUser.avatar_path" :src="currentUser.avatar_path" alt="Avatar" class="w-full h-full object-cover" />
+              <span v-else>{{ (currentUser.name || 'Staff').substring(0, 2).toUpperCase() }}</span>
+            </div>
+            <div class="hidden lg:block">
+              <div class="text-xs font-bold text-white leading-tight flex items-center gap-1.5 group-hover:text-blue-400 transition-colors">
+                <span>{{ currentUser.name || 'Staff User' }}</span>
+                <Edit class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
+              </div>
+              <span 
+                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-tight uppercase mt-0.5"
+                :class="roleBadgeClass"
+              >
+                <Shield v-if="isSuperAdmin" class="w-2.5 h-2.5" />
+                <Award v-else-if="isEditor" class="w-2.5 h-2.5" />
+                <PenTool v-else class="w-2.5 h-2.5" />
+                {{ roleLabel }}
+              </span>
+            </div>
+          </button>
+
+          <button @click="openProfileModal" title="Profile & Password Settings" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors">
+            <User class="w-4 h-4" />
+          </button>
+          <button @click="logout" title="Sign Out" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors ml-1">
             <LogOut class="w-4 h-4" />
           </button>
         </div>
@@ -673,9 +1217,9 @@ onMounted(() => {
     </div>
 
     <!-- Workspace Container (Sidebar + Dynamic Workspace Area) -->
-    <div class="flex flex-grow overflow-hidden">
+    <div class="flex-1 flex overflow-hidden min-h-0 relative">
       <!-- Sidebar Navigation -->
-      <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 overflow-y-auto">
+      <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 overflow-y-auto select-none dark-scrollbar">
         <nav class="p-4 space-y-1.5 text-xs font-bold">
           <button 
             @click="activeSection = 'dashboard'"
@@ -690,9 +1234,10 @@ onMounted(() => {
 
           <!-- Media Management Category -->
           <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Media & Visuals
+            {{ isAuthor ? 'Content & Media' : 'Media & Visuals' }}
           </div>
           <button 
+            v-if="can.manageHeroSlides"
             @click="activeSection = 'hero_slides'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -723,6 +1268,7 @@ onMounted(() => {
             <span>News & Press Releases</span>
           </button>
           <button 
+            v-if="can.manageTenders"
             @click="activeSection = 'tenders'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -733,6 +1279,7 @@ onMounted(() => {
             <span>Public Tenders</span>
           </button>
           <button 
+            v-if="can.manageVacancies"
             @click="activeSection = 'vacancies'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -744,10 +1291,11 @@ onMounted(() => {
           </button>
 
           <!-- Governance Management Category -->
-          <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="can.manageMayor || can.manageLeadership || can.manageOffices" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
             Governance
           </div>
           <button 
+            v-if="can.manageMayor"
             @click="activeSection = 'mayor'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -758,6 +1306,7 @@ onMounted(() => {
             <span>Mayor Profile & Keynote</span>
           </button>
           <button 
+            v-if="can.manageLeadership"
             @click="activeSection = 'leadership'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -768,6 +1317,7 @@ onMounted(() => {
             <span>Cabinet & Council</span>
           </button>
           <button 
+            v-if="can.manageOffices"
             @click="activeSection = 'offices'"
             :class="[
               'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -783,9 +1333,10 @@ onMounted(() => {
 
           <!-- Civic Services Category -->
           <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Services & Projects
+            Services & Resources
           </div>
           <button 
+            v-if="can.manageServices"
             @click="activeSection = 'services'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -796,6 +1347,7 @@ onMounted(() => {
             <span>Text & Step Services</span>
           </button>
           <button 
+            v-if="can.manageProjects"
             @click="activeSection = 'projects'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -816,6 +1368,7 @@ onMounted(() => {
             <span>Resources & Directives</span>
           </button>
           <button 
+            v-if="can.manageDestinations"
             @click="activeSection = 'destinations'"
             :class="[
               'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -830,10 +1383,11 @@ onMounted(() => {
           </button>
 
           <!-- Citizen Interaction Category -->
-          <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="can.viewInquiries" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
             Civic Feedback
           </div>
           <button 
+            v-if="can.viewInquiries"
             @click="activeSection = 'messages'"
             :class="[
               'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -850,11 +1404,11 @@ onMounted(() => {
           </button>
 
           <!-- System Administration -->
-          <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="isSuperAdmin" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
             Administration
           </div>
           <button 
-            v-if="currentUser.role === 'super_admin'"
+            v-if="isSuperAdmin"
             @click="activeSection = 'staff'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -865,6 +1419,7 @@ onMounted(() => {
             <span>Staff Accounts</span>
           </button>
           <button 
+            v-if="isSuperAdmin"
             @click="activeSection = 'settings'"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -877,11 +1432,31 @@ onMounted(() => {
         </nav>
       </aside>
 
-      <!-- Dynamic Workspace Area -->
-      <main class="flex-grow p-8 overflow-y-auto space-y-8">
-        <!-- 1. DASHBOARD OVERVIEW (Matching User's ASCII Diagram) -->
+      <!-- Dynamic Workspace Area (Independent Scrollable Container) -->
+      <main class="flex-1 p-8 overflow-y-auto space-y-8 bg-slate-100 min-w-0">
+        <!-- 1. DASHBOARD OVERVIEW (Role Adaptive Workspace) -->
         <div v-if="activeSection === 'dashboard'" class="space-y-8">
-          <div>
+          <!-- Author Contributor Workspace Header (when isAuthor) -->
+          <div v-if="isAuthor" class="p-6 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 text-emerald-200 text-xs font-bold uppercase tracking-wider mb-1">
+                <PenTool class="w-4 h-4" />
+                <span>Journalist & Contributor Workspace</span>
+              </div>
+              <h2 class="text-2xl font-black">Welcome, {{ currentUser?.name || 'Author' }}!</h2>
+              <p class="text-xs text-emerald-100 mt-1 max-w-xl">
+                You have authoring privileges to compose and publish bilingual press releases, upload public event photography, and catalog official municipal resources.
+              </p>
+            </div>
+            <div class="flex gap-3 shrink-0">
+              <button @click="modalType = 'news'" class="px-4 py-2.5 rounded-2xl bg-white text-emerald-800 font-bold text-xs hover:bg-emerald-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
+                <Plus class="w-4 h-4" />
+                <span>Write Press Release</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-else>
             <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               <LayoutDashboard class="w-6 h-6 text-blue-600" />
               <span>Dashboard Overview</span>
@@ -889,8 +1464,36 @@ onMounted(() => {
             <p class="text-xs text-slate-500">Live municipal key performance metrics and quick operational actions.</p>
           </div>
 
-          <!-- The 4 Stat Cards from ASCII diagram -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- The 4 Stat Cards: Author vs Municipal Admin/Editor -->
+          <div v-if="isAuthor" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">News & Press Releases</span>
+              <div class="text-3xl font-black text-emerald-600 mt-2 font-mono">{{ newsList.length }}</div>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">Articles in municipal registry</span>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Media Assets</span>
+              <div class="text-3xl font-black text-blue-600 mt-2 font-mono">{{ galleryList.length }}</div>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">Photos & gallery collections</span>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Directives & Documents</span>
+              <div class="text-3xl font-black text-indigo-600 mt-2 font-mono">{{ resourcesList.length }}</div>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">Cataloged citizen publications</span>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Publishing Privileges</span>
+              <div class="text-sm font-black text-emerald-700 mt-2 uppercase tracking-wide">
+                Author Active
+              </div>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">Full drafting & editing rights</span>
+            </div>
+          </div>
+
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
               <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Views This Month</span>
               <div class="text-3xl font-black text-slate-900 mt-2 font-mono">{{ stats.monthly_views }}</div>
@@ -918,8 +1521,62 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Quick Action Center from ASCII diagram -->
-          <div>
+          <!-- Quick Action Center -->
+          <div v-if="isAuthor">
+            <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+              <Zap class="w-5 h-5 text-emerald-600" />
+              <span>Author Contribution Center</span>
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                  <h4 class="font-extrabold text-slate-900 text-sm">Authoring Shortcuts</h4>
+                  <span class="text-xs font-bold text-emerald-600">Quick Create</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button @click="modalType = 'news'" class="p-3.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
+                    <span>+ New Press Release</span>
+                    <Plus class="w-4 h-4" />
+                  </button>
+                  <button @click="modalType = 'gallery'" class="p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
+                    <span>+ Upload Photo Asset</span>
+                    <Plus class="w-4 h-4" />
+                  </button>
+                  <button @click="modalType = 'resource'" class="p-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
+                    <span>+ Catalog Directive</span>
+                    <Plus class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Editorial Guidelines & Policy -->
+              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                  <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                    <BookOpen class="w-4 h-4 text-emerald-600" />
+                    <span>Editorial Standards</span>
+                  </h4>
+                  <span class="text-xs font-bold text-slate-400">Policy</span>
+                </div>
+                <ul class="text-xs text-slate-600 space-y-2">
+                  <li class="flex items-start gap-2">
+                    <span class="text-emerald-600 font-bold">•</span>
+                    <span>Always provide Amharic (primary) and English titles for accurate multilingual indexing.</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-emerald-600 font-bold">•</span>
+                    <span>Use high-resolution 16:9 imagery for article banners and event galleries.</span>
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="text-emerald-600 font-bold">•</span>
+                    <span>Deleting published releases or directives requires Editor approval.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div v-else>
             <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
               <Zap class="w-5 h-5 text-blue-600" />
               <span>Quick Action Center</span>
@@ -1058,7 +1715,7 @@ onMounted(() => {
                 <button @click="editItem('hero_slide', slide)" class="p-2 text-blue-600 hover:bg-blue-100 rounded-xl cursor-pointer" title="Edit Slide">
                   <Edit class="w-4 h-4" />
                 </button>
-                <button @click="deleteItem('/admin/hero-slides', slide.id, slide.title_en || slide.title_am)" class="p-2 text-rose-500 hover:bg-rose-100 rounded-xl cursor-pointer" title="Delete Slide">
+                <button v-if="can.canDelete" @click="deleteItem('/admin/hero-slides', slide.id, slide.title_en || slide.title_am)" class="p-2 text-rose-500 hover:bg-rose-100 rounded-xl cursor-pointer" title="Delete Slide">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </div>
@@ -1068,50 +1725,102 @@ onMounted(() => {
 
         <!-- MEDIA GALLERY MANAGEMENT -->
         <div v-else-if="activeSection === 'gallery'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Media Gallery Manager</h2>
+              <h2 class="text-2xl font-black text-slate-900">
+                Media Gallery Manager
+                <span class="text-blue-600 font-mono text-xl">({{ filteredGallery.length }})</span>
+              </h2>
               <p class="text-xs text-slate-500">Manage high-resolution photography and video documentaries with category tagging and multilingual captions.</p>
             </div>
-            <button @click="editingId = null; modalType = 'gallery'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Add Image or Video</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <div class="relative w-64">
+                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  v-model="gallerySearch"
+                  type="text"
+                  placeholder="Filter gallery caption, category..."
+                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+                />
+              </div>
+              <button @click="editingId = null; modalType = 'gallery'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+                <Plus class="w-4 h-4" />
+                <span>Add Media</span>
+              </button>
+            </div>
           </div>
 
-          <div v-if="galleryList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
-            No media items in gallery yet.
+          <div v-if="filteredGallery.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
+            No media items found matching "<span class="font-bold text-slate-600">{{ gallerySearch }}</span>".
           </div>
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div v-for="item in galleryList" :key="item.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
-              <div>
-                <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center">
-                  <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover" />
-                  <span :class="['absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1', item.media_type === 'video' ? 'bg-red-600 text-white' : 'bg-slate-900/80 text-white']">
-                    <Video v-if="item.media_type === 'video'" class="w-3 h-3" />
-                    <ImageIcon v-else class="w-3 h-3" />
-                    <span>{{ item.media_type }}</span>
-                  </span>
-                  <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-white/90 text-slate-800 text-[10px] font-bold uppercase">
-                    {{ item.category }}
-                  </span>
+          <div v-else class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div v-for="item in paginatedGallery" :key="item.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+                <div>
+                  <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center">
+                    <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover" />
+                    <span :class="['absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1', item.media_type === 'video' ? 'bg-red-600 text-white' : 'bg-slate-900/80 text-white']">
+                      <Video v-if="item.media_type === 'video'" class="w-3 h-3" />
+                      <ImageIcon v-else class="w-3 h-3" />
+                      <span>{{ item.media_type }}</span>
+                    </span>
+                    <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-white/90 text-slate-800 text-[10px] font-bold uppercase">
+                      {{ item.category }}
+                    </span>
+                  </div>
+                  <div class="p-4">
+                    <h4 class="font-bold text-sm text-slate-900 line-clamp-2 leading-snug mb-1">{{ item.caption_en || item.caption_am }}</h4>
+                    <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ item.caption_am }}</p>
+                    <p class="text-[11px] text-slate-400 truncate mt-2 font-mono">Src: {{ item.media_path_or_url }}</p>
+                  </div>
                 </div>
-                <div class="p-4">
-                  <h4 class="font-bold text-sm text-slate-900 line-clamp-2 leading-snug mb-1">{{ item.caption_en || item.caption_am }}</h4>
-                  <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ item.caption_am }}</p>
-                  <p class="text-[11px] text-slate-400 truncate mt-2 font-mono">Src: {{ item.media_path_or_url }}</p>
+                <div class="p-3 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span class="text-slate-400 font-mono">Order: {{ item.order }}</span>
+                  <div class="flex items-center gap-1">
+                    <button @click="editItem('gallery', item)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer" title="Edit Item">
+                      <Edit class="w-4 h-4" />
+                    </button>
+                    <button v-if="can.deleteMedia" @click="deleteItem('/admin/gallery', item.id, item.caption_en || item.caption_am)" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg cursor-pointer" title="Delete Item">
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="p-3 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-slate-400 font-mono">Order: {{ item.order }}</span>
-                <div class="flex items-center gap-1">
-                  <button @click="editItem('gallery', item)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer" title="Edit Item">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button @click="deleteItem('/admin/gallery', item.id, item.caption_en || item.caption_am)" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg cursor-pointer" title="Delete Item">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
+            </div>
+
+            <!-- Gallery Pagination Controls Bar -->
+            <div v-if="filteredGallery.length > galleryPerPage" class="p-4 px-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (galleryPage - 1) * galleryPerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(galleryPage * galleryPerPage, filteredGallery.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredGallery.length }}</span> items
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="galleryPage === 1" 
+                  @click="galleryPage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalGalleryPages" 
+                  :key="p"
+                  @click="galleryPage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    galleryPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="galleryPage === totalGalleryPages" 
+                  @click="galleryPage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -1119,20 +1828,37 @@ onMounted(() => {
 
         <!-- 2. NEWS & PRESS RELEASES -->
         <div v-else-if="activeSection === 'news'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">News Articles & Press Releases</h2>
+              <h2 class="text-2xl font-black text-slate-900">
+                News Articles & Press Releases
+                <span class="text-blue-600 font-mono text-xl">({{ filteredNews.length }})</span>
+              </h2>
               <p class="text-xs text-slate-500">Publish and manage trilingual municipal announcements.</p>
             </div>
-            <button @click="openNewModal('news')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-blue-600/20">
-              <Plus class="w-4 h-4" />
-              <span>Create Press Release</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <div class="relative w-64">
+                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  v-model="newsSearch"
+                  type="text"
+                  placeholder="Filter news by title, category..."
+                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+                />
+              </div>
+              <button @click="openNewModal('news')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-blue-600/20 shrink-0">
+                <Plus class="w-4 h-4" />
+                <span>Create Press Release</span>
+              </button>
+            </div>
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="divide-y divide-slate-100">
-              <div v-for="item in newsList" :key="item.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
+            <div v-if="filteredNews.length === 0" class="p-12 text-center text-slate-400 text-xs">
+              No news articles found matching "<span class="font-bold text-slate-600">{{ newsSearch }}</span>".
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="item in paginatedNews" :key="item.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
                 <div class="flex items-center gap-4">
                   <img 
                     :src="item.thumbnail_path || '/assets/hero_industry.jpg'" 
@@ -1152,10 +1878,46 @@ onMounted(() => {
                   <button @click="editItem('news', item)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Article">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button @click="deleteItem('/admin/news', item.id, item.title_en || item.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Article">
+                  <button v-if="can.deleteNews" @click="deleteItem('/admin/news', item.id, item.title_en || item.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Article">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- News Pagination Controls Bar -->
+            <div v-if="filteredNews.length > newsPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (newsPage - 1) * newsPerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(newsPage * newsPerPage, filteredNews.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredNews.length }}</span> articles
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="newsPage === 1" 
+                  @click="newsPage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalNewsPages" 
+                  :key="p"
+                  @click="newsPage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    newsPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="newsPage === totalNewsPages" 
+                  @click="newsPage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -1163,20 +1925,37 @@ onMounted(() => {
 
         <!-- 3. PUBLIC TENDERS -->
         <div v-else-if="activeSection === 'tenders'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Public Procurement & Tenders</h2>
+              <h2 class="text-2xl font-black text-slate-900">
+                Public Procurement & Tenders
+                <span class="text-amber-600 font-mono text-xl">({{ filteredTenders.length }})</span>
+              </h2>
               <p class="text-xs text-slate-500">Create public bids with live countdowns and bid bond requirements.</p>
             </div>
-            <button @click="openNewModal('tender')" class="px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Post New Tender</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <div class="relative w-64">
+                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  v-model="tendersSearch"
+                  type="text"
+                  placeholder="Filter by ref, category, title..."
+                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-amber-600 focus:border-amber-600 outline-none shadow-xs"
+                />
+              </div>
+              <button @click="openNewModal('tender')" class="px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+                <Plus class="w-4 h-4" />
+                <span>Post New Tender</span>
+              </button>
+            </div>
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="divide-y divide-slate-100">
-              <div v-for="tender in tendersList" :key="tender.id" class="p-6 flex items-center justify-between gap-4">
+            <div v-if="filteredTenders.length === 0" class="p-12 text-center text-slate-400 text-xs">
+              No tenders found matching "<span class="font-bold text-slate-600">{{ tendersSearch }}</span>".
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="tender in paginatedTenders" :key="tender.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
                 <div>
                   <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-mono font-bold mr-2">{{ tender.reference_number }}</span>
                   <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase">{{ tender.category }}</span>
@@ -1187,10 +1966,46 @@ onMounted(() => {
                   <button @click="editItem('tender', tender)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Tender">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button @click="deleteItem('/admin/tenders', tender.id, tender.reference_number)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Tender">
+                  <button v-if="can.canDelete" @click="deleteItem('/admin/tenders', tender.id, tender.reference_number)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Tender">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Tenders Pagination Controls Bar -->
+            <div v-if="filteredTenders.length > tendersPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (tendersPage - 1) * tendersPerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(tendersPage * tendersPerPage, filteredTenders.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredTenders.length }}</span> tenders
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="tendersPage === 1" 
+                  @click="tendersPage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalTendersPages" 
+                  :key="p"
+                  @click="tendersPage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    tendersPage === p ? 'bg-amber-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="tendersPage === totalTendersPages" 
+                  @click="tendersPage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -1198,20 +2013,37 @@ onMounted(() => {
 
         <!-- 4. JOB VACANCIES -->
         <div v-else-if="activeSection === 'vacancies'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Civil Service Vacancies & Careers</h2>
+              <h2 class="text-2xl font-black text-slate-900">
+                Civil Service Vacancies & Careers
+                <span class="text-emerald-600 font-mono text-xl">({{ filteredVacancies.length }})</span>
+              </h2>
               <p class="text-xs text-slate-500">Post employment openings, salary scales, and application guidelines.</p>
             </div>
-            <button @click="openNewModal('vacancy')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Post Job Vacancy</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <div class="relative w-64">
+                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  v-model="vacanciesSearch"
+                  type="text"
+                  placeholder="Filter by code, title, type..."
+                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none shadow-xs"
+                />
+              </div>
+              <button @click="openNewModal('vacancy')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+                <Plus class="w-4 h-4" />
+                <span>Post Job Vacancy</span>
+              </button>
+            </div>
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="divide-y divide-slate-100">
-              <div v-for="job in vacanciesList" :key="job.id" class="p-6 flex items-center justify-between gap-4">
+            <div v-if="filteredVacancies.length === 0" class="p-12 text-center text-slate-400 text-xs">
+              No vacancies found matching "<span class="font-bold text-slate-600">{{ vacanciesSearch }}</span>".
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="job in paginatedVacancies" :key="job.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
                 <div>
                   <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase mr-2">{{ job.employment_type }}</span>
                   <span class="text-xs font-mono text-slate-500 font-bold">Code: {{ job.position_code }}</span>
@@ -1222,10 +2054,46 @@ onMounted(() => {
                   <button @click="editItem('vacancy', job)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Vacancy">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Vacancy">
+                  <button v-if="can.canDelete" @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Vacancy">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Vacancies Pagination Controls Bar -->
+            <div v-if="filteredVacancies.length > vacanciesPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (vacanciesPage - 1) * vacanciesPerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(vacanciesPage * vacanciesPerPage, filteredVacancies.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredVacancies.length }}</span> vacancies
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="vacanciesPage === 1" 
+                  @click="vacanciesPage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalVacanciesPages" 
+                  :key="p"
+                  @click="vacanciesPage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    vacanciesPage === p ? 'bg-emerald-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="vacanciesPage === totalVacanciesPages" 
+                  @click="vacanciesPage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -1361,7 +2229,7 @@ onMounted(() => {
                 <button @click="editItem('leadership', m)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Member">
                   <Edit class="w-4 h-4" />
                 </button>
-                <button @click="deleteItem('/admin/leadership', m.id, m.name_en || m.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Member">
+                <button v-if="isSuperAdmin" @click="deleteItem('/admin/leadership', m.id, m.name_en || m.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Member">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </div>
@@ -1371,20 +2239,38 @@ onMounted(() => {
 
         <!-- 7. 22 MUNICIPAL OFFICES -->
         <div v-else-if="activeSection === 'offices'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Municipal Offices & Public Directory <span v-if="officesList.length" class="text-blue-600 font-mono text-xl">({{ officesList.length }})</span></h2>
+              <h2 class="text-2xl font-black text-slate-900">
+                Municipal Offices & Public Directory 
+                <span class="text-blue-600 font-mono text-xl">({{ filteredOffices.length }})</span>
+              </h2>
               <p class="text-xs text-slate-500">Maintain official directory, building locations, room numbers and direct phone lines.</p>
             </div>
-            <button @click="openNewModal('office')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Add Office</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <!-- Live Filter Search Bar -->
+              <div class="relative w-64">
+                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  v-model="officeSearch"
+                  type="text"
+                  placeholder="Filter by name, room, phone..."
+                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+                />
+              </div>
+              <button @click="openNewModal('office')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+                <Plus class="w-4 h-4" />
+                <span>Add Office</span>
+              </button>
+            </div>
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="divide-y divide-slate-100">
-              <div v-for="off in officesList" :key="off.id" class="p-6 flex items-center justify-between gap-4">
+            <div v-if="filteredOffices.length === 0" class="p-12 text-center text-slate-400 text-xs">
+              No municipal offices found matching "<span class="font-bold text-slate-600">{{ officeSearch }}</span>".
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="off in paginatedOffices" :key="off.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
                 <div>
                   <h4 class="font-bold text-base text-slate-900">{{ off.name_en || off.name_am }}</h4>
                   <div class="text-xs text-slate-500 font-mono mt-1">
@@ -1396,10 +2282,46 @@ onMounted(() => {
                   <button @click="editItem('office', off)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Office">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button @click="deleteItem('/admin/offices', off.id, off.name_en || off.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Office">
+                  <button v-if="isSuperAdmin" @click="deleteItem('/admin/offices', off.id, off.name_en || off.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Office">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Offices Pagination Controls Bar -->
+            <div v-if="filteredOffices.length > officePerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (officePage - 1) * officePerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(officePage * officePerPage, filteredOffices.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredOffices.length }}</span> offices
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="officePage === 1" 
+                  @click="officePage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalOfficePages" 
+                  :key="p"
+                  @click="officePage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    officePage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="officePage === totalOfficePages" 
+                  @click="officePage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -1432,7 +2354,7 @@ onMounted(() => {
                     <button @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Service">
                       <Edit class="w-4 h-4" />
                     </button>
-                    <button @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Service">
+                    <button v-if="can.canDelete" @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Service">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -1474,7 +2396,7 @@ onMounted(() => {
                     <button @click="editItem('project', proj)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Project">
                       <Edit class="w-4 h-4" />
                     </button>
-                    <button @click="deleteItem('/admin/projects', proj.id, proj.title_en || proj.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Project">
+                    <button v-if="isSuperAdmin" @click="deleteItem('/admin/projects', proj.id, proj.title_en || proj.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Project">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -1510,20 +2432,37 @@ onMounted(() => {
 
         <!-- 10. RESOURCES & DIRECTIVES -->
         <div v-else-if="activeSection === 'resources'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Public Directives & Document Library</h2>
+              <h2 class="text-2xl font-black text-slate-900">
+                Public Directives & Document Library
+                <span class="text-blue-600 font-mono text-xl">({{ filteredResources.length }})</span>
+              </h2>
               <p class="text-xs text-slate-500">Upload official bylaws, directives, annual budgets, and master plan maps.</p>
             </div>
-            <button @click="openNewModal('resource')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Catalog Directive</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <div class="relative w-64">
+                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  v-model="resourcesSearch"
+                  type="text"
+                  placeholder="Filter by title, year, category..."
+                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+                />
+              </div>
+              <button @click="openNewModal('resource')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+                <Plus class="w-4 h-4" />
+                <span>Catalog Directive</span>
+              </button>
+            </div>
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="divide-y divide-slate-100">
-              <div v-for="res in resourcesList" :key="res.id" class="p-6 flex items-center justify-between gap-4">
+            <div v-if="filteredResources.length === 0" class="p-12 text-center text-slate-400 text-xs">
+              No directives or resources found matching "<span class="font-bold text-slate-600">{{ resourcesSearch }}</span>".
+            </div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="res in paginatedResources" :key="res.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
                 <div>
                   <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase mr-2">{{ res.category }}</span>
                   <span class="text-xs font-mono text-slate-500">{{ res.year }}</span>
@@ -1534,10 +2473,46 @@ onMounted(() => {
                   <button @click="editItem('resource', res)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Directive">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Directive">
+                  <button v-if="can.deleteResources" @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Directive">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Resources Pagination Controls Bar -->
+            <div v-if="filteredResources.length > resourcesPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (resourcesPage - 1) * resourcesPerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(resourcesPage * resourcesPerPage, filteredResources.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredResources.length }}</span> directives
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="resourcesPage === 1" 
+                  @click="resourcesPage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalResourcesPages" 
+                  :key="p"
+                  @click="resourcesPage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    resourcesPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="resourcesPage === totalResourcesPages" 
+                  @click="resourcesPage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -1581,7 +2556,25 @@ onMounted(() => {
                     <MapPin class="w-3.5 h-3.5 text-blue-600 shrink-0" />
                     <span>{{ dest.location_en || dest.location_am }}</span>
                   </div>
-                  <p class="text-xs text-slate-600 line-clamp-3">{{ dest.summary_en || dest.summary_am }}</p>
+                  <p class="text-xs text-slate-600 line-clamp-2 mb-3">{{ dest.summary_en || dest.summary_am }}</p>
+
+                  <!-- Detail badges in admin -->
+                  <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-1.5 text-[11px]">
+                    <span v-if="dest.visiting_hours" class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium flex items-center gap-1">
+                      <Clock class="w-3 h-3" />
+                      {{ dest.visiting_hours }}
+                    </span>
+                    <span v-if="dest.contact_phone" class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono font-medium flex items-center gap-1">
+                      <Phone class="w-3 h-3" />
+                      {{ dest.contact_phone }}
+                    </span>
+                    <span v-if="dest.admission_fee" class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium">
+                      {{ dest.admission_fee }}
+                    </span>
+                    <span v-if="dest.description_en || dest.description_am" class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 font-medium">
+                      ✓ Full Details
+                    </span>
+                  </div>
                 </div>
               </div>
               <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
@@ -1590,7 +2583,7 @@ onMounted(() => {
                   <button @click="editItem('destination', dest)" class="p-2 text-blue-600 hover:bg-blue-100/50 rounded-xl cursor-pointer" title="Edit Destination">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button @click="deleteItem('/admin/destinations', dest.id, dest.title_en || dest.title_am)" class="p-2 text-rose-500 hover:bg-rose-100/50 rounded-xl cursor-pointer" title="Delete Destination">
+                  <button v-if="can.canDelete" @click="deleteItem('/admin/destinations', dest.id, dest.title_en || dest.title_am)" class="p-2 text-rose-500 hover:bg-rose-100/50 rounded-xl cursor-pointer" title="Delete Destination">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -1601,16 +2594,30 @@ onMounted(() => {
 
         <!-- 11. CITIZEN FEEDBACK INBOX -->
         <div v-else-if="activeSection === 'messages'" class="space-y-6">
-          <div>
-            <h2 class="text-2xl font-black text-slate-900">Citizen Feedback & Inquiries Desk</h2>
-            <p class="text-xs text-slate-500">Live submissions received via the public Contact Us portal.</p>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-slate-900">
+                Citizen Feedback & Inquiries Desk
+                <span class="text-blue-600 font-mono text-xl">({{ filteredMessages.length }})</span>
+              </h2>
+              <p class="text-xs text-slate-500">Live submissions received via the public Contact Us portal.</p>
+            </div>
+            <div class="relative w-72">
+              <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input 
+                v-model="messagesSearch"
+                type="text"
+                placeholder="Search sender, subject, phone..."
+                class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+              />
+            </div>
           </div>
 
-          <div v-if="messagesList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
-            No inquiries received.
+          <div v-if="filteredMessages.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
+            No inquiries found matching "<span class="font-bold text-slate-600">{{ messagesSearch }}</span>".
           </div>
           <div v-else class="space-y-4">
-            <div v-for="msg in messagesList" :key="msg.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+            <div v-for="msg in paginatedMessages" :key="msg.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
               <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
                 <div class="flex items-center gap-3">
                   <span class="font-extrabold text-slate-900 text-sm">{{ msg.sender_name }}</span>
@@ -1633,6 +2640,42 @@ onMounted(() => {
                 </div>
               </div>
             </div>
+
+            <!-- Messages Pagination Controls Bar -->
+            <div v-if="filteredMessages.length > messagesPerPage" class="p-4 px-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing <span class="font-bold text-slate-900">{{ (messagesPage - 1) * messagesPerPage + 1 }}</span> to 
+                <span class="font-bold text-slate-900">{{ Math.min(messagesPage * messagesPerPage, filteredMessages.length) }}</span> of 
+                <span class="font-bold text-slate-900">{{ filteredMessages.length }}</span> inquiries
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  :disabled="messagesPage === 1" 
+                  @click="messagesPage--"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Previous
+                </button>
+                <button 
+                  v-for="p in totalMessagesPages" 
+                  :key="p"
+                  @click="messagesPage = p"
+                  :class="[
+                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    messagesPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="messagesPage === totalMessagesPages" 
+                  @click="messagesPage++"
+                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1653,7 +2696,7 @@ onMounted(() => {
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase">
                 <tr>
-                  <th class="p-4">Name</th>
+                  <th class="p-4">Staff Member</th>
                   <th class="p-4">Email</th>
                   <th class="p-4">Role</th>
                   <th class="p-4">Status</th>
@@ -1662,10 +2705,24 @@ onMounted(() => {
               </thead>
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="user in staffList" :key="user.id" class="hover:bg-slate-50/50">
-                  <td class="p-4 font-bold text-slate-900">{{ user.name }}</td>
+                  <td class="p-4 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 border border-slate-200">
+                      <img v-if="user.avatar_path" :src="user.avatar_path" class="w-full h-full object-cover" />
+                      <span v-else>{{ (user.name || 'S').substring(0, 2).toUpperCase() }}</span>
+                    </div>
+                    <div>
+                      <div class="font-bold text-slate-900">{{ user.name }}</div>
+                      <div v-if="user.phone" class="text-[11px] text-slate-400 font-mono">{{ user.phone }}</div>
+                    </div>
+                  </td>
                   <td class="p-4 text-slate-600 font-mono">{{ user.email }}</td>
                   <td class="p-4">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-700">{{ user.role }}</span>
+                    <span 
+                      class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                      :class="user.role === 'super_admin' ? 'bg-purple-50 text-purple-700 border border-purple-200' : (user.role === 'editor' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')"
+                    >
+                      {{ user.role }}
+                    </span>
                   </td>
                   <td class="p-4">
                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="user.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'">
@@ -1673,9 +2730,19 @@ onMounted(() => {
                     </span>
                   </td>
                   <td class="p-4 text-right">
-                    <button @click="api.patch(`/admin/staff/${user.id}/toggle`).then(fetchAllAdminData)" class="px-3 py-1 rounded-lg border text-xs font-bold cursor-pointer hover:bg-slate-50">
-                      {{ user.is_active ? 'Deactivate' : 'Activate' }}
-                    </button>
+                    <div class="flex items-center justify-end gap-2">
+                      <button 
+                        @click="openResetStaffPasswordModal(user)" 
+                        class="px-2.5 py-1 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                        title="Reset Staff Member Password"
+                      >
+                        <KeyRound class="w-3.5 h-3.5" />
+                        <span>Reset Password</span>
+                      </button>
+                      <button @click="api.patch(`/admin/staff/${user.id}/toggle`).then(fetchAllAdminData)" class="px-3 py-1 rounded-lg border text-xs font-bold cursor-pointer hover:bg-slate-50">
+                        {{ user.is_active ? 'Deactivate' : 'Activate' }}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -1691,13 +2758,42 @@ onMounted(() => {
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
-            <!-- Maintenance Mode Toggle -->
-            <div class="flex items-center justify-between p-4 rounded-2xl bg-amber-50 border border-amber-200">
-              <div>
-                <h4 class="font-extrabold text-amber-900 text-sm">Emergency Maintenance Mode</h4>
-                <p class="text-xs text-amber-700">When enabled, the public portal displays an emergency maintenance holding screen while admin CMS remains accessible.</p>
+            <!-- Maintenance Mode Toggle Switch -->
+            <div 
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border transition-all"
+              :class="siteSettings.is_maintenance ? 'bg-amber-500/10 border-amber-500/40 shadow-xs' : 'bg-slate-50 border-slate-200'"
+            >
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <h4 class="font-extrabold text-sm" :class="siteSettings.is_maintenance ? 'text-amber-900' : 'text-slate-900'">
+                    Emergency Maintenance Mode
+                  </h4>
+                  <span 
+                    class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-colors"
+                    :class="siteSettings.is_maintenance ? 'bg-amber-600 text-white shadow-2xs' : 'bg-slate-200 text-slate-700'"
+                  >
+                    {{ siteSettings.is_maintenance ? 'Active (Live on Portal)' : 'Disabled (Portal Public)' }}
+                  </span>
+                </div>
+                <p class="text-xs max-w-xl" :class="siteSettings.is_maintenance ? 'text-amber-800' : 'text-slate-500'">
+                  When enabled, public visitors are shown an emergency maintenance holding screen. The Admin CMS remains fully accessible.
+                </p>
               </div>
-              <input type="checkbox" v-model="siteSettings.is_maintenance" class="w-6 h-6 text-amber-600 rounded cursor-pointer" />
+
+              <!-- Interactive Toggle Switch -->
+              <button 
+                type="button"
+                @click="siteSettings.is_maintenance = !siteSettings.is_maintenance"
+                class="relative inline-flex h-8 w-16 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-xs"
+                :class="siteSettings.is_maintenance ? 'bg-amber-600' : 'bg-slate-300'"
+                role="switch"
+                :aria-checked="siteSettings.is_maintenance"
+              >
+                <span 
+                  class="pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+                  :class="siteSettings.is_maintenance ? 'translate-x-8' : 'translate-x-0'"
+                />
+              </button>
             </div>
 
             <div>
@@ -1771,27 +2867,74 @@ onMounted(() => {
 
           <!-- Tender Fields -->
           <div v-else-if="modalType === 'tender'" class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Reference Number *</label>
-              <input v-model="tenderForm.reference_number" type="text" required placeholder="KMB/NCB/10/2026" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Title (Amharic) *</label>
-              <input v-model="tenderForm.title_am" type="text" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Title (English)</label>
-              <input v-model="tenderForm.title_en" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
-            </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bid Bond (ETB)</label>
-                <input v-model="tenderForm.bid_bond_amount" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Reference Number *</label>
+                <input v-model="tenderForm.reference_number" type="text" required placeholder="KMB/NCB/10/2026" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Closing Date & Time *</label>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Procurement Category *</label>
+                <select v-model="tenderForm.category" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs">
+                  <option value="Goods">Goods (ዕቃዎች)</option>
+                  <option value="Works">Works (ግንባታና እድሳት)</option>
+                  <option value="Services">Services (አገልግሎቶች)</option>
+                  <option value="Consultancy">Consultancy (የማማከር)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bidding Status *</label>
+                <select v-model="tenderForm.status" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs">
+                  <option value="open">Open (ንቁ / ክፍት)</option>
+                  <option value="closed">Closed (የተዘጋ)</option>
+                  <option value="cancelled">Cancelled (የተሰረዘ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tender Title (Amharic - አማርኛ) *</label>
+              <input v-model="tenderForm.title_am" type="text" required placeholder="የጨረታ ርዕስ በአማርኛ..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tender Title (English)</label>
+                <input v-model="tenderForm.title_en" type="text" placeholder="Tender title in English..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tender Title (Afaan Oromoo)</label>
+                <input v-model="tenderForm.title_om" type="text" placeholder="Mata duree caalbaasii..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bid Security Bond (ETB - የጨረታ ማስከበሪያ)</label>
+                <input v-model="tenderForm.bid_bond_amount" type="number" placeholder="50000" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bid Closing Date & Time * (Powers Countdown)</label>
                 <input v-model="tenderForm.closing_datetime" type="datetime-local" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
               </div>
+            </div>
+
+            <!-- Bid Dossier PDF Document Upload -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Bid Dossier / RFP Document (PDF)</label>
+              <div class="flex items-center gap-3">
+                <input 
+                  v-model="tenderForm.document_pdf_path" 
+                  type="text" 
+                  placeholder="/uploads/... or click Upload PDF" 
+                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" 
+                />
+                <label class="px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                  <Upload class="w-4 h-4" />
+                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload PDF' }}</span>
+                  <input type="file" @change="uploadFileFor($event, tenderForm, 'document_pdf_path')" class="hidden" accept=".pdf,.doc,.docx" />
+                </label>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">This enables the "Download Bid Dossier (PDF)" button on the public portal.</p>
             </div>
           </div>
 
@@ -2348,21 +3491,78 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Summaries in 3 Languages -->
+            <!-- Brief Card Summaries in 3 Languages -->
+            <div class="pt-2 border-t border-slate-100">
+              <span class="text-[11px] font-black uppercase text-blue-700 tracking-wider">1. Brief Card Summaries (ለካርድ ማሳያ አጭር መግለጫ)</span>
+            </div>
+
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Description (ዝርዝር መግለጫ)</label>
-              <textarea v-model="destinationForm.summary_am" rows="2" placeholder="የመዳረሻው ዝርዝር መግለጫ..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Short Summary (አጭር ማጠቃለያ) *</label>
+              <textarea v-model="destinationForm.summary_am" rows="2" placeholder="በካርዱ ላይ የሚታይ አጭር ማጠቃለያ..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"></textarea>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Description</label>
-                <textarea v-model="destinationForm.summary_en" rows="2" placeholder="Comprehensive summary for visitors and investors..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Short Summary</label>
+                <textarea v-model="destinationForm.summary_en" rows="2" placeholder="Brief card summary for visitors and investors..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Description</label>
-                <textarea v-model="destinationForm.summary_om" rows="2" placeholder="Ibsa guutuu..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Short Summary</label>
+                <textarea v-model="destinationForm.summary_om" rows="2" placeholder="Ibsa gabaabaa kaardiirratti mul'atu..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
               </div>
+            </div>
+
+            <!-- Full Detailed Inquire Description in 3 Languages -->
+            <div class="pt-2 border-t border-slate-100">
+              <span class="text-[11px] font-black uppercase text-blue-700 tracking-wider">2. Full Detailed Inquire Information (ሙሉ ዝርዝርና መመሪያዎች)</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Full Detail (ዝርዝር መረጃ፣ ታሪክና መመሪያዎች)</label>
+              <textarea v-model="destinationForm.description_am" rows="3" placeholder="ተጠቃሚዎች 'Inquire Details' ሲጫኑ የሚታይ ዝርዝር መረጃ..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Full Detail</label>
+                <textarea v-model="destinationForm.description_en" rows="3" placeholder="Comprehensive detail shown when visitors click 'Inquire Details'..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Full Detail</label>
+                <textarea v-model="destinationForm.description_om" rows="3" placeholder="Ibsa guutuu yeroo 'Inquire Details' cuqaafamu mul'atu..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              </div>
+            </div>
+
+            <!-- Visitor & Inquirer Practical Information -->
+            <div class="pt-2 border-t border-slate-100">
+              <span class="text-[11px] font-black uppercase text-blue-700 tracking-wider">3. Practical Details & Visitor Inquiries (የጉብኝት ሰዓት፣ ክፍያና አድራሻ)</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Visiting / Operating Hours (የስራ/ጉብኝት ሰዓት)</label>
+                <input v-model="destinationForm.visiting_hours" type="text" placeholder="e.g. Daily: 6:00 AM - 6:30 PM" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Admission / Ticket Fee (የመግቢያ ክፍያ)</label>
+                <input v-model="destinationForm.admission_fee" type="text" placeholder="e.g. Free Entry or 50 ETB" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Inquiry Contact Phone (ስልክ)</label>
+                <input v-model="destinationForm.contact_phone" type="text" placeholder="e.g. +251 33 551 0145" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Inquiry Contact Email (ኢሜይል)</label>
+                <input v-model="destinationForm.contact_email" type="email" placeholder="e.g. tourism@kombolchacity.gov.et" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Key Features & Amenities (ልዩ መገለጫዎች - በነጠላ ሰረዝ ይለዩ)</label>
+              <input v-model="destinationForm.features" type="text" placeholder="e.g. Hiking Trails, Bird Watching, Parking, Scenic Viewpoint, Camping" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
             </div>
           </div>
 
@@ -2370,6 +3570,204 @@ onMounted(() => {
             <button type="button" @click="modalType = ''; editingId = null" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
             <button type="submit" :disabled="submitting" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
               {{ submitting ? 'Saving...' : (editingId ? 'Update & Save Changes' : 'Confirm & Publish Live') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PROFILE & SECURITY SETTINGS MODAL (For All Staff: Authors, Editors, Super Admins) -->
+    <div v-if="profileModalOpen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <div>
+            <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
+              <User class="w-5 h-5 text-blue-600" />
+              <span>Account Profile & Security</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Manage your personal credentials, contact info, avatar and password.</p>
+          </div>
+          <button @click="profileModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-200 px-6 bg-white">
+          <button 
+            type="button"
+            @click="profileActiveTab = 'details'"
+            :class="[
+              'py-3.5 px-4 font-bold text-xs border-b-2 transition-colors cursor-pointer flex items-center gap-2',
+              profileActiveTab === 'details' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+            ]"
+          >
+            <User class="w-4 h-4" />
+            <span>Profile Details</span>
+          </button>
+          <button 
+            type="button"
+            @click="profileActiveTab = 'password'"
+            :class="[
+              'py-3.5 px-4 font-bold text-xs border-b-2 transition-colors cursor-pointer flex items-center gap-2',
+              profileActiveTab === 'password' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+            ]"
+          >
+            <Lock class="w-4 h-4" />
+            <span>Change Password</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Profile Details Form -->
+        <form v-if="profileActiveTab === 'details'" @submit.prevent="handleSaveProfile" class="p-6 space-y-4">
+          <!-- Avatar Preview & Upload -->
+          <div class="flex items-center gap-5 pb-4 border-b border-slate-100">
+            <div class="w-20 h-20 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 relative group">
+              <img v-if="profileForm.avatar_path" :src="profileForm.avatar_path" class="w-full h-full object-cover" />
+              <div v-else class="text-2xl font-black text-slate-400">
+                {{ (profileForm.name || 'U').substring(0, 2).toUpperCase() }}
+              </div>
+            </div>
+            <div class="space-y-1.5 flex-grow">
+              <label class="block text-xs font-bold text-slate-700 uppercase">Profile Photo / Avatar</label>
+              <div class="flex gap-2">
+                <label class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold cursor-pointer transition-colors flex items-center gap-1.5">
+                  <Camera class="w-3.5 h-3.5" />
+                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload Photo' }}</span>
+                  <input type="file" @change="uploadFileFor($event, profileForm, 'avatar_path')" accept="image/*" class="hidden" />
+                </label>
+                <button v-if="profileForm.avatar_path" type="button" @click="profileForm.avatar_path = ''" class="px-2.5 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 text-xs font-bold">
+                  Remove
+                </button>
+              </div>
+              <input v-model="profileForm.avatar_path" type="text" placeholder="Or enter image URL..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name</label>
+              <input v-model="profileForm.name" type="text" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Official Email</label>
+              <input v-model="profileForm.email" type="email" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
+              <input v-model="profileForm.phone" type="text" placeholder="+251 9X XXX XXXX" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Assigned Role</label>
+              <div class="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold uppercase text-slate-700">
+                {{ roleLabel }}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="profileLoading || uploadingFile" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
+              {{ profileLoading ? 'Saving...' : 'Save Profile Changes' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Tab 2: Change Password Form -->
+        <form v-else-if="profileActiveTab === 'password'" @submit.prevent="handleChangePassword" class="p-6 space-y-4">
+          <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2.5">
+            <AlertCircle class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <span>For security reasons, changing your password requires verifying your current password. Passwords must be at least 8 characters.</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Current Password</label>
+            <input v-model="passwordForm.current_password" type="password" required placeholder="Enter current password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
+              <input v-model="passwordForm.new_password" type="password" required minlength="8" placeholder="At least 8 characters" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm New Password</label>
+              <input v-model="passwordForm.new_password_confirmation" type="password" required minlength="8" placeholder="Repeat new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="profileLoading" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
+              {{ profileLoading ? 'Updating...' : 'Update Password' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- SUPER ADMIN RESET STAFF PASSWORD OVERRIDE MODAL -->
+    <div v-if="resetStaffModalOpen && targetStaffUser" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 bg-amber-50/50 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+              <KeyRound class="w-5 h-5" />
+            </div>
+            <div>
+              <h3 class="text-base font-black text-slate-900">Reset Staff Password</h3>
+              <p class="text-xs text-slate-500">Super Administrator override</p>
+            </div>
+          </div>
+          <button @click="resetStaffModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <form @submit.prevent="handleAdminResetPassword" class="p-6 space-y-4">
+          <!-- Target Staff Info Card -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">Staff Name:</span>
+              <span class="font-extrabold text-slate-900">{{ targetStaffUser.name }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">Email:</span>
+              <span class="font-mono text-slate-700">{{ targetStaffUser.email }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">Role:</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-700">{{ targetStaffUser.role }}</span>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-700 uppercase">New Password</label>
+              <button type="button" @click="generateRandomPassword" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+                <span>Generate Strong Password</span>
+              </button>
+            </div>
+            <input v-model="resetStaffForm.password" type="text" required minlength="8" placeholder="Enter or generate password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm New Password</label>
+            <input v-model="resetStaffForm.password_confirmation" type="text" required minlength="8" placeholder="Repeat new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+          </div>
+
+          <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[11px] leading-relaxed">
+            <strong>Security Notice:</strong> Performing this reset will instantly terminate all existing login sessions for this account, requiring the staff member to sign in with this new password.
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <button type="button" @click="resetStaffModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="resetStaffLoading" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
+              {{ resetStaffLoading ? 'Resetting...' : 'Set New Password' }}
             </button>
           </div>
         </form>

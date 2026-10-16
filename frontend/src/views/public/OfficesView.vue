@@ -8,12 +8,22 @@ const langStore = useLanguageStore()
 const offices = ref([])
 const searchQuery = ref('')
 const loading = ref(true)
+const page = ref(1)
+const perPage = ref(9)
+
+const totalPages = computed(() => Math.ceil(offices.value.length / perPage.value) || 1)
+
+const paginatedOffices = computed(() => {
+  const start = (page.value - 1) * perPage.value
+  return offices.value.slice(start, start + perPage.value)
+})
 
 async function fetchOffices() {
   loading.value = true
+  page.value = 1
   try {
     const res = await api.get('/offices', { params: { search: searchQuery.value } })
-    offices.value = res.data
+    offices.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
   } catch (err) {
     console.error('Failed to load offices:', err)
   } finally {
@@ -65,46 +75,84 @@ onMounted(() => {
     </div>
 
     <!-- Offices Grid -->
-    <div v-else-if="offices.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        v-for="office in offices" 
-        :key="office.id" 
-        class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between"
-      >
-        <div>
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
-              <Building2 class="w-5 h-5" />
+    <div v-else-if="offices.length > 0" class="space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div 
+          v-for="office in paginatedOffices" 
+          :key="office.id" 
+          class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between"
+        >
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                <Building2 class="w-5 h-5" />
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">Sector Bureau</span>
+                <h3 class="text-base font-bold text-slate-900 leading-snug">
+                  {{ langStore.currentLang === 'am' ? office.name_am : (langStore.currentLang === 'om' ? office.name_om : office.name_en) }}
+                </h3>
+              </div>
             </div>
-            <div>
-              <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">Sector Bureau</span>
-              <h3 class="text-base font-bold text-slate-900 leading-snug">
-                {{ langStore.currentLang === 'am' ? office.name_am : (langStore.currentLang === 'om' ? office.name_om : office.name_en) }}
-              </h3>
+
+            <div class="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-3">
+              <div class="flex items-center gap-2">
+                <MapPin class="w-4 h-4 text-slate-400 shrink-0" />
+                <span>{{ office.building_location_am }}</span>
+                <span v-if="office.room_number" class="ml-auto font-mono font-semibold px-2 py-0.5 rounded bg-slate-100">Room {{ office.room_number }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <Clock class="w-4 h-4 text-slate-400 shrink-0" />
+                <span>{{ langStore.currentLang === 'am' ? office.working_hours_am : (langStore.currentLang === 'om' ? office.working_hours_om : office.working_hours_en) }}</span>
+              </div>
             </div>
           </div>
 
-          <div class="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-3">
-            <div class="flex items-center gap-2">
-              <MapPin class="w-4 h-4 text-slate-400 shrink-0" />
-              <span>{{ office.building_location_am }}</span>
-              <span v-if="office.room_number" class="ml-auto font-mono font-semibold px-2 py-0.5 rounded bg-slate-100">Room {{ office.room_number }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <Clock class="w-4 h-4 text-slate-400 shrink-0" />
-              <span>{{ langStore.currentLang === 'am' ? office.working_hours_am : (langStore.currentLang === 'om' ? office.working_hours_om : office.working_hours_en) }}</span>
-            </div>
+          <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+            <a :href="'tel:' + office.phone" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700">
+              <Phone class="w-3.5 h-3.5" />
+              <span>{{ office.phone }}</span>
+            </a>
+            <a v-if="office.email" :href="'mailto:' + office.email" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600">
+              <Mail class="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
+      </div>
 
-        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-          <a :href="'tel:' + office.phone" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700">
-            <Phone class="w-3.5 h-3.5" />
-            <span>{{ office.phone }}</span>
-          </a>
-          <a v-if="office.email" :href="'mailto:' + office.email" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600">
-            <Mail class="w-3.5 h-3.5" />
-          </a>
+      <!-- Public Pagination Controls -->
+      <div v-if="offices.length > perPage" class="p-4 px-6 bg-white rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+        <div>
+          Showing <span class="font-bold text-slate-900">{{ (page - 1) * perPage + 1 }}</span> to 
+          <span class="font-bold text-slate-900">{{ Math.min(page * perPage, offices.length) }}</span> of 
+          <span class="font-bold text-slate-900">{{ offices.length }}</span> offices
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button 
+            :disabled="page === 1" 
+            @click="page--; window.scrollTo({ top: 0, behavior: 'smooth' })"
+            class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+          >
+            Previous
+          </button>
+          <button 
+            v-for="p in totalPages" 
+            :key="p"
+            @click="page = p; window.scrollTo({ top: 0, behavior: 'smooth' })"
+            :class="[
+              'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+              page === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+            ]"
+          >
+            {{ p }}
+          </button>
+          <button 
+            :disabled="page === totalPages" 
+            @click="page++; window.scrollTo({ top: 0, behavior: 'smooth' })"
+            class="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

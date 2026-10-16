@@ -26,10 +26,16 @@ class PublicApiController extends Controller
             ->orderBy('order')
             ->get();
 
+        $settings = DB::table('site_settings')->first();
+        if ($settings) {
+            $settings->is_maintenance = (bool)$settings->is_maintenance;
+        }
+
         return response()->json([
             'emergency_contacts' => $emergencyContacts,
             'hero_slides' => $heroSlides,
             'sub_cities' => $subCities,
+            'settings' => $settings,
         ]);
     }
 
@@ -59,7 +65,7 @@ class PublicApiController extends Controller
         ]);
     }
 
-    // 22 Municipal Offices with Search Filter
+    // Municipal Offices with Search Filter and optional Pagination
     public function getOffices(Request $request)
     {
         $query = DB::table('offices')->where('is_active', true);
@@ -71,6 +77,7 @@ class PublicApiController extends Controller
                   ->orWhere('name_en', 'like', $search)
                   ->orWhere('name_om', 'like', $search)
                   ->orWhere('phone', 'like', $search)
+                  ->orWhere('room_number', 'like', $search)
                   ->orWhere('building_location_am', 'like', $search);
             });
         }
@@ -79,7 +86,14 @@ class PublicApiController extends Controller
             $query->where('sub_city_id', $request->sub_city_id);
         }
 
-        $offices = $query->orderBy('order')->get();
+        $query->orderBy('order');
+
+        if ($request->has('per_page')) {
+            $perPage = max(1, min(100, (int)$request->per_page));
+            return response()->json($query->paginate($perPage));
+        }
+
+        $offices = $query->get();
         return response()->json($offices);
     }
 
@@ -136,7 +150,7 @@ class PublicApiController extends Controller
         return response()->json($vacancies);
     }
 
-    // News Articles
+    // News Articles with Category, Search and Pagination
     public function getNews(Request $request)
     {
         $query = DB::table('news_articles')->where('status', 'published');
@@ -145,7 +159,19 @@ class PublicApiController extends Controller
             $query->where('category', $request->category);
         }
 
-        $news = $query->orderBy('published_at', 'desc')->paginate(9);
+        if ($request->has('search') && !empty($request->search)) {
+            $search = '%' . $request->search . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('title_am', 'like', $search)
+                  ->orWhere('title_en', 'like', $search)
+                  ->orWhere('title_om', 'like', $search)
+                  ->orWhere('content_am', 'like', $search)
+                  ->orWhere('content_en', 'like', $search);
+            });
+        }
+
+        $perPage = max(1, min(50, (int)$request->input('per_page', 9)));
+        $news = $query->orderBy('published_at', 'desc')->paginate($perPage);
         return response()->json($news);
     }
 

@@ -121,11 +121,7 @@ const langStore = useLanguageStore()
           </div>
         </div>
 
-        <div class="pt-2">
-          <router-link to="/admin/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors">
-            Staff Portal Login
-          </router-link>
-        </div>
+      
       </div>
     </div>
 

@@ -68,81 +68,105 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login'
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/logout', [AdminAuthController::class, 'logout']);
     Route::get('/admin/me', [AdminAuthController::class, 'me']);
-
-    // Admin Dashboard & Operations
     Route::get('/admin/stats', [AdminContentController::class, 'getDashboardStats']);
-    Route::get('/admin/messages', [AdminContentController::class, 'getContactMessages']);
-    Route::patch('/admin/messages/{id}', [AdminContentController::class, 'updateMessageStatus']);
-    
-    // Articles Management
-    Route::post('/admin/news', [AdminContentController::class, 'storeNews']);
-    Route::put('/admin/news/{id}', [AdminContentController::class, 'updateNews']);
-    Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);
 
-    // Tenders Management
-    Route::post('/admin/tenders', [AdminContentController::class, 'storeTender']);
-    Route::put('/admin/tenders/{id}', [AdminContentController::class, 'updateTender']);
-    Route::delete('/admin/tenders/{id}', [AdminContentController::class, 'deleteTender']);
+    // Actor Profile Management (Self: Name, Email, Phone, Avatar & Password)
+    Route::put('/admin/profile', [AdminAuthController::class, 'updateProfile']);
+    Route::put('/admin/password', [AdminAuthController::class, 'updatePassword']);
 
-    // Vacancies Management
-    Route::post('/admin/vacancies', [AdminContentController::class, 'storeVacancy']);
-    Route::put('/admin/vacancies/{id}', [AdminContentController::class, 'updateVacancy']);
-    Route::delete('/admin/vacancies/{id}', [AdminContentController::class, 'deleteVacancy']);
-
-    // Services Management
-    Route::post('/admin/services', [AdminContentController::class, 'storeService']);
-    Route::put('/admin/services/{id}', [AdminContentController::class, 'updateService']);
-    Route::delete('/admin/services/{id}', [AdminContentController::class, 'deleteService']);
-
-    // Projects Management
-    Route::post('/admin/projects', [AdminContentController::class, 'storeProject']);
-    Route::put('/admin/projects/{id}', [AdminContentController::class, 'updateProject']);
-    Route::patch('/admin/projects/{id}/progress', [AdminContentController::class, 'updateProjectProgress']);
-    Route::delete('/admin/projects/{id}', [AdminContentController::class, 'deleteProject']);
-
-    // Resources Management
-    Route::post('/admin/resources', [AdminContentController::class, 'storeResource']);
-    Route::put('/admin/resources/{id}', [AdminContentController::class, 'updateResource']);
-    Route::delete('/admin/resources/{id}', [AdminContentController::class, 'deleteResource']);
-
-    // Mayor & Leadership Management
-    Route::put('/admin/mayor', [AdminContentController::class, 'updateMayorProfile']);
-    Route::post('/admin/leadership', [AdminContentController::class, 'storeLeadershipMember']);
-    Route::put('/admin/leadership/{id}', [AdminContentController::class, 'updateLeadershipMember']);
-    Route::delete('/admin/leadership/{id}', [AdminContentController::class, 'deleteLeadershipMember']);
-
-    // Municipal Offices Management
-    Route::post('/admin/offices', [AdminContentController::class, 'storeOffice']);
-    Route::put('/admin/offices/{id}', [AdminContentController::class, 'updateOffice']);
-    Route::delete('/admin/offices/{id}', [AdminContentController::class, 'deleteOffice']);
-
-    // Site Settings & Maintenance Mode
-    Route::get('/admin/settings', [AdminContentController::class, 'getSiteSettings']);
-    Route::post('/admin/settings', [AdminContentController::class, 'updateSiteSettings']);
-
-    // Super Admin Only: Staff Management
-    Route::get('/admin/staff', [AdminContentController::class, 'getStaffUsers']);
-    Route::post('/admin/staff', [AdminContentController::class, 'createStaffUser']);
-    Route::patch('/admin/staff/{id}/toggle', [AdminContentController::class, 'toggleStaffStatus']);
-
-    // Media Upload (Photos, Videos, PDFs)
+    // Media Upload (Photos, Videos, PDFs) - Available to all authenticated staff
     Route::post('/admin/upload', [AdminContentController::class, 'uploadMedia']);
 
-    // Gallery Management (Images & Videos)
-    Route::get('/admin/gallery', [AdminContentController::class, 'getGallery']);
-    Route::post('/admin/gallery', [AdminContentController::class, 'storeGalleryItem']);
-    Route::put('/admin/gallery/{id}', [AdminContentController::class, 'updateGalleryItem']);
-    Route::delete('/admin/gallery/{id}', [AdminContentController::class, 'deleteGalleryItem']);
+    // ----------------------------------------------------
+    // AUTHOR, EDITOR & SUPER_ADMIN (Content Creation & Drafting)
+    // ----------------------------------------------------
+    Route::middleware('role:author,editor,super_admin')->group(function () {
+        // Articles Management (Create & Edit)
+        Route::post('/admin/news', [AdminContentController::class, 'storeNews']);
+        Route::put('/admin/news/{id}', [AdminContentController::class, 'updateNews']);
 
-    // Hero Slides Management
-    Route::get('/admin/hero-slides', [AdminContentController::class, 'getHeroSlides']);
-    Route::post('/admin/hero-slides', [AdminContentController::class, 'storeHeroSlide']);
-    Route::put('/admin/hero-slides/{id}', [AdminContentController::class, 'updateHeroSlide']);
-    Route::delete('/admin/hero-slides/{id}', [AdminContentController::class, 'deleteHeroSlide']);
+        // Gallery Management (Upload & Edit)
+        Route::get('/admin/gallery', [AdminContentController::class, 'getGallery']);
+        Route::post('/admin/gallery', [AdminContentController::class, 'storeGalleryItem']);
+        Route::put('/admin/gallery/{id}', [AdminContentController::class, 'updateGalleryItem']);
 
-    // Destinations & Tourism Management
-    Route::get('/admin/destinations', [AdminContentController::class, 'getDestinations']);
-    Route::post('/admin/destinations', [AdminContentController::class, 'storeDestination']);
-    Route::put('/admin/destinations/{id}', [AdminContentController::class, 'updateDestination']);
-    Route::delete('/admin/destinations/{id}', [AdminContentController::class, 'deleteDestination']);
+        // Resources Management (Create & Edit)
+        Route::post('/admin/resources', [AdminContentController::class, 'storeResource']);
+        Route::put('/admin/resources/{id}', [AdminContentController::class, 'updateResource']);
+    });
+
+    // ----------------------------------------------------
+    // EDITOR & SUPER_ADMIN (Editorial, Public Services, Destinations, Inquiries & Deletion)
+    // ----------------------------------------------------
+    Route::middleware('role:editor,super_admin')->group(function () {
+        // Content Deletion
+        Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);
+        Route::delete('/admin/gallery/{id}', [AdminContentController::class, 'deleteGalleryItem']);
+        Route::delete('/admin/resources/{id}', [AdminContentController::class, 'deleteResource']);
+
+        // Citizen Inquiries & Feedback
+        Route::get('/admin/messages', [AdminContentController::class, 'getContactMessages']);
+        Route::patch('/admin/messages/{id}', [AdminContentController::class, 'updateMessageStatus']);
+
+        // Tenders Management
+        Route::post('/admin/tenders', [AdminContentController::class, 'storeTender']);
+        Route::put('/admin/tenders/{id}', [AdminContentController::class, 'updateTender']);
+        Route::delete('/admin/tenders/{id}', [AdminContentController::class, 'deleteTender']);
+
+        // Vacancies Management
+        Route::post('/admin/vacancies', [AdminContentController::class, 'storeVacancy']);
+        Route::put('/admin/vacancies/{id}', [AdminContentController::class, 'updateVacancy']);
+        Route::delete('/admin/vacancies/{id}', [AdminContentController::class, 'deleteVacancy']);
+
+        // Services Management
+        Route::post('/admin/services', [AdminContentController::class, 'storeService']);
+        Route::put('/admin/services/{id}', [AdminContentController::class, 'updateService']);
+        Route::delete('/admin/services/{id}', [AdminContentController::class, 'deleteService']);
+
+        // Projects Management
+        Route::post('/admin/projects', [AdminContentController::class, 'storeProject']);
+        Route::put('/admin/projects/{id}', [AdminContentController::class, 'updateProject']);
+        Route::patch('/admin/projects/{id}/progress', [AdminContentController::class, 'updateProjectProgress']);
+
+        // Mayor & Leadership Management
+        Route::put('/admin/mayor', [AdminContentController::class, 'updateMayorProfile']);
+        Route::post('/admin/leadership', [AdminContentController::class, 'storeLeadershipMember']);
+        Route::put('/admin/leadership/{id}', [AdminContentController::class, 'updateLeadershipMember']);
+
+        // Municipal Offices Directory
+        Route::post('/admin/offices', [AdminContentController::class, 'storeOffice']);
+        Route::put('/admin/offices/{id}', [AdminContentController::class, 'updateOffice']);
+
+        // Hero Slides Management
+        Route::get('/admin/hero-slides', [AdminContentController::class, 'getHeroSlides']);
+        Route::post('/admin/hero-slides', [AdminContentController::class, 'storeHeroSlide']);
+        Route::put('/admin/hero-slides/{id}', [AdminContentController::class, 'updateHeroSlide']);
+        Route::delete('/admin/hero-slides/{id}', [AdminContentController::class, 'deleteHeroSlide']);
+
+        // Destinations & Tourism Spotlight Management
+        Route::get('/admin/destinations', [AdminContentController::class, 'getDestinations']);
+        Route::post('/admin/destinations', [AdminContentController::class, 'storeDestination']);
+        Route::put('/admin/destinations/{id}', [AdminContentController::class, 'updateDestination']);
+        Route::delete('/admin/destinations/{id}', [AdminContentController::class, 'deleteDestination']);
+    });
+
+    // ----------------------------------------------------
+    // SUPER ADMIN ONLY (Staff Administration, System Settings & Structural Deletion)
+    // ----------------------------------------------------
+    Route::middleware('role:super_admin')->group(function () {
+        // Staff Management
+        Route::get('/admin/staff', [AdminContentController::class, 'getStaffUsers']);
+        Route::post('/admin/staff', [AdminContentController::class, 'createStaffUser']);
+        Route::patch('/admin/staff/{id}/toggle', [AdminContentController::class, 'toggleStaffStatus']);
+        Route::patch('/admin/staff/{id}/reset-password', [AdminContentController::class, 'adminResetStaffPassword']);
+
+        // Site Settings & Maintenance Mode
+        Route::get('/admin/settings', [AdminContentController::class, 'getSiteSettings']);
+        Route::post('/admin/settings', [AdminContentController::class, 'updateSiteSettings']);
+
+        // Structural Entity Deletions
+        Route::delete('/admin/offices/{id}', [AdminContentController::class, 'deleteOffice']);
+        Route::delete('/admin/leadership/{id}', [AdminContentController::class, 'deleteLeadershipMember']);
+        Route::delete('/admin/projects/{id}', [AdminContentController::class, 'deleteProject']);
+    });
 });

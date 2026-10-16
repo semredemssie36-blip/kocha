@@ -1,5 +1,6 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useLanguageStore } from '@/stores/language'
 import { api } from '@/services/api'
 import { 
@@ -15,6 +16,7 @@ import {
   PhoneCall
 } from 'lucide-vue-next'
 
+const route = useRoute()
 const langStore = useLanguageStore()
 
 const form = reactive({
@@ -24,6 +26,16 @@ const form = reactive({
   sub_city: 'Central Municipality (ዋና ማዘጋጃ ቤት)',
   subject: '',
   message: ''
+})
+
+onMounted(() => {
+  if (route.query.inquiry_target) {
+    const target = route.query.inquiry_target
+    form.subject = `Inquiry: ${target}`
+    form.message = langStore.currentLang === 'am' 
+      ? `ሰላም፣ ስለ ${target} ተጨማሪ የጉብኝትና የማዘጋጃ ቤት መረጃ ለማግኘት እፈልጋለሁ።`
+      : `Greetings, I would like to make an inquiry regarding visiting guidelines and municipal coordination for "${target}".`
+  }
 })
 
 const submitting = ref(false)

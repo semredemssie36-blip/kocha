@@ -3,28 +3,59 @@ import { ref, onMounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import api from '@/services/api'
 import SkeletonCard from '@/components/common/SkeletonCard.vue'
-import { TrendingUp, Clock, Eye, ArrowRight, X, ChevronRight, Share2 } from 'lucide-vue-next'
+import { TrendingUp, Clock, Eye, ArrowRight, X, ChevronRight, Share2, Search, ChevronLeft } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
 const newsArticles = ref([])
 const activeCategory = ref('all')
+const searchQuery = ref('')
 const selectedArticle = ref(null)
 const loading = ref(true)
 
+const currentPage = ref(1)
+const lastPage = ref(1)
+const totalArticles = ref(0)
+const perPage = ref(9)
+
 const categories = ['all', 'Development', 'Governance', 'Logistics', 'Social']
 
-async function fetchNews() {
+async function fetchNews(page = 1) {
   loading.value = true
+  currentPage.value = page
   try {
-    const res = await api.get('/news', {
-      params: { category: activeCategory.value }
-    })
-    newsArticles.value = res.data.data || []
+    const params = {
+      category: activeCategory.value,
+      page: page,
+      per_page: perPage.value
+    }
+    if (searchQuery.value && searchQuery.value.trim() !== '') {
+      params.search = searchQuery.value.trim()
+    }
+
+    const res = await api.get('/news', { params })
+    if (res.data && res.data.data) {
+      newsArticles.value = res.data.data
+      currentPage.value = res.data.current_page || 1
+      lastPage.value = res.data.last_page || 1
+      totalArticles.value = res.data.total ?? res.data.data.length
+    } else if (Array.isArray(res.data)) {
+      newsArticles.value = res.data
+      currentPage.value = 1
+      lastPage.value = 1
+      totalArticles.value = res.data.length
+    } else {
+      newsArticles.value = []
+      totalArticles.value = 0
+    }
   } catch (err) {
     console.error('Failed to load news:', err)
   } finally {
     loading.value = false
   }
+}
+
+function handleSearch() {
+  fetchNews(1)
 }
 
 function openArticle(article) {
@@ -33,7 +64,13 @@ function openArticle(article) {
 
 function filterCategory(cat) {
   activeCategory.value = cat
-  fetchNews()
+  fetchNews(1)
+}
+
+function changePage(p) {
+  if (p < 1 || p > lastPage.value || p === currentPage.value) return
+  fetchNews(p)
+  window.scrollTo({ top: 120, behavior: 'smooth' })
 }
 
 function getNewsTitle(news) {
@@ -45,7 +82,7 @@ function getNewsTitle(news) {
 }
 
 onMounted(() => {
-  fetchNews()
+  fetchNews(1)
 })
 </script>
 
@@ -53,31 +90,60 @@ onMounted(() => {
   <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
     <!-- Header Banner: Clean White Official Style -->
     <div class="bg-white border-b border-slate-200 pb-8 mb-10">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-200">
-        Communications & Press Bureau
-      </div>
-      <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-2">
-        {{ langStore.t('nav.news') }}
-      </h1>
-      <p class="text-slate-600 text-base max-w-2xl mb-6">
-        Official press briefings, municipal announcements, community reports, and development milestones in Kombolcha City.
-      </p>
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-200">
+            Communications & Press Bureau
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-2">
+            {{ langStore.t('nav.news') }}
+          </h1>
+          <p class="text-slate-600 text-base max-w-2xl">
+            Official press briefings, municipal announcements, community reports, and development milestones in Kombolcha City.
+          </p>
+        </div>
 
-      <!-- Category Filter Pills -->
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          v-for="cat in categories"
-          :key="cat"
-          @click="filterCategory(cat)"
-          :class="[
-            'px-3.5 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer',
-            activeCategory === cat 
-              ? 'bg-blue-700 text-white shadow-2xs' 
-              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
-          ]"
-        >
-          {{ cat }}
-        </button>
+        <!-- Search Bar -->
+        <div class="w-full md:w-80">
+          <form @submit.prevent="handleSearch" class="relative">
+            <Search class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              placeholder="Search news & reports..." 
+              class="w-full pl-10 pr-20 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+            />
+            <button 
+              type="submit" 
+              class="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition shadow-xs"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills & Result Stats -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            v-for="cat in categories"
+            :key="cat"
+            @click="filterCategory(cat)"
+            :class="[
+              'px-3.5 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer',
+              activeCategory === cat 
+                ? 'bg-blue-700 text-white shadow-2xs' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+            ]"
+          >
+            {{ cat }}
+          </button>
+        </div>
+
+        <div v-if="!loading" class="text-xs font-semibold text-slate-500">
+          Found <span class="text-slate-900 font-bold">{{ totalArticles }}</span> articles
+        </div>
       </div>
     </div>
 
@@ -136,11 +202,54 @@ onMounted(() => {
       </article>
     </div>
 
+    <!-- Pagination Controls -->
+    <div v-if="!loading && totalArticles > perPage" class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <div class="text-xs font-semibold text-slate-500">
+        Showing <span class="text-slate-900 font-bold">{{ ((currentPage - 1) * perPage) + 1 }}</span> to <span class="text-slate-900 font-bold">{{ Math.min(currentPage * perPage, totalArticles) }}</span> of <span class="text-slate-900 font-bold">{{ totalArticles }}</span> articles
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button
+          @click="changePage(currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+        >
+          <ChevronLeft class="w-4 h-4" />
+          Previous
+        </button>
+
+        <div class="flex items-center gap-1">
+          <button
+            v-for="p in lastPage"
+            :key="p"
+            @click="changePage(p)"
+            :class="[
+              'w-8 h-8 rounded-lg text-xs font-bold transition flex items-center justify-center cursor-pointer',
+              currentPage === p
+                ? 'bg-blue-700 text-white shadow-2xs font-black'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            ]"
+          >
+            {{ p }}
+          </button>
+        </div>
+
+        <button
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === lastPage"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+        >
+          Next
+          <ChevronRight class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+
     <!-- Empty News -->
-    <div v-else class="text-center py-20 bg-white rounded-2xl border border-slate-200">
+    <div v-else-if="!loading && newsArticles.length === 0" class="text-center py-20 bg-white rounded-2xl border border-slate-200">
       <TrendingUp class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-      <h4 class="text-base font-bold text-slate-700">No news articles in this category yet</h4>
-      <p class="text-xs text-slate-400 mt-1">Check back shortly or select another category filter.</p>
+      <h4 class="text-base font-bold text-slate-700">No news articles found</h4>
+      <p class="text-xs text-slate-400 mt-1">Try adjusting your search query or select another category filter.</p>
     </div>
 
     <!-- Article Reader Lightbox Modal -->
