@@ -285,6 +285,11 @@ class AdminContentController extends Controller
             'deadline' => 'required|date',
         ]);
 
+        $status = $request->input('status');
+        if (!$status) {
+            $status = (strtotime($validated['deadline']) < strtotime(date('Y-m-d'))) ? 'closed' : 'open';
+        }
+
         $id = DB::table('vacancies')->insertGetId([
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
@@ -294,7 +299,7 @@ class AdminContentController extends Controller
             'salary_grade' => $validated['salary_grade'] ?? 'Government Scale',
             'requirements_am' => $validated['requirements_am'],
             'deadline' => $validated['deadline'],
-            'status' => 'open',
+            'status' => $status,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -313,7 +318,13 @@ class AdminContentController extends Controller
             'salary_grade' => 'nullable|string',
             'requirements_am' => 'required|string',
             'deadline' => 'required|date',
+            'status' => 'nullable|in:open,closed',
         ]);
+
+        $status = $validated['status'] ?? null;
+        if (!$status) {
+            $status = (strtotime($validated['deadline']) < strtotime(date('Y-m-d'))) ? 'closed' : 'open';
+        }
 
         DB::table('vacancies')->where('id', $id)->update([
             'title_am' => $validated['title_am'],
@@ -324,6 +335,7 @@ class AdminContentController extends Controller
             'salary_grade' => $validated['salary_grade'] ?? 'Government Scale',
             'requirements_am' => $validated['requirements_am'],
             'deadline' => $validated['deadline'],
+            'status' => $status,
             'updated_at' => now(),
         ]);
 

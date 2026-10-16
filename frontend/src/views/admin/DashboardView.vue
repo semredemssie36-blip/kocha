@@ -2241,6 +2241,16 @@ onUnmounted(() => {
               <div v-for="job in paginatedVacancies" :key="job.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
                 <div>
                   <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase mr-2">{{ job.employment_type }}</span>
+                  <span 
+                    :class="[
+                      'px-2 py-0.5 rounded-full text-[10px] font-black uppercase mr-2 border',
+                      (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date())
+                        ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    ]"
+                  >
+                    {{ (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date()) ? 'Closed' : 'Open' }}
+                  </span>
                   <span class="text-xs font-mono text-slate-500 font-bold">Code: {{ job.position_code }}</span>
                   <h4 class="font-bold text-base text-slate-900 mt-1">{{ job.title_en || job.title_am }}</h4>
                   <div class="text-xs text-slate-500 mt-1">Scale: {{ job.salary_grade }} | Deadline: {{ job.deadline }}</div>

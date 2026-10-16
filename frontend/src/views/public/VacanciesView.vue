@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import { api } from '@/services/api'
 import { 
@@ -10,12 +10,15 @@ import {
   Building, 
   FileText,
   BadgePercent,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  Filter
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
 const loading = ref(true)
 const vacancies = ref([])
+const statusFilter = ref('all') // 'all' | 'open' | 'closed'
 
 const fetchVacancies = async () => {
   loading.value = true
@@ -50,14 +53,61 @@ const getApplicationGuide = (v) => {
   return v.application_guide_en
 }
 
-const getDaysRemaining = (deadlineStr) => {
-  if (!deadlineStr) return 0
-  const deadline = new Date(deadlineStr)
-  const now = new Date()
-  const diffTime = deadline - now
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays > 0 ? diffDays : 0
+// Real-time calculation: Check if vacancy has closed
+const isJobClosed = (job) => {
+  if (job.status === 'closed') return true
+  if (!job.deadline) return false
+  // A deadline date like '2026-10-14' closes at 23:59:59 on that day
+  const deadlineDate = new Date(job.deadline.includes('T') || job.deadline.includes(' ') ? job.deadline : job.deadline + 'T23:59:59')
+  return deadlineDate.getTime() <= Date.now()
 }
+
+// Real-time calculation: Accurate remaining days or closed status
+const getDeadlineBadgeText = (job) => {
+  if (job.status === 'closed') {
+    if (langStore.currentLang === 'am') return 'የተዘጋ'
+    if (langStore.currentLang === 'om') return 'Cufameera'
+    return 'Closed'
+  }
+  if (!job.deadline) {
+    if (langStore.currentLang === 'am') return 'ክፍት ነው'
+    if (langStore.currentLang === 'om') return 'Bantamaa'
+    return 'Open'
+  }
+
+  const deadlineDate = new Date(job.deadline.includes('T') || job.deadline.includes(' ') ? job.deadline : job.deadline + 'T23:59:59')
+  const diffMs = deadlineDate.getTime() - Date.now()
+
+  if (diffMs <= 0) {
+    if (langStore.currentLang === 'am') return 'የማመልከቻ ጊዜው አልፏል (የተዘጋ)'
+    if (langStore.currentLang === 'om') return 'Yeroon Darbeera (Cufameera)'
+    return 'Application Closed'
+  }
+
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+  if (diffDays <= 1) {
+    if (langStore.currentLang === 'am') return 'ዛሬ ያበቃል (የመጨረሻ ቀን)'
+    if (langStore.currentLang === 'om') return 'Har\'a Xumurama'
+    return 'Closes Today (Last Day)'
+  }
+
+  if (langStore.currentLang === 'am') return `${diffDays} ቀናት ቀርተዋል`
+  if (langStore.currentLang === 'om') return `Guyyoota ${diffDays} hafe`
+  return `${diffDays} days left`
+}
+
+const openCount = computed(() => vacancies.value.filter(j => !isJobClosed(j)).length)
+const closedCount = computed(() => vacancies.value.filter(j => isJobClosed(j)).length)
+
+const filteredVacanciesList = computed(() => {
+  if (statusFilter.value === 'open') {
+    return vacancies.value.filter(j => !isJobClosed(j))
+  }
+  if (statusFilter.value === 'closed') {
+    return vacancies.value.filter(j => isJobClosed(j))
+  }
+  return vacancies.value
+})
 
 onMounted(() => {
   fetchVacancies()
@@ -67,7 +117,7 @@ onMounted(() => {
 <template>
   <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
     <!-- Header Banner: Clean White Official Style -->
-    <div class="bg-white border-b border-slate-200 pb-8 mb-10">
+    <div class="bg-white border-b border-slate-200 pb-8 mb-8">
       <div class="max-w-3xl">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-200">
           <Briefcase class="w-3.5 h-3.5 text-blue-700" />
@@ -82,6 +132,56 @@ onMounted(() => {
       </div>
     </div>
 
+    <!-- Filter Tabs (All / Open / Closed) -->
+    <div class="flex items-center gap-2 mb-8 overflow-x-auto pb-1 scrollbar-none">
+      <button 
+        @click="statusFilter = 'all'"
+        :class="[
+          'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0',
+          statusFilter === 'all' 
+            ? 'bg-[#0b3c5d] text-white shadow-sm' 
+            : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+        ]"
+      >
+        <span>{{ langStore.currentLang === 'am' ? 'ሁሉም የቅጥር ማስታወቂያዎች' : (langStore.currentLang === 'om' ? 'Hundumaa' : 'All Positions') }}</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold" :class="statusFilter === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'">
+          {{ vacancies.length }}
+        </span>
+      </button>
+
+      <button 
+        @click="statusFilter = 'open'"
+        :class="[
+          'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0',
+          statusFilter === 'open' 
+            ? 'bg-emerald-700 text-white shadow-sm' 
+            : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+        ]"
+      >
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>{{ langStore.currentLang === 'am' ? 'አሁን ክፍት የሆኑ' : (langStore.currentLang === 'om' ? 'Bantamaa' : 'Open Positions') }}</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold" :class="statusFilter === 'open' ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700'">
+          {{ openCount }}
+        </span>
+      </button>
+
+      <button 
+        @click="statusFilter = 'closed'"
+        :class="[
+          'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0',
+          statusFilter === 'closed' 
+            ? 'bg-rose-700 text-white shadow-sm' 
+            : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+        ]"
+      >
+        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+        <span>{{ langStore.currentLang === 'am' ? 'የተዘጉ / ያለፉ ማስታወቂያዎች' : (langStore.currentLang === 'om' ? 'Cufamaa' : 'Closed / Past Postings') }}</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold" :class="statusFilter === 'closed' ? 'bg-white/20 text-white' : 'bg-rose-50 text-rose-700'">
+          {{ closedCount }}
+        </span>
+      </button>
+    </div>
+
     <!-- Vacancies List -->
     <div v-if="loading" class="space-y-6">
       <div v-for="i in 3" :key="i" class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm animate-pulse">
@@ -91,43 +191,67 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-else-if="vacancies.length === 0" class="text-center py-16 bg-white rounded-3xl border border-slate-200">
+    <div v-else-if="filteredVacanciesList.length === 0" class="text-center py-16 bg-white rounded-3xl border border-slate-200">
       <Briefcase class="w-12 h-12 text-slate-300 mx-auto mb-3" />
       <h3 class="text-lg font-bold text-slate-800">
-        {{ langStore.currentLang === 'am' ? 'በአሁኑ ሰዓት ክፍት የስራ ማስታወቂያ የለም' : 'No Open Positions At This Time' }}
+        {{ langStore.currentLang === 'am' ? 'ምንም ማስታወቂያ አልተገኘም' : 'No Positions Found' }}
       </h3>
       <p class="text-slate-500 text-sm mt-1">
-        {{ langStore.currentLang === 'am' ? 'አዳዲስ ማስታወቂያዎች ሲኖሩ በዚህ ገጽ ላይ ይለጠፋሉ። እባክዎ በየጊዜው ይከታተሉ።' : 'Check back regularly for civil service postings and apprentice programs.' }}
+        {{ langStore.currentLang === 'am' ? 'በዚህ ምድብ ውስጥ የተመዘገበ ክፍት የስራ ማስታወቂያ የለም።' : 'There are no position records under this selection.' }}
       </p>
     </div>
 
     <div v-else class="space-y-6">
       <div 
-        v-for="job in vacancies" 
+        v-for="job in filteredVacanciesList" 
         :key="job.id"
-        class="bg-white rounded-3xl border border-slate-200 hover:border-blue-300 p-8 shadow-sm hover:shadow-xl transition-all duration-300"
+        class="bg-white rounded-3xl border p-8 shadow-sm hover:shadow-xl transition-all duration-300"
+        :class="isJobClosed(job) ? 'border-slate-200 bg-slate-50/40' : 'border-slate-200 hover:border-blue-300'"
       >
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
           <div>
-            <div class="flex items-center gap-3 mb-2">
-              <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-100">
+            <div class="flex flex-wrap items-center gap-2.5 mb-2">
+              <span 
+                class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border"
+                :class="isJobClosed(job) ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-blue-50 text-blue-700 border-blue-100'"
+              >
                 {{ job.employment_type || 'Full-Time' }}
               </span>
               <span v-if="job.position_code" class="text-xs font-mono font-bold text-slate-500">
                 Code: {{ job.position_code }}
               </span>
+              <!-- Status Pill on Header -->
+              <span 
+                v-if="isJobClosed(job)" 
+                class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-extrabold uppercase flex items-center gap-1"
+              >
+                <AlertCircle class="w-3 h-3" />
+                {{ langStore.currentLang === 'am' ? 'የተዘጋ' : (langStore.currentLang === 'om' ? 'Cufamaa' : 'Closed') }}
+              </span>
+              <span 
+                v-else 
+                class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold uppercase flex items-center gap-1"
+              >
+                <CheckCircle2 class="w-3 h-3" />
+                {{ langStore.currentLang === 'am' ? 'ክፍት ነው' : (langStore.currentLang === 'om' ? 'Bantamaa' : 'Open') }}
+              </span>
             </div>
-            <h2 class="text-xl sm:text-2xl font-black text-slate-900">
+            <h2 class="text-xl sm:text-2xl font-black" :class="isJobClosed(job) ? 'text-slate-700' : 'text-slate-900'">
               {{ getTitle(job) }}
             </h2>
           </div>
 
-          <!-- Deadline Tag -->
-          <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shrink-0">
-            <Clock class="w-4 h-4 text-amber-600" />
+          <!-- Deadline Tag (Reactive Amber vs Rose) -->
+          <div 
+            class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shrink-0 border"
+            :class="isJobClosed(job) ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-amber-50 border-amber-200 text-amber-900'"
+          >
+            <Clock class="w-4 h-4" :class="isJobClosed(job) ? 'text-rose-600' : 'text-amber-600'" />
             <div class="text-xs font-bold">
-              <span>{{ langStore.currentLang === 'am' ? 'የማመልከቻ ቀነ-ገደብ' : 'Application Closes' }}:</span>
-              <span class="block text-amber-700 font-mono">{{ job.deadline }} ({{ getDaysRemaining(job.deadline) }} days left)</span>
+              <span>{{ isJobClosed(job) ? (langStore.currentLang === 'am' ? 'የማመልከቻ ሁኔታ' : (langStore.currentLang === 'om' ? 'Haala Iyyannoo' : 'Application Status')) : (langStore.currentLang === 'am' ? 'የማመልከቻ ቀነ-ገደብ' : (langStore.currentLang === 'om' ? 'Guyyaa Cufinsaa' : 'Application Closes')) }}:</span>
+              <span class="block font-mono" :class="isJobClosed(job) ? 'text-rose-700 font-extrabold' : 'text-amber-700'">
+                {{ job.deadline }} ({{ getDeadlineBadgeText(job) }})
+              </span>
             </div>
           </div>
         </div>
@@ -166,19 +290,38 @@ onMounted(() => {
                 <span class="font-bold text-slate-800">Kombolcha City</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-slate-500">{{ langStore.currentLang === 'am' ? 'ሁኔታ' : 'Status' }}:</span>
-                <span class="inline-flex items-center gap-1 font-bold text-emerald-600">
+                <span class="text-slate-500">{{ langStore.currentLang === 'am' ? 'ሁኔታ' : (langStore.currentLang === 'om' ? 'Haala' : 'Status') }}:</span>
+                <span 
+                  v-if="!isJobClosed(job)" 
+                  class="inline-flex items-center gap-1 font-bold text-emerald-600"
+                >
                   <CheckCircle2 class="w-3.5 h-3.5" />
-                  {{ langStore.currentLang === 'am' ? 'ክፍት ነው' : 'Open' }}
+                  {{ langStore.currentLang === 'am' ? 'ክፍት ነው' : (langStore.currentLang === 'om' ? 'Bantamaa' : 'Open') }}
+                </span>
+                <span 
+                  v-else 
+                  class="inline-flex items-center gap-1 font-bold text-rose-600"
+                >
+                  <AlertCircle class="w-3.5 h-3.5" />
+                  {{ langStore.currentLang === 'am' ? 'የተዘጋ' : (langStore.currentLang === 'om' ? 'Cufamaa' : 'Closed') }}
                 </span>
               </div>
             </div>
 
-            <router-link 
-              to="/contact" 
-              class="mt-6 w-full py-3 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold text-center transition-all duration-200 shadow-sm"
+            <!-- Inquire Button (Disabled and styled when closed) -->
+            <div 
+              v-if="isJobClosed(job)" 
+              class="mt-6 w-full py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 text-xs font-bold text-center flex items-center justify-center gap-2 cursor-not-allowed select-none"
             >
-              {{ langStore.currentLang === 'am' ? 'ስለ ስራው ጥያቄ ካለዎት ይጠይቁ' : 'Inquire Regarding Position' }}
+              <AlertCircle class="w-4 h-4 text-slate-400" />
+              <span>{{ langStore.currentLang === 'am' ? 'የማመልከቻ ጊዜው ተጠናቋል (የተዘጋ)' : (langStore.currentLang === 'om' ? 'Iyyannoon Cufameera' : 'Application Period Closed') }}</span>
+            </div>
+            <router-link 
+              v-else
+              to="/contact" 
+              class="mt-6 w-full py-3 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold text-center transition-all duration-200 shadow-sm block"
+            >
+              {{ langStore.currentLang === 'am' ? 'ስለ ስራው ጥያቄ ካለዎት ይጠይቁ' : (langStore.currentLang === 'om' ? 'Waa\'ee Hojii Gaafadhaa' : 'Inquire Regarding Position') }}
             </router-link>
           </div>
         </div>

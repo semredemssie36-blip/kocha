@@ -21,17 +21,34 @@ async function fetchTenders() {
 }
 
 // Calculate remaining time
+function isTenderClosed(tender) {
+  if (tender.status === 'closed') return true
+  if (!tender.closing_datetime) return false
+  return new Date(tender.closing_datetime).getTime() <= Date.now()
+}
+
 function formatCountdown(closingDatetime) {
   const diff = new Date(closingDatetime) - new Date()
-  if (diff <= 0) return { closed: true, text: 'Tender Closed' }
+  if (diff <= 0) return { closed: true, text: langStore.currentLang === 'am' ? 'ጨረታው ተዘግቷል' : (langStore.currentLang === 'om' ? 'Caalbaasiin Cufameera' : 'Tender Closed') }
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
   const minutes = Math.floor((diff / 1000 / 60) % 60)
 
+  if (days <= 0) {
+    return {
+      closed: false,
+      text: langStore.currentLang === 'am' 
+        ? `${hours} ሰዓታት : ${minutes} ደቂቃዎች ቀርተዋል` 
+        : `${hours} Hours : ${minutes} Mins left`
+    }
+  }
+
   return {
     closed: false,
-    text: `${days} Days : ${hours} Hours : ${minutes} Mins left`
+    text: langStore.currentLang === 'am' 
+      ? `${days} ቀናት : ${hours} ሰዓታት ቀርተዋል` 
+      : `${days} Days : ${hours} Hours : ${minutes} Mins left`
   }
 }
 
@@ -76,11 +93,11 @@ onMounted(() => {
             </span>
             <span 
               :class="[
-                'px-2.5 py-0.5 rounded-full text-xs font-semibold',
-                tender.status === 'open' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
+                'px-2.5 py-0.5 rounded-full text-xs font-bold uppercase',
+                !isTenderClosed(tender) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
               ]"
             >
-              Status: {{ tender.status.toUpperCase() }}
+              {{ langStore.currentLang === 'am' ? 'ሁኔታ' : (langStore.currentLang === 'om' ? 'Haala' : 'Status') }}: {{ !isTenderClosed(tender) ? (langStore.currentLang === 'am' ? 'ክፍት' : (langStore.currentLang === 'om' ? 'BANTAMAA' : 'OPEN')) : (langStore.currentLang === 'am' ? 'የተዘጋ' : (langStore.currentLang === 'om' ? 'CUFAMAA' : 'CLOSED')) }}
             </span>
           </div>
 

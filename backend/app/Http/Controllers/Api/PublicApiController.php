@@ -131,6 +131,12 @@ class PublicApiController extends Controller
     // Public Tenders (Procurement notices with live countdown)
     public function getTenders()
     {
+        // Real-time automatic closing of tenders where closing_datetime has passed
+        DB::table('tenders')
+            ->where('status', 'open')
+            ->where('closing_datetime', '<=', now())
+            ->update(['status' => 'closed']);
+
         $tenders = DB::table('tenders')
             ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
             ->orderBy('closing_datetime', 'asc')
@@ -142,9 +148,15 @@ class PublicApiController extends Controller
     // Vacancies / Jobs
     public function getVacancies()
     {
-        $vacancies = DB::table('vacancies')
+        // Real-time automatic closing of vacancies where deadline has passed
+        DB::table('vacancies')
             ->where('status', 'open')
-            ->orderBy('deadline', 'asc')
+            ->whereDate('deadline', '<', date('Y-m-d'))
+            ->update(['status' => 'closed']);
+
+        $vacancies = DB::table('vacancies')
+            ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
+            ->orderBy('deadline', 'desc')
             ->get();
 
         return response()->json($vacancies);
