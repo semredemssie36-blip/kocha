@@ -106,7 +106,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="relative z-30 shadow-xs">
+  <header class="sticky top-0 z-50 shadow-md">
     <!-- Top Utility Bar (White background, social icons, Internal Board, Language selector) -->
     <div class="bg-white border-b border-slate-200 py-1.5 px-3 sm:px-6 2xl:px-12 text-xs text-slate-600">
       <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2 min-w-0">
