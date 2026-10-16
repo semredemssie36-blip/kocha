@@ -60,7 +60,196 @@ import {
 const router = useRouter()
 const activeSection = ref('dashboard')
 const activeSubTab = ref('overview')
-const adminLang = ref('en')
+const adminLang = ref(localStorage.getItem('kombolcha_admin_lang') || 'en')
+
+function switchAdminLang(lang) {
+  adminLang.value = lang
+  localStorage.setItem('kombolcha_admin_lang', lang)
+}
+
+const adminTranslations = {
+  en: {
+    portal_title: 'Kombolcha Admin Portal',
+    portal_sub: 'Kombolcha Metropolitan Administration',
+    search_placeholder: 'Search articles, tenders, offices, citizen messages...',
+    live_site: 'Live Site',
+    notifications: 'Notifications',
+    new: 'New',
+    mark_all_read: 'Mark all read',
+    no_notifications: 'No new notifications',
+    all_caught_up: "You're all caught up with portal inquiries and alerts.",
+    go_to_inbox: 'Go to Citizen Inquiries Inbox',
+    sign_out: 'Sign Out',
+    my_profile: 'Profile & Password Settings',
+    
+    // Sidebar categories
+    cat_media_visuals: 'Media & Visuals',
+    cat_content_media: 'Content & Media',
+    cat_governance: 'Governance',
+    cat_services_resources: 'Services & Resources',
+    cat_civic_feedback: 'Civic Feedback',
+    cat_administration: 'Administration',
+
+    // Sidebar items
+    nav_dashboard: 'Dashboard Overview',
+    nav_hero_slides: 'Hero Slider Manager',
+    nav_gallery: 'Media Gallery',
+    nav_news: 'News & Press Releases',
+    nav_tenders: 'Public Tenders',
+    nav_vacancies: 'Job Vacancies',
+    nav_mayor: 'Mayor Profile & Keynote',
+    nav_leadership: 'Cabinet & Council',
+    nav_offices: 'Offices & Directory',
+    nav_services: 'Text & Step Services',
+    nav_projects: 'Mega Infrastructure',
+    nav_resources: 'Resources & Directives',
+    nav_destinations: 'Tourism & Destinations',
+    nav_messages: 'Citizen Inquiries',
+    nav_staff: 'Staff Accounts',
+    nav_settings: 'Site Settings & Maintenance',
+
+    // Dashboard Overview
+    overview_title: 'Dashboard Overview',
+    overview_sub: 'Live municipal key performance metrics and quick operational actions.',
+    stat_views: 'Total Views This Month',
+    stat_traffic: '↑ 14.8% Citizen traffic',
+    stat_articles: 'Published Articles',
+    stat_articles_sub: 'Live across 3 languages',
+    stat_tenders: 'Active Tenders',
+    stat_tenders_sub: 'Live procurement bidding',
+    stat_hotlines: 'Emergency Hotlines Status',
+    stat_hotlines_status: 'Active 24/7 Desk',
+    stat_hotlines_sub: 'Police (991), Fire (939), Ambulance',
+
+    // Author Overview stats
+    author_news: 'News & Press Releases',
+    author_news_sub: 'Articles in municipal registry',
+    author_media: 'Media Assets',
+    author_media_sub: 'Photos & gallery collections',
+    author_resources: 'Directives & Documents',
+    author_resources_sub: 'Cataloged citizen publications',
+    author_privileges: 'Publishing Privileges',
+    author_privileges_status: 'Author Active',
+    author_privileges_sub: 'Full drafting & editing rights',
+
+    // Action center
+    quick_action_center: 'Quick Action Center',
+    rapid_shortcuts: 'Rapid Management Shortcuts',
+    quick_create: 'Quick Create',
+    action_new_news: '+ New Press Release',
+    action_post_tender: '+ Post Public Tender',
+    action_post_vacancy: '+ Post Job Opening',
+    action_track_project: '+ Track New Project',
+    action_upload_photo: '+ Upload Photo Asset',
+    action_catalog_directive: '+ Catalog Directive',
+    
+    // Inquiries Card
+    recent_inquiries: 'Recent Inquiries',
+    unread: 'unread',
+    view_all_inbox: 'View All Inbox →',
+    no_inquiries: 'No inquiries received.',
+
+    // Audit Card
+    recent_activity: 'Recent Activity & Audit Feed',
+    db_active: 'MySQL Database Active',
+    dict_synced: 'Trilingual Dictionaries Synced (Amharic, English, Afaan Oromoo)',
+    pinia_verified: 'Pinia Store Verified',
+    seeded_offices: 'Seeded 22 Municipal Offices & 4 Sub-Cities'
+  },
+  am: {
+    portal_title: 'የኮምቦልቻ አስተዳደር ፖርታል',
+    portal_sub: 'የኮምቦልቻ ከተማ አስተዳደር',
+    search_placeholder: 'ዜናዎች፣ ጨረታዎች፣ ቢሮዎች፣ የዜጎች መልዕክቶች ይፈልጉ...',
+    live_site: 'ቀጥታ ድረ-ገጽ',
+    notifications: 'ማሳወቂያዎች',
+    new: 'አዲስ',
+    mark_all_read: 'ሁሉንም አንብቤያለሁ',
+    no_notifications: 'ምንም አዲስ ማሳወቂያ የለም',
+    all_caught_up: 'ሁሉም የዜጎች ጥያቄዎች እና የስርዓት ማሳወቂያዎች ታይተዋል።',
+    go_to_inbox: 'ወደ ዜጎች ጥያቄዎች ሳጥን ሂድ',
+    sign_out: 'ውጣ',
+    my_profile: 'የመገለጫ እና የይለፍ ቃል ቅንብሮች',
+
+    // Sidebar categories
+    cat_media_visuals: 'ሚዲያ እና ምስላዊ ይዘቶች',
+    cat_content_media: 'ይዘት እና ሚዲያ',
+    cat_governance: 'አስተዳደር እና አመራር',
+    cat_services_resources: 'አገልግሎቶችና ግብዓቶች',
+    cat_civic_feedback: 'የዜጎች ግብረ-መልስ',
+    cat_administration: 'አስተዳደራዊ ቁጥጥር',
+
+    // Sidebar items
+    nav_dashboard: 'ዳሽቦርድ አጠቃላይ እይታ',
+    nav_hero_slides: 'የስላይደር ማስተዳደሪያ',
+    nav_gallery: 'የሚዲያ ማህደር',
+    nav_news: 'ዜናዎች እና መግለጫዎች',
+    nav_tenders: 'የመንግስት ጨረታዎች',
+    nav_vacancies: 'ክፍት የሥራ ቦታዎች',
+    nav_mayor: 'የከንቲባ መገለጫና መልዕክት',
+    nav_leadership: 'ካቢኔ እና ም/ቤት አባላት',
+    nav_offices: 'የመምሪያዎች ማውጫ',
+    nav_services: 'የዜጎች አገልግሎቶች',
+    nav_projects: 'ግዙፍ የመሰረተ ልማት ፕሮጀክቶች',
+    nav_resources: 'መመሪያዎችና ሰነዶች',
+    nav_destinations: 'ቱሪዝም እና መዳረሻዎች',
+    nav_messages: 'የዜጎች ጥያቄዎችና አስተያየቶች',
+    nav_staff: 'የሠራተኞች መለያዎች',
+    nav_settings: 'የስርዓት ቅንብሮች እና ጥገና',
+
+    // Dashboard Overview
+    overview_title: 'ዳሽቦርድ አጠቃላይ እይታ',
+    overview_sub: 'የከተማው ቁልፍ የአፈጻጸም መረጃዎችና ፈጣን የሥራ ክንውኖች።',
+    stat_views: 'የዚህ ወር ጠቅላላ ጎብኝዎች',
+    stat_traffic: '↑ 14.8% የዜጎች ተሳትፎ',
+    stat_articles: 'የታተሙ ዜናዎች',
+    stat_articles_sub: 'በ3 ቋንቋዎች የቀረበ',
+    stat_tenders: 'ንቁ ጨረታዎች',
+    stat_tenders_sub: 'በሂደት ላይ ያሉ የመንግስት ግዥዎች',
+    stat_hotlines: 'የአስቸኳይ ጥሪዎች ሁኔታ',
+    stat_hotlines_status: 'የ24/7 ዝግጁ ጠረጴዛ',
+    stat_hotlines_sub: 'ፖሊስ (991)፣ እሳት አደጋ (939)፣ አምቡላንስ',
+
+    // Author Overview stats
+    author_news: 'ዜናዎች እና መግለጫዎች',
+    author_news_sub: 'በማዘጋጃ ቤቱ መዝገብ የተካተቱ',
+    author_media: 'የሚዲያ ሀብቶች',
+    author_media_sub: 'የፎቶዎችና ጋለሪ ስብስቦች',
+    author_resources: 'መመሪያዎችና ሰነዶች',
+    author_resources_sub: 'ለዜጎች የቀረቡ ህትመቶች',
+    author_privileges: 'የማዘጋጀት ፈቃዶች',
+    author_privileges_status: 'ጸሐፊ ንቁ ነው',
+    author_privileges_sub: 'ሙሉ የማዘጋጀትና የማረም መብት',
+
+    // Action center
+    quick_action_center: 'ፈጣን የሥራ ማዕከል',
+    rapid_shortcuts: 'ፈጣን የአስተዳደር አቋራጮች',
+    quick_create: 'ፈጣን ፍጠር',
+    action_new_news: '+ አዲስ ዜና አውጣ',
+    action_post_tender: '+ አዲስ ጨረታ ለጥፍ',
+    action_post_vacancy: '+ ክፍት የስራ ቦታ ለጥፍ',
+    action_track_project: '+ አዲስ ፕሮጀክት መዝግብ',
+    action_upload_photo: '+ ፎቶ ወደ ማህደር ጫን',
+    action_catalog_directive: '+ መመሪያ/ሰነድ መዝግብ',
+
+    // Inquiries Card
+    recent_inquiries: 'የቅርብ ጊዜ ጥያቄዎች',
+    unread: 'ያልተነበበ',
+    view_all_inbox: 'ሁሉንም ሳጥን ይመልከቱ →',
+    no_inquiries: 'ምንም ጥያቄ አልደረሰም።',
+
+    // Audit Card
+    recent_activity: 'የቅርብ ጊዜ እንቅስቃሴዎችና ኦዲት',
+    db_active: 'የMySQL ውሂብ ጎታ ንቁ ነው',
+    dict_synced: 'የሶስት ቋንቋዎች መዝገበ-ቃላት ተመሳስለዋል (አማርኛ፣ እንግሊዝኛ፣ አፋን ኦሮሞ)',
+    pinia_verified: 'የስቴት ማከማቻ (Pinia) ተረጋግጧል',
+    seeded_offices: '22 የመንግስት መስሪያ ቤቶችና 4 ክፍለ ከተሞች ተመዝግበዋል'
+  }
+}
+
+const adminT = computed(() => {
+  const dict = adminTranslations[adminLang.value] || adminTranslations['en']
+  return (key) => dict[key] || key
+})
 
 // Global Search in Admin
 const adminSearch = ref('')
@@ -86,6 +275,12 @@ const isEditor = computed(() => role.value === 'editor' || isSuperAdmin.value)
 const isAuthor = computed(() => role.value === 'author')
 
 const roleLabel = computed(() => {
+  if (adminLang.value === 'am') {
+    if (role.value === 'super_admin') return 'ዋና አስተዳዳሪ'
+    if (role.value === 'editor') return 'የኮሙኒኬሽን አዘጋጅ'
+    if (role.value === 'author') return 'የዜና ጸሐፊ / ጋዜጠኛ'
+    return role.value
+  }
   if (role.value === 'super_admin') return 'Super Administrator'
   if (role.value === 'editor') return 'Communications Editor'
   if (role.value === 'author') return 'Content Author / Journalist'
@@ -1033,12 +1228,12 @@ onUnmounted(() => {
         <img src="/assets/city_logo.png" alt="Seal" class="w-10 h-10 object-contain rounded-full border border-blue-400/40" />
         <div>
           <h1 class="text-sm font-black tracking-tight text-white flex items-center gap-2">
-            Kombolcha Admin Portal
+            {{ adminT('portal_title') }}
             <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-600/30 text-blue-300 border border-blue-500/30">
               CMS 2026
             </span>
           </h1>
-          <p class="text-[10px] text-slate-400">Kombolcha Metropolitan Administration</p>
+          <p class="text-[10px] text-slate-400">{{ adminT('portal_sub') }}</p>
         </div>
       </div>
 
@@ -1048,7 +1243,7 @@ onUnmounted(() => {
         <input 
           v-model="adminSearch" 
           type="text" 
-          placeholder="Search articles, tenders, offices, citizen messages..." 
+          :placeholder="adminT('search_placeholder')" 
           class="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-9 pr-4 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
         />
       </div>
@@ -1058,20 +1253,20 @@ onUnmounted(() => {
         <!-- Live Public Site Shortcut -->
         <router-link to="/" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors">
           <Globe class="w-3.5 h-3.5 text-emerald-400" />
-          <span>Live Site</span>
+          <span>{{ adminT('live_site') }}</span>
         </router-link>
 
         <!-- Admin Language Toggle [AM | EN] -->
         <div class="flex items-center bg-slate-800 rounded-xl p-1 border border-slate-700 text-xs font-bold">
           <button 
-            @click="adminLang = 'en'" 
-            :class="adminLang === 'en' ? 'bg-blue-600 text-white px-2 py-0.5 rounded-lg' : 'text-slate-400 px-2 py-0.5'"
+            @click="switchAdminLang('en')" 
+            :class="adminLang === 'en' ? 'bg-blue-600 text-white px-2 py-0.5 rounded-lg' : 'text-slate-400 px-2 py-0.5 cursor-pointer hover:text-white'"
           >
             EN
           </button>
           <button 
-            @click="adminLang = 'am'" 
-            :class="adminLang === 'am' ? 'bg-blue-600 text-white px-2 py-0.5 rounded-lg' : 'text-slate-400 px-2 py-0.5'"
+            @click="switchAdminLang('am')" 
+            :class="adminLang === 'am' ? 'bg-blue-600 text-white px-2 py-0.5 rounded-lg' : 'text-slate-400 px-2 py-0.5 cursor-pointer hover:text-white'"
           >
             አማ
           </button>
@@ -1082,7 +1277,7 @@ onUnmounted(() => {
           <button 
             @click.stop="notificationDropdownOpen = !notificationDropdownOpen"
             class="relative p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
-            title="System & Citizen Notifications"
+            :title="adminT('notifications')"
           >
             <Bell class="w-4 h-4" />
             <span v-if="stats.unread_messages > 0" class="absolute -top-1 -right-1 px-1 min-w-4 h-4 rounded-md bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
@@ -1099,9 +1294,9 @@ onUnmounted(() => {
             <div class="p-3.5 px-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <Bell class="w-4 h-4 text-blue-600" />
-                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Notifications</h4>
+                <h4 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">{{ adminT('notifications') }}</h4>
                 <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold">
-                  {{ stats.unread_messages }} New
+                  {{ stats.unread_messages }} {{ adminT('new') }}
                 </span>
               </div>
               <button 
@@ -1109,7 +1304,7 @@ onUnmounted(() => {
                 @click="markAllInquiriesRead"
                 class="text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
               >
-                Mark all read
+                {{ adminT('mark_all_read') }}
               </button>
             </div>
 
@@ -1151,8 +1346,8 @@ onUnmounted(() => {
               <!-- No Notifications Empty State -->
               <div v-else class="p-8 text-center text-slate-400">
                 <Bell class="w-8 h-8 mx-auto mb-2 opacity-30 text-slate-400" />
-                <p class="text-xs font-bold text-slate-600">No new notifications</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">You're all caught up with portal inquiries and alerts.</p>
+                <p class="text-xs font-bold text-slate-600">{{ adminT('no_notifications') }}</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">{{ adminT('all_caught_up') }}</p>
               </div>
             </div>
 
@@ -1162,7 +1357,7 @@ onUnmounted(() => {
                 @click="notificationDropdownOpen = false; activeSection = 'messages'"
                 class="w-full py-1.5 px-3 rounded-xl bg-white hover:bg-slate-100 text-blue-700 text-xs font-bold border border-slate-200 transition shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <span>Go to Citizen Inquiries Inbox</span>
+                <span>{{ adminT('go_to_inbox') }}</span>
                 <ChevronRight class="w-3.5 h-3.5" />
               </button>
             </div>
@@ -1173,7 +1368,7 @@ onUnmounted(() => {
         <div class="flex items-center gap-3 pl-2 border-l border-slate-800">
           <button 
             @click="openProfileModal" 
-            title="Manage My Profile & Password"
+            :title="adminT('my_profile')"
             class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer group text-left"
           >
             <div 
@@ -1200,10 +1395,10 @@ onUnmounted(() => {
             </div>
           </button>
 
-          <button @click="openProfileModal" title="Profile & Password Settings" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors">
+          <button @click="openProfileModal" :title="adminT('my_profile')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors">
             <User class="w-4 h-4" />
           </button>
-          <button @click="logout" title="Sign Out" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors ml-1">
+          <button @click="logout" :title="adminT('sign_out')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors ml-1">
             <LogOut class="w-4 h-4" />
           </button>
         </div>
@@ -1229,12 +1424,12 @@ onUnmounted(() => {
             ]"
           >
             <LayoutDashboard class="w-4 h-4" />
-            <span>Dashboard Overview</span>
+            <span>{{ adminT('nav_dashboard') }}</span>
           </button>
 
           <!-- Media Management Category -->
           <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            {{ isAuthor ? 'Content & Media' : 'Media & Visuals' }}
+            {{ isAuthor ? adminT('cat_content_media') : adminT('cat_media_visuals') }}
           </div>
           <button 
             v-if="can.manageHeroSlides"
@@ -1245,7 +1440,7 @@ onUnmounted(() => {
             ]"
           >
             <Sliders class="w-4 h-4" />
-            <span>Hero Slider Manager</span>
+            <span>{{ adminT('nav_hero_slides') }}</span>
           </button>
           <button 
             @click="activeSection = 'gallery'"
@@ -1255,7 +1450,7 @@ onUnmounted(() => {
             ]"
           >
             <Film class="w-4 h-4" />
-            <span>Media Gallery</span>
+            <span>{{ adminT('nav_gallery') }}</span>
           </button>
           <button 
             @click="activeSection = 'news'"
@@ -1265,7 +1460,7 @@ onUnmounted(() => {
             ]"
           >
             <FileText class="w-4 h-4" />
-            <span>News & Press Releases</span>
+            <span>{{ adminT('nav_news') }}</span>
           </button>
           <button 
             v-if="can.manageTenders"
@@ -1276,7 +1471,7 @@ onUnmounted(() => {
             ]"
           >
             <FileCheck class="w-4 h-4" />
-            <span>Public Tenders</span>
+            <span>{{ adminT('nav_tenders') }}</span>
           </button>
           <button 
             v-if="can.manageVacancies"
@@ -1287,12 +1482,12 @@ onUnmounted(() => {
             ]"
           >
             <Briefcase class="w-4 h-4" />
-            <span>Job Vacancies</span>
+            <span>{{ adminT('nav_vacancies') }}</span>
           </button>
 
           <!-- Governance Management Category -->
           <div v-if="can.manageMayor || can.manageLeadership || can.manageOffices" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Governance
+            {{ adminT('cat_governance') }}
           </div>
           <button 
             v-if="can.manageMayor"
@@ -1303,7 +1498,7 @@ onUnmounted(() => {
             ]"
           >
             <Award class="w-4 h-4" />
-            <span>Mayor Profile & Keynote</span>
+            <span>{{ adminT('nav_mayor') }}</span>
           </button>
           <button 
             v-if="can.manageLeadership"
@@ -1314,7 +1509,7 @@ onUnmounted(() => {
             ]"
           >
             <Users class="w-4 h-4" />
-            <span>Cabinet & Council</span>
+            <span>{{ adminT('nav_leadership') }}</span>
           </button>
           <button 
             v-if="can.manageOffices"
@@ -1326,14 +1521,14 @@ onUnmounted(() => {
           >
             <div class="flex items-center gap-3">
               <Building2 class="w-4 h-4 shrink-0" />
-              <span>Offices & Directory</span>
+              <span>{{ adminT('nav_offices') }}</span>
             </div>
             <span v-if="officesList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ officesList.length }}</span>
           </button>
 
           <!-- Civic Services Category -->
           <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Services & Resources
+            {{ adminT('cat_services_resources') }}
           </div>
           <button 
             v-if="can.manageServices"
@@ -1344,7 +1539,7 @@ onUnmounted(() => {
             ]"
           >
             <Layers class="w-4 h-4" />
-            <span>Text & Step Services</span>
+            <span>{{ adminT('nav_services') }}</span>
           </button>
           <button 
             v-if="can.manageProjects"
@@ -1355,7 +1550,7 @@ onUnmounted(() => {
             ]"
           >
             <HardHat class="w-4 h-4" />
-            <span>Mega Infrastructure</span>
+            <span>{{ adminT('nav_projects') }}</span>
           </button>
           <button 
             @click="activeSection = 'resources'"
@@ -1365,7 +1560,7 @@ onUnmounted(() => {
             ]"
           >
             <FolderOpen class="w-4 h-4" />
-            <span>Resources & Directives</span>
+            <span>{{ adminT('nav_resources') }}</span>
           </button>
           <button 
             v-if="can.manageDestinations"
@@ -1377,14 +1572,14 @@ onUnmounted(() => {
           >
             <div class="flex items-center gap-3">
               <Compass class="w-4 h-4 shrink-0" />
-              <span>Tourism & Destinations</span>
+              <span>{{ adminT('nav_destinations') }}</span>
             </div>
             <span v-if="destinationsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ destinationsList.length }}</span>
           </button>
 
           <!-- Citizen Interaction Category -->
           <div v-if="can.viewInquiries" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Civic Feedback
+            {{ adminT('cat_civic_feedback') }}
           </div>
           <button 
             v-if="can.viewInquiries"
@@ -1396,7 +1591,7 @@ onUnmounted(() => {
           >
             <div class="flex items-center gap-3">
               <MessageSquare class="w-4 h-4" />
-              <span>Citizen Inquiries</span>
+              <span>{{ adminT('nav_messages') }}</span>
             </div>
             <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black">
               {{ stats.unread_messages }}
@@ -1405,7 +1600,7 @@ onUnmounted(() => {
 
           <!-- System Administration -->
           <div v-if="isSuperAdmin" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Administration
+            {{ adminT('cat_administration') }}
           </div>
           <button 
             v-if="isSuperAdmin"
@@ -1416,7 +1611,7 @@ onUnmounted(() => {
             ]"
           >
             <ShieldCheck class="w-4 h-4" />
-            <span>Staff Accounts</span>
+            <span>{{ adminT('nav_staff') }}</span>
           </button>
           <button 
             v-if="isSuperAdmin"
@@ -1427,7 +1622,7 @@ onUnmounted(() => {
             ]"
           >
             <Sliders class="w-4 h-4" />
-            <span>Site Settings & Maintenance</span>
+            <span>{{ adminT('nav_settings') }}</span>
           </button>
         </nav>
       </aside>
@@ -1459,65 +1654,65 @@ onUnmounted(() => {
           <div v-else>
             <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               <LayoutDashboard class="w-6 h-6 text-blue-600" />
-              <span>Dashboard Overview</span>
+              <span>{{ adminT('overview_title') }}</span>
             </h2>
-            <p class="text-xs text-slate-500">Live municipal key performance metrics and quick operational actions.</p>
+            <p class="text-xs text-slate-500">{{ adminT('overview_sub') }}</p>
           </div>
 
           <!-- The 4 Stat Cards: Author vs Municipal Admin/Editor -->
           <div v-if="isAuthor" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">News & Press Releases</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_news') }}</span>
               <div class="text-3xl font-black text-emerald-600 mt-2 font-mono">{{ newsList.length }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">Articles in municipal registry</span>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_news_sub') }}</span>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Media Assets</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_media') }}</span>
               <div class="text-3xl font-black text-blue-600 mt-2 font-mono">{{ galleryList.length }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">Photos & gallery collections</span>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_media_sub') }}</span>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Directives & Documents</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_resources') }}</span>
               <div class="text-3xl font-black text-indigo-600 mt-2 font-mono">{{ resourcesList.length }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">Cataloged citizen publications</span>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_resources_sub') }}</span>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Publishing Privileges</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_privileges') }}</span>
               <div class="text-sm font-black text-emerald-700 mt-2 uppercase tracking-wide">
-                Author Active
+                {{ adminT('author_privileges_status') }}
               </div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">Full drafting & editing rights</span>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_privileges_sub') }}</span>
             </div>
           </div>
 
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Views This Month</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_views') }}</span>
               <div class="text-3xl font-black text-slate-900 mt-2 font-mono">{{ stats.monthly_views }}</div>
-              <span class="text-xs text-emerald-600 font-bold mt-1 block">↑ 14.8% Citizen traffic</span>
+              <span class="text-xs text-emerald-600 font-bold mt-1 block">{{ adminT('stat_traffic') }}</span>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Published Articles</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_articles') }}</span>
               <div class="text-3xl font-black text-blue-600 mt-2 font-mono">{{ stats.news_count }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">Live across 3 languages</span>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('stat_articles_sub') }}</span>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Tenders</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_tenders') }}</span>
               <div class="text-3xl font-black text-amber-600 mt-2 font-mono">{{ stats.active_tenders }}</div>
-              <span class="text-xs text-amber-600 font-medium mt-1 block">Live procurement bidding</span>
+              <span class="text-xs text-amber-600 font-medium mt-1 block">{{ adminT('stat_tenders_sub') }}</span>
             </div>
 
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Emergency Hotlines Status</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_hotlines') }}</span>
               <div class="text-sm font-black text-emerald-700 mt-2 uppercase tracking-wide">
-                Active 24/7 Desk
+                {{ adminT('stat_hotlines_status') }}
               </div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">Police (991), Fire (939), Ambulance</span>
+              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('stat_hotlines_sub') }}</span>
             </div>
           </div>
 
@@ -1525,25 +1720,25 @@ onUnmounted(() => {
           <div v-if="isAuthor">
             <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
               <Zap class="w-5 h-5 text-emerald-600" />
-              <span>Author Contribution Center</span>
+              <span>{{ adminT('quick_action_center') }}</span>
             </h3>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                  <h4 class="font-extrabold text-slate-900 text-sm">Authoring Shortcuts</h4>
-                  <span class="text-xs font-bold text-emerald-600">Quick Create</span>
+                  <h4 class="font-extrabold text-slate-900 text-sm">{{ adminT('rapid_shortcuts') }}</h4>
+                  <span class="text-xs font-bold text-emerald-600">{{ adminT('quick_create') }}</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button @click="modalType = 'news'" class="p-3.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ New Press Release</span>
+                    <span>{{ adminT('action_new_news') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                   <button @click="modalType = 'gallery'" class="p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ Upload Photo Asset</span>
+                    <span>{{ adminT('action_upload_photo') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                   <button @click="modalType = 'resource'" class="p-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ Catalog Directive</span>
+                    <span>{{ adminT('action_catalog_directive') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                 </div>
@@ -1579,32 +1774,32 @@ onUnmounted(() => {
           <div v-else>
             <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
               <Zap class="w-5 h-5 text-blue-600" />
-              <span>Quick Action Center</span>
+              <span>{{ adminT('quick_action_center') }}</span>
             </h3>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <!-- Pending Approvals & Operations Card -->
               <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                   <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                    <span>Rapid Management Shortcuts</span>
+                    <span>{{ adminT('rapid_shortcuts') }}</span>
                   </h4>
-                  <span class="text-xs font-bold text-blue-600">Quick Create</span>
+                  <span class="text-xs font-bold text-blue-600">{{ adminT('quick_create') }}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                   <button @click="modalType = 'news'" class="p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ New Press Release</span>
+                    <span>{{ adminT('action_new_news') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                   <button @click="modalType = 'tender'" class="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ Post Public Tender</span>
+                    <span>{{ adminT('action_post_tender') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                   <button @click="modalType = 'vacancy'" class="p-3.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ Post Job Opening</span>
+                    <span>{{ adminT('action_post_vacancy') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                   <button @click="modalType = 'project'" class="p-3.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>+ Track New Project</span>
+                    <span>{{ adminT('action_track_project') }}</span>
                     <Plus class="w-4 h-4" />
                   </button>
                 </div>
@@ -1614,16 +1809,16 @@ onUnmounted(() => {
               <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                   <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                    <span>Recent Inquiries</span>
+                    <span>{{ adminT('recent_inquiries') }}</span>
                     <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black">
-                      {{ stats.unread_messages }} unread
+                      {{ stats.unread_messages }} {{ adminT('unread') }}
                     </span>
                   </h4>
-                  <button @click="activeSection = 'messages'" class="text-xs font-bold text-blue-600 hover:underline">View All Inbox →</button>
+                  <button @click="activeSection = 'messages'" class="text-xs font-bold text-blue-600 hover:underline">{{ adminT('view_all_inbox') }}</button>
                 </div>
 
                 <div v-if="messagesList.length === 0" class="text-xs text-slate-400 py-6 text-center">
-                  No inquiries received.
+                  {{ adminT('no_inquiries') }}
                 </div>
                 <div v-else class="space-y-3">
                   <div 
@@ -1650,18 +1845,18 @@ onUnmounted(() => {
           <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
             <h4 class="font-extrabold text-slate-900 text-sm mb-4 flex items-center gap-2">
               <Activity class="w-4 h-4 text-slate-700" />
-              <span>Recent Activity & Audit Feed</span>
+              <span>{{ adminT('recent_activity') }}</span>
             </h4>
             <div class="space-y-3 text-xs text-slate-600">
               <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
                 <span class="font-mono text-slate-400">[DB]</span>
-                <span class="font-bold text-slate-800">Seeded 22 Municipal Offices & 4 Sub-Cities</span>
-                <span class="text-slate-400 font-mono ml-auto">MySQL Database Active</span>
+                <span class="font-bold text-slate-800">{{ adminT('seeded_offices') }}</span>
+                <span class="text-slate-400 font-mono ml-auto">{{ adminT('db_active') }}</span>
               </div>
               <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
                 <span class="font-mono text-slate-400">[I18N]</span>
-                <span class="font-bold text-slate-800">Trilingual Dictionaries Synced (Amharic, English, Afaan Oromoo)</span>
-                <span class="text-slate-400 font-mono ml-auto">Pinia Store Verified</span>
+                <span class="font-bold text-slate-800">{{ adminT('dict_synced') }}</span>
+                <span class="text-slate-400 font-mono ml-auto">{{ adminT('pinia_verified') }}</span>
               </div>
               <div class="flex items-center gap-3">
                 <span class="font-mono text-slate-400">[POLL]</span>

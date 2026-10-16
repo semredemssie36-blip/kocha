@@ -167,7 +167,7 @@ onUnmounted(() => {
 
           <!-- Internal Board Link (Government Staff Portal) -->
           <router-link to="/internal-board" class="font-semibold text-slate-700 hover:text-[#0b3c5d] transition-colors flex items-center gap-1">
-            <span>Internal Board</span>
+            <span>{{ langStore.t('nav.internal_board') }}</span>
           </router-link>
 
           <span class="text-slate-300">|</span>
@@ -217,10 +217,10 @@ onUnmounted(() => {
           />
           <div>
             <h1 class="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
-              ኮምቦልቻ ከተማ አስተዳደር
+              {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር' : (langStore.currentLang === 'om' ? 'Bulchiinsa Magaalaa Kombolchaa' : 'Kombolcha City Administration') }}
             </h1>
             <p class="text-[12px] text-sky-200 font-semibold tracking-wider uppercase">
-              Kombolcha City Administration
+              {{ langStore.currentLang === 'am' ? 'Kombolcha City Administration' : (langStore.currentLang === 'om' ? 'Kombolcha City Administration' : 'የኮምቦልቻ ከተማ አስተዳደር') }}
             </p>
           </div>
         </router-link>
@@ -233,7 +233,7 @@ onUnmounted(() => {
             class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
             :class="{ 'bg-white/15': route.path === '/' }"
           >
-            Home
+            {{ langStore.t('nav.home') }}
           </router-link>
 
           <!-- About Us Dropdown -->
@@ -247,7 +247,7 @@ onUnmounted(() => {
               class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1"
               :class="{ 'bg-white/15': route.path.startsWith('/about') }"
             >
-              <span>About Us</span>
+              <span>{{ langStore.t('nav.about') }}</span>
               <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </router-link>
 
@@ -258,22 +258,22 @@ onUnmounted(() => {
             >
               <div class="bg-white rounded-lg shadow-xl border border-slate-200 py-1.5 text-slate-800 text-xs">
                 <router-link to="/about?tab=about" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  About
+                  {{ langStore.t('nav.about_city') }}
                 </router-link>
                 <router-link to="/about?tab=history" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  History
+                  {{ langStore.t('nav.about_history') }}
                 </router-link>
                 <router-link to="/about?tab=vision" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Vision and Mission
+                  {{ langStore.t('nav.about_vision') }}
                 </router-link>
                 <router-link to="/about?tab=people" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  People & Culture
+                  {{ langStore.t('nav.about_demographics') }}
                 </router-link>
                 <router-link to="/about?tab=geography" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Geography & Climate
+                  {{ langStore.t('nav.about_geography') }}
                 </router-link>
                 <router-link to="/about?tab=administration" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Administration
+                  {{ langStore.t('nav.about_administration') }}
                 </router-link>
               </div>
             </div>
@@ -289,7 +289,7 @@ onUnmounted(() => {
               class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
               :class="{ 'bg-white/15': route.path.startsWith('/government') }"
             >
-              <span>Government</span>
+              <span>{{ langStore.t('nav.government') }}</span>
               <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </button>
 
@@ -300,22 +300,22 @@ onUnmounted(() => {
             >
               <div class="bg-white rounded-lg shadow-xl border border-slate-200 py-1.5 text-slate-800 text-xs">
                 <router-link to="/government/mayor" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  {{ langStore.currentLang === 'am' ? 'ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa' : 'Mayor') }}
+                  {{ langStore.t('nav.mayor') }}
                 </router-link>
                 <router-link to="/government/mayor?tab=cabinet" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  {{ langStore.currentLang === 'am' ? 'የካቢኔ መገለጫ' : (langStore.currentLang === 'om' ? 'Ibsa Kaabinee' : 'Cabinet Profile') }}
+                  {{ langStore.t('nav.cabinet') }}
                 </router-link>
                 <router-link to="/about?tab=administration" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  {{ langStore.currentLang === 'am' ? 'የከተማው መዋቅር' : (langStore.currentLang === 'om' ? 'Caasaa Magaalaa' : 'City Structure') }}
+                  {{ langStore.t('nav.about_administration') }}
                 </router-link>
                 <router-link to="/government/mayor?tab=council" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  {{ langStore.currentLang === 'am' ? 'የከተማው ምክር ቤት' : (langStore.currentLang === 'om' ? 'Manni Maree Magaalaa' : 'Council') }}
+                  {{ langStore.t('nav.council') }}
                 </router-link>
                 <router-link to="/government/sub-cities" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  {{ langStore.currentLang === 'am' ? 'የክፍለ ከተሞች መረጃ' : (langStore.currentLang === 'om' ? 'Oodeeffannoo Kutaalee Magaalaa' : 'Sub City Information') }}
+                  {{ langStore.t('nav.sub_cities') }}
                 </router-link>
                 <router-link to="/government/offices" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  {{ langStore.currentLang === 'am' ? 'የመምሪያዎች ማውጫ' : (langStore.currentLang === 'om' ? 'Galmee Waajjiraalee' : 'Offices Directory') }}
+                  {{ langStore.t('nav.offices_directory') }}
                 </router-link>
               </div>
             </div>
@@ -332,7 +332,7 @@ onUnmounted(() => {
               class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1"
               :class="{ 'bg-white/15': route.path.startsWith('/media') }"
             >
-              <span>News</span>
+              <span>{{ langStore.t('nav.news') }}</span>
               <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </router-link>
 
@@ -343,16 +343,16 @@ onUnmounted(() => {
             >
               <div class="bg-white rounded-lg shadow-xl border border-slate-200 py-1.5 text-slate-800 text-xs">
                 <router-link to="/media/news" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Latest News
+                  {{ langStore.t('nav.latest_news') }}
                 </router-link>
                 <router-link to="/media/news?filter=announcement" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Announcement
+                  {{ langStore.t('nav.announcement') }}
                 </router-link>
                 <router-link to="/media/vacancies" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Vacancy
+                  {{ langStore.t('nav.vacancies') }}
                 </router-link>
                 <router-link to="/media/tenders" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Tender
+                  {{ langStore.t('nav.tenders') }}
                 </router-link>
               </div>
             </div>
@@ -364,7 +364,7 @@ onUnmounted(() => {
             class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
             :class="{ 'bg-white/15': route.path === '/services' }"
           >
-            Service
+            {{ langStore.t('nav.services') }}
           </router-link>
 
           <!-- Explore -->
@@ -373,7 +373,7 @@ onUnmounted(() => {
             class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
             :class="{ 'bg-white/15': route.path === '/explore' }"
           >
-            Explore
+            {{ langStore.t('nav.explore') }}
           </router-link>
 
           <!-- Program & Project Dropdown -->
@@ -387,7 +387,7 @@ onUnmounted(() => {
               class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1"
               :class="{ 'bg-white/15': route.path === '/projects' }"
             >
-              <span>Program & Project</span>
+              <span>{{ langStore.t('nav.projects') }}</span>
               <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </router-link>
 
@@ -398,10 +398,10 @@ onUnmounted(() => {
             >
               <div class="bg-white rounded-lg shadow-xl border border-slate-200 py-1.5 text-slate-800 text-xs">
                 <router-link to="/projects" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Mega Infrastructure
+                  {{ langStore.t('nav.mega_projects') }}
                 </router-link>
                 <router-link to="/projects" class="block px-4 py-2 hover:bg-slate-100 hover:text-[#0b3c5d] font-medium transition-colors">
-                  Urban Development
+                  {{ langStore.t('nav.urban_development') }}
                 </router-link>
               </div>
             </div>
@@ -413,7 +413,7 @@ onUnmounted(() => {
             class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
             :class="{ 'bg-white/15': route.path === '/resources' }"
           >
-            Resources
+            {{ langStore.t('nav.resources') }}
           </router-link>
 
           <!-- Gallery -->
@@ -422,7 +422,7 @@ onUnmounted(() => {
             class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
             :class="{ 'bg-white/15': route.path === '/gallery' }"
           >
-            Gallery
+            {{ langStore.t('nav.gallery') }}
           </router-link>
 
           <!-- Contact -->
@@ -431,7 +431,7 @@ onUnmounted(() => {
             class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
             :class="{ 'bg-white/15': route.path === '/contact' }"
           >
-            Contact
+            {{ langStore.t('nav.contact') }}
           </router-link>
         </nav>
 
@@ -441,18 +441,18 @@ onUnmounted(() => {
           <button 
             @click="searchModalOpen = true" 
             class="p-2 rounded-full hover:bg-white/10 text-white transition-colors cursor-pointer" 
-            title="Search Portal"
+            :title="langStore.t('nav.search_portal')"
           >
             <Search class="w-4 h-4" />
           </button>
 
-          <!-- Login Button -->
+          <!-- Login / Dashboard Button -->
           <router-link 
             :to="isAuthenticated ? '/admin' : '/admin/login'" 
             class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/25 rounded-md transition-all shadow-2xs"
           >
             <LogIn class="w-3.5 h-3.5" />
-            <span>{{ isAuthenticated ? 'Dashboard' : (langStore.currentLang === 'am' ? 'ግባ' : (langStore.currentLang === 'om' ? 'Seensa' : 'Login')) }}</span>
+            <span>{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
           </router-link>
 
           <!-- Mobile Hamburger Toggle -->
@@ -475,7 +475,7 @@ onUnmounted(() => {
     >
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl p-5 border border-slate-200 animate-fadeIn">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-          <h3 class="text-sm font-bold text-slate-800">Search Kombolcha City Portal</h3>
+          <h3 class="text-sm font-bold text-slate-800">{{ langStore.t('nav.search_portal') }}</h3>
           <button @click="searchModalOpen = false" class="text-slate-400 hover:text-slate-600">
             <X class="w-5 h-5" />
           </button>
@@ -486,7 +486,7 @@ onUnmounted(() => {
             <input 
               v-model="searchQuery" 
               type="text" 
-              placeholder="Search news, directives, tenders, services..." 
+              :placeholder="langStore.t('nav.search_input_placeholder')" 
               class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-[#0b3c5d]"
               autofocus
             />
@@ -495,7 +495,7 @@ onUnmounted(() => {
             type="submit" 
             class="px-5 py-2 bg-[#0b3c5d] hover:bg-[#0c4a6e] text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer"
           >
-            Search
+            {{ langStore.currentLang === 'am' ? 'ፈልግ' : (langStore.currentLang === 'om' ? 'Barbaadi' : 'Search') }}
           </button>
         </form>
       </div>
@@ -507,7 +507,7 @@ onUnmounted(() => {
       class="xl:hidden bg-[#082d46] text-white px-4 py-4 space-y-1 border-t border-white/10 max-h-[80vh] overflow-y-auto text-sm"
     >
       <router-link @click="mobileMenuOpen = false" to="/" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Home
+        {{ langStore.t('nav.home') }}
       </router-link>
 
       <!-- About Us Accordion -->
@@ -516,16 +516,16 @@ onUnmounted(() => {
           @click="toggleMobileDropdown('about')" 
           class="w-full flex items-center justify-between px-3 py-2 rounded font-medium hover:bg-white/10 text-left"
         >
-          <span>About Us</span>
+          <span>{{ langStore.t('nav.about') }}</span>
           <ChevronDown class="w-4 h-4 transition-transform" :class="{ 'rotate-180': mobileDropdownOpen.about }" />
         </button>
         <div v-show="mobileDropdownOpen.about" class="pl-4 space-y-1 bg-black/10 py-1 rounded">
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=about" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">About</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=history" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">History</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=vision" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Vision and Mission</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=people" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">People & Culture</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=geography" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Geography & Climate</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=administration" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Administration</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=about" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_city') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=history" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_history') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=vision" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_vision') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=people" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_demographics') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=geography" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_geography') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=administration" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_administration') }}</router-link>
         </div>
       </div>
 
@@ -535,16 +535,16 @@ onUnmounted(() => {
           @click="toggleMobileDropdown('government')" 
           class="w-full flex items-center justify-between px-3 py-2 rounded font-medium hover:bg-white/10 text-left"
         >
-          <span>Government</span>
+          <span>{{ langStore.t('nav.government') }}</span>
           <ChevronDown class="w-4 h-4 transition-transform" :class="{ 'rotate-180': mobileDropdownOpen.government }" />
         </button>
         <div v-show="mobileDropdownOpen.government" class="pl-4 space-y-1 bg-black/10 py-1 rounded">
-          <router-link @click="mobileMenuOpen = false" to="/government/mayor" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa' : 'Mayor') }}</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/mayor?tab=cabinet" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የካቢኔ መገለጫ' : (langStore.currentLang === 'om' ? 'Ibsa Kaabinee' : 'Cabinet Profile') }}</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/about?tab=administration" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የከተማው መዋቅር' : (langStore.currentLang === 'om' ? 'Caasaa Magaalaa' : 'City Structure') }}</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/mayor?tab=council" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የከተማው ምክር ቤት' : (langStore.currentLang === 'om' ? 'Manni Maree Magaalaa' : 'Council') }}</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/sub-cities" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የክፍለ ከተሞች መረጃ' : (langStore.currentLang === 'om' ? 'Oodeeffannoo Kutaalee Magaalaa' : 'Sub City Information') }}</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/government/offices" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.currentLang === 'am' ? 'የመምሪያዎች ማውጫ' : (langStore.currentLang === 'om' ? 'Galmee Waajjiraalee' : 'Offices Directory') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/mayor" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.mayor') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/mayor?tab=cabinet" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.cabinet') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/about?tab=administration" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.about_administration') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/mayor?tab=council" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.council') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/sub-cities" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.sub_cities') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/government/offices" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.offices_directory') }}</router-link>
         </div>
       </div>
 
@@ -554,39 +554,39 @@ onUnmounted(() => {
           @click="toggleMobileDropdown('news')" 
           class="w-full flex items-center justify-between px-3 py-2 rounded font-medium hover:bg-white/10 text-left"
         >
-          <span>News</span>
+          <span>{{ langStore.t('nav.news') }}</span>
           <ChevronDown class="w-4 h-4 transition-transform" :class="{ 'rotate-180': mobileDropdownOpen.news }" />
         </button>
         <div v-show="mobileDropdownOpen.news" class="pl-4 space-y-1 bg-black/10 py-1 rounded">
-          <router-link @click="mobileMenuOpen = false" to="/media/news" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Latest News</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/media/news?filter=announcement" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Announcement</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/media/vacancies" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Vacancy</router-link>
-          <router-link @click="mobileMenuOpen = false" to="/media/tenders" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">Tender</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/media/news" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.latest_news') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/media/news?filter=announcement" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.announcement') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/media/vacancies" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.vacancies') }}</router-link>
+          <router-link @click="mobileMenuOpen = false" to="/media/tenders" class="block px-3 py-1.5 text-xs text-sky-100 hover:text-white">{{ langStore.t('nav.tenders') }}</router-link>
         </div>
       </div>
 
       <router-link @click="mobileMenuOpen = false" to="/services" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Service
+        {{ langStore.t('nav.services') }}
       </router-link>
 
       <router-link @click="mobileMenuOpen = false" to="/explore" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Explore
+        {{ langStore.t('nav.explore') }}
       </router-link>
 
       <router-link @click="mobileMenuOpen = false" to="/projects" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Program & Project
+        {{ langStore.t('nav.projects') }}
       </router-link>
 
       <router-link @click="mobileMenuOpen = false" to="/resources" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Resources
+        {{ langStore.t('nav.resources') }}
       </router-link>
 
       <router-link @click="mobileMenuOpen = false" to="/gallery" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Gallery
+        {{ langStore.t('nav.gallery') }}
       </router-link>
 
       <router-link @click="mobileMenuOpen = false" to="/contact" class="block px-3 py-2 rounded font-medium hover:bg-white/10">
-        Contact
+        {{ langStore.t('nav.contact') }}
       </router-link>
 
       <router-link 
@@ -595,7 +595,7 @@ onUnmounted(() => {
         class="flex items-center gap-2 px-3 py-2 rounded font-medium bg-blue-600/30 text-white mt-2 border border-blue-400/30"
       >
         <LogIn class="w-4 h-4" />
-        <span>{{ isAuthenticated ? 'Dashboard' : (langStore.currentLang === 'am' ? 'ግባ (Login)' : (langStore.currentLang === 'om' ? 'Seensa (Login)' : 'Login')) }}</span>
+        <span>{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
       </router-link>
     </div>
   </header>
