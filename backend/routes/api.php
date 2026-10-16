@@ -155,6 +155,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/emergency-contacts', [AdminContentController::class, 'storeEmergencyContact']);
         Route::put('/admin/emergency-contacts/{id}', [AdminContentController::class, 'updateEmergencyContact']);
         Route::delete('/admin/emergency-contacts/{id}', [AdminContentController::class, 'deleteEmergencyContact']);
+
+        // Civic Opinion Polls Management
+        Route::get('/admin/polls', [AdminContentController::class, 'getPolls']);
+        Route::post('/admin/polls', [AdminContentController::class, 'storePoll']);
+        Route::put('/admin/polls/{id}', [AdminContentController::class, 'updatePoll']);
+        Route::patch('/admin/polls/{id}/toggle-active', [AdminContentController::class, 'togglePollActive']);
+        Route::post('/admin/polls/{id}/reset-votes', [AdminContentController::class, 'resetPollVotes']);
+        Route::delete('/admin/polls/{id}', [AdminContentController::class, 'deletePoll']);
     });
 
     // ----------------------------------------------------

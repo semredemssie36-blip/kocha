@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class AdminContentController extends Controller
 {
@@ -1105,5 +1106,178 @@ class AdminContentController extends Controller
     {
         DB::table('emergency_contacts')->where('id', $id)->delete();
         return response()->json(['message' => 'Emergency contact deleted successfully']);
+    }
+
+    // ==========================================
+    // CIVIC OPINION POLLS MANAGEMENT
+    // ==========================================
+    public function getPolls()
+    {
+        $polls = DB::table('polls')->orderBy('created_at', 'desc')->get();
+
+        foreach ($polls as $p) {
+            $options = DB::table('poll_options')->where('poll_id', $p->id)->orderBy('order')->get();
+            $p->options = $options;
+            $p->total_votes = $options->sum('votes_count');
+            $p->is_expired = !empty($p->expires_at) && Carbon::parse($p->expires_at)->endOfDay()->isPast();
+        }
+
+        return response()->json($polls);
+    }
+
+    public function storePoll(Request $request)
+    {
+        $validated = $request->validate([
+            'question_am' => 'required|string|max:500',
+            'question_en' => 'required|string|max:500',
+            'question_om' => 'nullable|string|max:500',
+            'description_am' => 'nullable|string',
+            'description_en' => 'nullable|string',
+            'description_om' => 'nullable|string',
+            'expires_at' => 'nullable|date',
+            'is_active' => 'nullable|boolean',
+            'options' => 'required|array|min:2',
+            'options.*.option_text_am' => 'required|string|max:300',
+            'options.*.option_text_en' => 'required|string|max:300',
+            'options.*.option_text_om' => 'nullable|string|max:300',
+        ]);
+
+        $isActive = $request->has('is_active') ? $request->boolean('is_active') : true;
+
+        if ($isActive) {
+            DB::table('polls')->update(['is_active' => false]);
+        }
+
+        $pollId = DB::table('polls')->insertGetId([
+            'question_am' => $validated['question_am'],
+            'question_en' => $validated['question_en'],
+            'question_om' => $validated['question_om'] ?? $validated['question_en'],
+            'description_am' => $validated['description_am'] ?? null,
+            'description_en' => $validated['description_en'] ?? null,
+            'description_om' => $validated['description_om'] ?? null,
+            'expires_at' => $validated['expires_at'] ?? null,
+            'is_active' => $isActive ? 1 : 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $order = 1;
+        foreach ($validated['options'] as $opt) {
+            DB::table('poll_options')->insert([
+                'poll_id' => $pollId,
+                'option_text_am' => $opt['option_text_am'],
+                'option_text_en' => $opt['option_text_en'],
+                'option_text_om' => $opt['option_text_om'] ?? $opt['option_text_en'],
+                'votes_count' => 0,
+                'order' => $order++,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return response()->json(['message' => 'Civic poll created successfully', 'id' => $pollId]);
+    }
+
+    public function updatePoll(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'question_am' => 'required|string|max:500',
+            'question_en' => 'required|string|max:500',
+            'question_om' => 'nullable|string|max:500',
+            'description_am' => 'nullable|string',
+            'description_en' => 'nullable|string',
+            'description_om' => 'nullable|string',
+            'expires_at' => 'nullable|date',
+            'is_active' => 'nullable|boolean',
+            'options' => 'required|array|min:2',
+            'options.*.option_text_am' => 'required|string|max:300',
+            'options.*.option_text_en' => 'required|string|max:300',
+            'options.*.option_text_om' => 'nullable|string|max:300',
+            'options.*.id' => 'nullable|integer',
+        ]);
+
+        $isActive = $request->has('is_active') ? $request->boolean('is_active') : false;
+
+        if ($isActive) {
+            DB::table('polls')->where('id', '!=', $id)->update(['is_active' => false]);
+        }
+
+        DB::table('polls')->where('id', $id)->update([
+            'question_am' => $validated['question_am'],
+            'question_en' => $validated['question_en'],
+            'question_om' => $validated['question_om'] ?? $validated['question_en'],
+            'description_am' => $validated['description_am'] ?? null,
+            'description_en' => $validated['description_en'] ?? null,
+            'description_om' => $validated['description_om'] ?? null,
+            'expires_at' => $validated['expires_at'] ?? null,
+            'is_active' => $isActive ? 1 : 0,
+            'updated_at' => now(),
+        ]);
+
+        $keptOptionIds = [];
+        $order = 1;
+        foreach ($validated['options'] as $opt) {
+            if (!empty($opt['id'])) {
+                DB::table('poll_options')->where('id', $opt['id'])->where('poll_id', $id)->update([
+                    'option_text_am' => $opt['option_text_am'],
+                    'option_text_en' => $opt['option_text_en'],
+                    'option_text_om' => $opt['option_text_om'] ?? $opt['option_text_en'],
+                    'order' => $order++,
+                    'updated_at' => now(),
+                ]);
+                $keptOptionIds[] = $opt['id'];
+            } else {
+                $newId = DB::table('poll_options')->insertGetId([
+                    'poll_id' => $id,
+                    'option_text_am' => $opt['option_text_am'],
+                    'option_text_en' => $opt['option_text_en'],
+                    'option_text_om' => $opt['option_text_om'] ?? $opt['option_text_en'],
+                    'votes_count' => 0,
+                    'order' => $order++,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $keptOptionIds[] = $newId;
+            }
+        }
+
+        // Delete options no longer present
+        if (!empty($keptOptionIds)) {
+            DB::table('poll_options')->where('poll_id', $id)->whereNotIn('id', $keptOptionIds)->delete();
+        }
+
+        return response()->json(['message' => 'Civic poll updated successfully']);
+    }
+
+    public function togglePollActive($id)
+    {
+        $poll = DB::table('polls')->where('id', $id)->first();
+        if (!$poll) {
+            return response()->json(['message' => 'Poll not found'], 404);
+        }
+
+        $newActive = !$poll->is_active;
+
+        if ($newActive) {
+            DB::table('polls')->update(['is_active' => false]);
+            DB::table('polls')->where('id', $id)->update(['is_active' => true, 'updated_at' => now()]);
+        } else {
+            DB::table('polls')->where('id', $id)->update(['is_active' => false, 'updated_at' => now()]);
+        }
+
+        return response()->json(['message' => 'Poll status updated', 'is_active' => $newActive]);
+    }
+
+    public function resetPollVotes($id)
+    {
+        DB::table('poll_votes')->where('poll_id', $id)->delete();
+        DB::table('poll_options')->where('poll_id', $id)->update(['votes_count' => 0]);
+        return response()->json(['message' => 'Poll votes and ballots reset successfully. Now accepting real votes.']);
+    }
+
+    public function deletePoll($id)
+    {
+        DB::table('polls')->where('id', $id)->delete();
+        return response()->json(['message' => 'Poll deleted successfully']);
     }
 }

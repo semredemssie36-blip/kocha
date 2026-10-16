@@ -145,7 +145,7 @@ const fetchHomeData = async () => {
     mayorData.value = mayorRes.data || {}
     if (pollRes.data && pollRes.data.poll) {
       pollData.value = pollRes.data
-      hasVoted.value = pollRes.data.has_voted
+      hasVoted.value = Boolean(pollRes.data.has_voted || pollRes.data.is_expired || pollRes.data.is_closed)
     }
     if (slidesRes.data && slidesRes.data.length > 0) {
       slides.value = slidesRes.data.map(s => ({
@@ -216,6 +216,15 @@ const getPollQuestion = () => {
   if (lang === 'am') return pollData.value.poll.question_am
   if (lang === 'om') return pollData.value.poll.question_om || pollData.value.poll.question_en
   return pollData.value.poll.question_en
+}
+
+const getPollDescription = () => {
+  if (!pollData.value?.poll) return ''
+  const lang = langStore.currentLang
+  if (lang === 'am' && pollData.value.poll.description_am) return pollData.value.poll.description_am
+  if (lang === 'om' && pollData.value.poll.description_om) return pollData.value.poll.description_om
+  if (pollData.value.poll.description_en) return pollData.value.poll.description_en
+  return lang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር የ 2018/19 አመታዊ በጀት ድልድልን ለማቀድ የህዝቡን ድምጽ ያደምጣል።' : (lang === 'om' ? 'Sagalee keessan kennuudhaan misooma magaalaa keenyaa murteessaa.' : 'Cast your vote anonymously. Total verified votes shape municipal capital planning.')
 }
 
 const getOptionText = (opt) => {
@@ -500,9 +509,19 @@ onUnmounted(() => {
     <section v-if="pollData && pollData.poll" class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10 bg-white">
       <div class="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-sm">
         <div class="max-w-3xl">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-3 border border-blue-200">
-            <Vote class="w-3.5 h-3.5" />
-            {{ langStore.currentLang === 'am' ? 'የህዝብ አስተያየት መስጫ (Civic Poll)' : 'Citizen Infrastructure Priority Poll' }}
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200">
+              <Vote class="w-3.5 h-3.5" />
+              {{ langStore.currentLang === 'am' ? 'የህዝብ አስተያየት መስጫ (Civic Poll)' : (langStore.currentLang === 'om' ? 'Gaaffii Yaada Lammiilee' : 'Citizen Priority Poll') }}
+            </div>
+            <span v-if="pollData.is_expired || pollData.is_closed" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200">
+              <Clock class="w-3 h-3" />
+              {{ langStore.currentLang === 'am' ? 'ተጠናቋል (የመጨረሻ ውጤት)' : 'Concluded (Final Results)' }}
+            </span>
+            <span v-else class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+              {{ langStore.currentLang === 'am' ? 'ንቁ መስጫ' : 'Active Balloting' }}
+            </span>
           </div>
 
           <h3 class="text-xl sm:text-2xl font-black text-slate-900 mb-2 leading-snug">
@@ -510,7 +529,7 @@ onUnmounted(() => {
           </h3>
 
           <p class="text-xs text-slate-500 mb-6">
-            {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር የ 2018/19 አመታዊ በጀት ድልድልን ለማቀድ የህዝቡን ድምጽ ያደምጣል።' : 'Cast your vote anonymously. Total verified votes shape municipal capital planning.' }}
+            {{ getPollDescription() }}
           </p>
 
           <!-- Vote Options / Results -->
@@ -527,7 +546,7 @@ onUnmounted(() => {
               ]"
               @click="!hasVoted && (selectedOption = opt.id)"
             >
-              <!-- Progress fill if already voted -->
+              <!-- Progress fill if already voted or expired -->
               <div 
                 v-if="hasVoted" 
                 class="absolute left-0 top-0 bottom-0 bg-blue-100 transition-all duration-500"
@@ -551,19 +570,23 @@ onUnmounted(() => {
                 </div>
 
                 <div v-if="hasVoted" class="text-xs font-mono font-bold text-blue-800 shrink-0">
-                  {{ getOptionPercentage(opt.votes_count) }}% ({{ opt.votes_count }} {{ langStore.currentLang === 'am' ? 'ድምፅ' : 'votes' }})
+                  {{ getOptionPercentage(opt.votes_count) }}% ({{ opt.votes_count }} {{ langStore.currentLang === 'am' ? 'ድምፅ' : (langStore.currentLang === 'om' ? 'sagalee' : 'votes') }})
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div v-if="pollData.is_expired || pollData.is_closed" class="text-xs text-amber-800 font-bold flex items-center gap-1.5">
+              <Clock class="w-4 h-4" />
+              <span>{{ langStore.currentLang === 'am' ? 'ይህ የህዝብ አስተያየት መስጫ ቀን አልፎበታል (ተጠናቋል)። የመጨረሻው የተረጋገጠ ውጤት ከላይ ቀርቧል።' : 'This civic poll has concluded. Final verified citizen voting results are shown.' }}</span>
+            </div>
             <button 
-              v-if="!hasVoted" 
+              v-else-if="!hasVoted" 
               @click="submitVote"
               :disabled="!selectedOption || voting"
-              class="px-6 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50"
+              class="px-6 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 self-start sm:self-auto"
             >
               {{ voting ? (langStore.currentLang === 'am' ? 'ድምፅዎ እየተመዘገበ ነው...' : 'Recording...') : (langStore.currentLang === 'am' ? 'ድምጽ ይስጡ' : 'Cast Vote') }}
             </button>
@@ -573,7 +596,7 @@ onUnmounted(() => {
             </div>
 
             <span class="text-xs text-slate-500 font-mono">
-              {{ totalVotes }} {{ langStore.currentLang === 'am' ? 'አጠቃላይ ድምጾች' : 'Total Verified Ballots' }}
+              {{ totalVotes }} {{ langStore.currentLang === 'am' ? 'አጠቃላይ ድምጾች' : (langStore.currentLang === 'om' ? 'Sagaleewwan Waliigalaa' : 'Total Verified Ballots') }}
             </span>
           </div>
         </div>

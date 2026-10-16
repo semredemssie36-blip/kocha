@@ -259,17 +259,17 @@ onUnmounted(() => {
     <div class="bg-[#0b3c5d] text-white">
       <div class="w-full max-w-[1700px] mx-auto px-3 sm:px-6 2xl:px-12 py-2 sm:py-2.5 2xl:py-3 flex items-center justify-between gap-2 lg:gap-4">
         <!-- Official Brand / Emblem -->
-        <router-link to="/" class="flex items-center gap-2.5 2xl:gap-3.5 group shrink-0 min-w-0 max-w-[240px] sm:max-w-none">
+        <router-link to="/" class="flex items-center gap-2 sm:gap-2.5 2xl:gap-3.5 group min-w-0 flex-1 xl:flex-initial">
           <img 
             src="/assets/logo.png" 
             alt="Kombolcha City Official Seal" 
-            class="w-10 h-10 2xl:w-12 2xl:h-12 object-contain rounded-full bg-white p-0.5 shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0"
+            class="w-8 h-8 sm:w-10 sm:h-10 2xl:w-12 2xl:h-12 object-contain rounded-full bg-white p-0.5 shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0"
           />
-          <div class="min-w-0">
-            <h1 class="text-xs sm:text-base 2xl:text-lg font-black tracking-tight text-white leading-tight truncate sm:overflow-visible">
+          <div class="min-w-0 flex-1">
+            <h1 class="text-[11px] xs:text-xs sm:text-base 2xl:text-lg font-black tracking-tight text-white leading-tight truncate">
               {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር' : (langStore.currentLang === 'om' ? 'Bulchiinsa Magaalaa Kombolchaa' : 'Kombolcha City Administration') }}
             </h1>
-            <p class="text-[10px] 2xl:text-[12px] text-sky-200 font-semibold tracking-wider uppercase truncate sm:overflow-visible">
+            <p class="hidden sm:block text-[9px] sm:text-[10px] 2xl:text-[12px] text-sky-200 font-semibold tracking-wider uppercase truncate">
               {{ langStore.currentLang === 'am' ? 'Kombolcha City Administration' : (langStore.currentLang === 'om' ? 'Kombolcha City Administration' : 'የኮምቦልቻ ከተማ አስተዳደር') }}
             </p>
           </div>
@@ -486,33 +486,35 @@ onUnmounted(() => {
         </nav>
 
         <!-- Right Action Items (Search + Admin Portal + Mobile Toggle) -->
-        <div class="flex items-center gap-1.5 2xl:gap-2.5 shrink-0 ml-auto xl:ml-0">
+        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
           <!-- Search Button -->
           <button 
             @click="searchModalOpen = true" 
-            class="p-2 rounded-full hover:bg-white/10 text-white transition-colors cursor-pointer" 
+            class="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-white transition-colors cursor-pointer shrink-0" 
             :title="langStore.t('nav.search_portal')"
           >
             <Search class="w-4 h-4" />
           </button>
 
-          <!-- Login / Dashboard Button -->
+          <!-- Login / Dashboard Button (Icon on small mobile, Full badge on sm+) -->
           <router-link 
             :to="isAuthenticated ? '/admin' : '/admin/login'" 
-            class="inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/25 rounded-md transition-all shadow-2xs shrink-0 whitespace-nowrap"
+            class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 2xl:px-3 py-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/25 rounded-md transition-all shadow-2xs shrink-0"
+            :title="isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login')"
           >
             <LogIn class="w-3.5 h-3.5 shrink-0" />
-            <span>{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
+            <span class="hidden sm:inline">{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
           </router-link>
 
-          <!-- Mobile Hamburger Toggle -->
+          <!-- Mobile Hamburger Toggle - Always visible and prominent on mobile -->
           <button 
             @click="mobileMenuOpen = !mobileMenuOpen" 
-            class="xl:hidden p-2 rounded-md hover:bg-white/10 text-white cursor-pointer ml-1"
+            class="xl:hidden p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white cursor-pointer shrink-0 ml-0.5"
             aria-label="Toggle Navigation Menu"
+            title="Toggle Menu"
           >
-            <X v-if="mobileMenuOpen" class="w-6 h-6" />
-            <Menu v-else class="w-6 h-6" />
+            <X v-if="mobileMenuOpen" class="w-5 h-5 sm:w-6 sm:h-6" />
+            <Menu v-else class="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
       </div>

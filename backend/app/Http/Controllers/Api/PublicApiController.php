@@ -247,6 +247,11 @@ class PublicApiController extends Controller
             return response()->json(null);
         }
 
+        $isExpired = false;
+        if (!empty($poll->expires_at)) {
+            $isExpired = Carbon::parse($poll->expires_at)->endOfDay()->isPast();
+        }
+
         $options = DB::table('poll_options')->where('poll_id', $poll->id)->orderBy('order')->get();
         
         // Check if user already voted from this IP
@@ -259,7 +264,9 @@ class PublicApiController extends Controller
         return response()->json([
             'poll' => $poll,
             'options' => $options,
-            'has_voted' => $hasVoted
+            'has_voted' => $hasVoted,
+            'is_expired' => $isExpired,
+            'is_closed' => $isExpired
         ]);
     }
 
@@ -268,6 +275,15 @@ class PublicApiController extends Controller
         $request->validate([
             'option_id' => 'required|integer|exists:poll_options,id'
         ]);
+
+        $poll = DB::table('polls')->where('id', $id)->first();
+        if (!$poll || !$poll->is_active) {
+            return response()->json(['message' => 'This poll is not currently active.'], 422);
+        }
+
+        if (!empty($poll->expires_at) && Carbon::parse($poll->expires_at)->endOfDay()->isPast()) {
+            return response()->json(['message' => 'This civic poll has concluded on ' . $poll->expires_at . ' and is no longer accepting new votes.'], 422);
+        }
 
         $ipHash = hash('sha256', $request->ip() . '_' . $request->header('User-Agent'));
 
