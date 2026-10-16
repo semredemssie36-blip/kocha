@@ -254,25 +254,25 @@ onUnmounted(() => {
       </div>
 
       <!-- Slide Overlay Content (Aligned with standard site container) -->
-      <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-16 sm:py-20 lg:py-24">
+      <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12 sm:py-20 lg:py-24">
         <div class="max-w-3xl text-white">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/40 text-blue-200 text-xs font-bold tracking-wider uppercase mb-4 border border-blue-400/30">
             <Landmark class="w-3.5 h-3.5 text-blue-300" />
             <span>{{ getSlideTag() }}</span>
           </div>
 
-          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-4 drop-shadow-sm">
+          <h1 class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight leading-tight mb-4 drop-shadow-sm break-words">
             {{ getSlideTitle() }}
           </h1>
 
-          <p class="text-base sm:text-lg text-slate-200 leading-relaxed mb-8 max-w-2xl">
+          <p class="text-sm sm:text-base lg:text-lg text-slate-200 leading-relaxed mb-6 sm:mb-8 max-w-2xl">
             {{ getSlideDesc() }}
           </p>
 
-          <div class="flex flex-wrap items-center gap-4">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <router-link 
               :to="activeSlide.cta_link" 
-              class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-extrabold text-sm transition-colors cursor-pointer shadow-md"
+              class="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-extrabold text-sm transition-colors cursor-pointer shadow-md text-center"
             >
               <span>{{ getSlideCta() }}</span>
               <ArrowRight class="w-4 h-4" />
@@ -280,7 +280,7 @@ onUnmounted(() => {
 
             <router-link 
               to="/about" 
-              class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-sm border border-white/30 backdrop-blur-sm transition-colors"
+              class="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-sm border border-white/30 backdrop-blur-sm transition-colors text-center"
             >
               {{ langStore.t('nav.about') }}
             </router-link>

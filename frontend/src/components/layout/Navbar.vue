@@ -108,13 +108,13 @@ onUnmounted(() => {
 <template>
   <header class="sticky top-0 z-50 shadow-md">
     <!-- Top Utility Bar (White background, social icons, Internal Board, Language selector) -->
-    <div class="bg-white border-b border-slate-200 py-1.5 px-4 sm:px-8 xl:px-12 text-xs text-slate-600">
-      <div class="w-full max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3">
+    <div class="bg-white border-b border-slate-200 py-1.5 px-3 sm:px-6 2xl:px-12 text-xs text-slate-600 overflow-hidden">
+      <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2 min-w-0">
         <!-- Left: 24/7 Emergency Dispatch Hotlines -->
-        <div class="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5 max-w-full">
-          <div class="flex items-center gap-1.5 shrink-0 pr-1 text-slate-900 font-extrabold">
+        <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full md:w-auto min-w-0">
+          <div class="flex items-center gap-1.5 shrink-0 pr-1 text-slate-900 font-extrabold text-[11px]">
             <PhoneCall class="w-3.5 h-3.5 text-red-600 shrink-0" />
-            <span class="uppercase tracking-wider text-[11px] whitespace-nowrap">
+            <span class="uppercase tracking-wider whitespace-nowrap">
               {{ langStore.currentLang === 'am' ? 'የ 24/7 ድንገተኛ ጥሪዎች' : (langStore.currentLang === 'om' ? 'Sarara Balaa (24/7)' : '24/7 Hotlines') }}:
             </span>
           </div>
@@ -125,7 +125,7 @@ onUnmounted(() => {
               :key="item.phone"
               :href="'tel:' + item.phone"
               :class="[
-                'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border text-[11px] font-bold transition-colors shrink-0 shadow-2xs',
+                'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] sm:text-[11px] font-bold transition-colors shrink-0 shadow-2xs',
                 item.color
               ]"
               :title="getEmergencyName(item) + ': ' + item.phone"
@@ -138,9 +138,9 @@ onUnmounted(() => {
         </div>
 
         <!-- Right: Social Media, Internal Board & Language Dropdown -->
-        <div class="flex items-center gap-4 sm:gap-6 ml-auto">
+        <div class="flex items-center justify-between md:justify-end gap-3 sm:gap-5 shrink-0 w-full md:w-auto pt-1 md:pt-0 border-t md:border-t-0 border-slate-100">
           <!-- Social Icons (Matching Old Government Website) -->
-          <div class="flex items-center gap-3 text-slate-600">
+          <div class="flex items-center gap-2.5 sm:gap-3 text-slate-600">
             <!-- Facebook -->
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-[#0b3c5d] transition-colors" title="Facebook">
               <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -166,14 +166,14 @@ onUnmounted(() => {
           <span class="text-slate-300">|</span>
 
           <!-- Internal Board Link (Government Staff Portal) -->
-          <router-link to="/internal-board" class="font-semibold text-slate-700 hover:text-[#0b3c5d] transition-colors flex items-center gap-1">
+          <router-link to="/internal-board" class="font-semibold text-slate-700 hover:text-[#0b3c5d] transition-colors flex items-center gap-1 whitespace-nowrap">
             <span>{{ langStore.t('nav.internal_board') }}</span>
           </router-link>
 
           <span class="text-slate-300">|</span>
 
           <!-- Language Selector Dropdown -->
-          <div class="relative lang-selector">
+          <div class="relative lang-selector shrink-0">
             <button 
               @click.stop="langDropdownOpen = !langDropdownOpen" 
               class="flex items-center gap-1.5 font-bold text-slate-700 hover:text-[#0b3c5d] py-1 transition-colors cursor-pointer"
@@ -207,30 +207,30 @@ onUnmounted(() => {
 
     <!-- Main Navigation Bar: Official Municipal Deep Navy Blue (#0b3c5d / #0c4a6e) -->
     <div class="bg-[#0b3c5d] text-white">
-      <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-3 flex items-center justify-between gap-4">
+      <div class="w-full max-w-[1700px] mx-auto px-3 sm:px-6 2xl:px-12 py-2 sm:py-2.5 2xl:py-3 flex items-center justify-between gap-2 lg:gap-4">
         <!-- Official Brand / Emblem -->
-        <router-link to="/" class="flex items-center gap-3.5 group shrink-0">
+        <router-link to="/" class="flex items-center gap-2.5 2xl:gap-3.5 group shrink-0 min-w-0 max-w-[240px] sm:max-w-none">
           <img 
             src="/assets/logo.png" 
             alt="Kombolcha City Official Seal" 
-            class="w-12 h-12 object-contain rounded-full bg-white p-0.5 shadow-md group-hover:scale-105 transition-transform duration-200"
+            class="w-10 h-10 2xl:w-12 2xl:h-12 object-contain rounded-full bg-white p-0.5 shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0"
           />
-          <div>
-            <h1 class="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
+          <div class="min-w-0">
+            <h1 class="text-xs sm:text-base 2xl:text-lg font-black tracking-tight text-white leading-tight truncate sm:overflow-visible">
               {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር' : (langStore.currentLang === 'om' ? 'Bulchiinsa Magaalaa Kombolchaa' : 'Kombolcha City Administration') }}
             </h1>
-            <p class="text-[12px] text-sky-200 font-semibold tracking-wider uppercase">
+            <p class="text-[10px] 2xl:text-[12px] text-sky-200 font-semibold tracking-wider uppercase truncate sm:overflow-visible">
               {{ langStore.currentLang === 'am' ? 'Kombolcha City Administration' : (langStore.currentLang === 'om' ? 'Kombolcha City Administration' : 'የኮምቦልቻ ከተማ አስተዳደር') }}
             </p>
           </div>
         </router-link>
 
         <!-- Desktop Navigation Items (Exact structure from kombolchacity.gov.et) -->
-        <nav class="hidden xl:flex items-center gap-0.5 lg:gap-1 text-[13px] font-semibold text-white">
+        <nav class="hidden xl:flex items-center gap-0.5 2xl:gap-1 text-[11px] 2xl:text-[13px] font-semibold text-white min-w-0">
           <!-- Home -->
           <router-link 
             to="/" 
-            class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
+            class="px-2 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors whitespace-nowrap"
             :class="{ 'bg-white/15': route.path === '/' }"
           >
             {{ langStore.t('nav.home') }}
@@ -244,11 +244,11 @@ onUnmounted(() => {
           >
             <router-link 
               to="/about" 
-              class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1"
+              class="px-2 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1 whitespace-nowrap"
               :class="{ 'bg-white/15': route.path.startsWith('/about') }"
             >
               <span>{{ langStore.t('nav.about') }}</span>
-              <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
+              <ChevronDown class="w-3 h-3 2xl:w-3.5 2xl:h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </router-link>
 
             <!-- About Dropdown Menu -->
@@ -286,11 +286,11 @@ onUnmounted(() => {
             @mouseleave="activeDropdown = null"
           >
             <button 
-              class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
+              class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
               :class="{ 'bg-white/15': route.path.startsWith('/government') }"
             >
               <span>{{ langStore.t('nav.government') }}</span>
-              <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
+              <ChevronDown class="w-3 h-3 2xl:w-3.5 2xl:h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </button>
 
             <!-- Government Dropdown Menu -->
@@ -329,11 +329,11 @@ onUnmounted(() => {
           >
             <router-link 
               to="/media/news" 
-              class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1"
+              class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1 whitespace-nowrap"
               :class="{ 'bg-white/15': route.path.startsWith('/media') }"
             >
               <span>{{ langStore.t('nav.news') }}</span>
-              <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
+              <ChevronDown class="w-3 h-3 2xl:w-3.5 2xl:h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </router-link>
 
             <!-- News Dropdown Menu -->
@@ -361,7 +361,7 @@ onUnmounted(() => {
           <!-- Service -->
           <router-link 
             to="/services" 
-            class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
+            class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors whitespace-nowrap"
             :class="{ 'bg-white/15': route.path === '/services' }"
           >
             {{ langStore.t('nav.services') }}
@@ -370,7 +370,7 @@ onUnmounted(() => {
           <!-- Explore -->
           <router-link 
             to="/explore" 
-            class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
+            class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors whitespace-nowrap"
             :class="{ 'bg-white/15': route.path === '/explore' }"
           >
             {{ langStore.t('nav.explore') }}
@@ -384,11 +384,11 @@ onUnmounted(() => {
           >
             <router-link 
               to="/projects" 
-              class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1"
+              class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors flex items-center gap-1 whitespace-nowrap"
               :class="{ 'bg-white/15': route.path === '/projects' }"
             >
               <span>{{ langStore.t('nav.projects') }}</span>
-              <ChevronDown class="w-3.5 h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
+              <ChevronDown class="w-3 h-3 2xl:w-3.5 2xl:h-3.5 opacity-80 group-hover:rotate-180 transition-transform" />
             </router-link>
 
             <!-- Project Dropdown Menu -->
@@ -410,7 +410,7 @@ onUnmounted(() => {
           <!-- Resources -->
           <router-link 
             to="/resources" 
-            class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
+            class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors whitespace-nowrap"
             :class="{ 'bg-white/15': route.path === '/resources' }"
           >
             {{ langStore.t('nav.resources') }}
@@ -419,7 +419,7 @@ onUnmounted(() => {
           <!-- Gallery -->
           <router-link 
             to="/gallery" 
-            class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
+            class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors whitespace-nowrap"
             :class="{ 'bg-white/15': route.path === '/gallery' }"
           >
             {{ langStore.t('nav.gallery') }}
@@ -428,7 +428,7 @@ onUnmounted(() => {
           <!-- Contact -->
           <router-link 
             to="/contact" 
-            class="px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors"
+            class="px-1.5 2xl:px-2.5 py-1.5 rounded hover:bg-white/10 transition-colors whitespace-nowrap"
             :class="{ 'bg-white/15': route.path === '/contact' }"
           >
             {{ langStore.t('nav.contact') }}
@@ -436,7 +436,7 @@ onUnmounted(() => {
         </nav>
 
         <!-- Right Action Items (Search + Admin Portal + Mobile Toggle) -->
-        <div class="flex items-center gap-2.5 shrink-0">
+        <div class="flex items-center gap-1.5 2xl:gap-2.5 shrink-0 ml-auto xl:ml-0">
           <!-- Search Button -->
           <button 
             @click="searchModalOpen = true" 
@@ -449,16 +449,17 @@ onUnmounted(() => {
           <!-- Login / Dashboard Button -->
           <router-link 
             :to="isAuthenticated ? '/admin' : '/admin/login'" 
-            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/25 rounded-md transition-all shadow-2xs"
+            class="inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 border border-white/25 rounded-md transition-all shadow-2xs shrink-0 whitespace-nowrap"
           >
-            <LogIn class="w-3.5 h-3.5" />
+            <LogIn class="w-3.5 h-3.5 shrink-0" />
             <span>{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
           </router-link>
 
           <!-- Mobile Hamburger Toggle -->
           <button 
             @click="mobileMenuOpen = !mobileMenuOpen" 
-            class="xl:hidden p-2 rounded-md hover:bg-white/10 text-white"
+            class="xl:hidden p-2 rounded-md hover:bg-white/10 text-white cursor-pointer ml-1"
+            aria-label="Toggle Navigation Menu"
           >
             <X v-if="mobileMenuOpen" class="w-6 h-6" />
             <Menu v-else class="w-6 h-6" />

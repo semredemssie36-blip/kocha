@@ -30,7 +30,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-white text-slate-800">
+  <div class="min-h-screen flex flex-col bg-white text-slate-800 overflow-x-hidden w-full max-w-full">
     <!-- Maintenance Holding Screen for Public Visitors -->
     <div v-if="isMaintenanceActive" class="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-6 text-center">
       <div class="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 mb-6 shadow-xl animate-pulse">
