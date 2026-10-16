@@ -91,32 +91,34 @@ const getMayorKeynote = () => {
 
 const activeSlide = computed(() => slides.value[currentSlide.value] || slides.value[0])
 
+const isValidText = (val) => val && typeof val === 'string' && !val.startsWith('???') && val.trim() !== ''
+
 const getSlideTag = () => {
   const lang = langStore.currentLang
-  if (lang === 'am') return activeSlide.value.tag_am
-  if (lang === 'om') return activeSlide.value.tag_om || activeSlide.value.tag_en
-  return activeSlide.value.tag_en
+  if (lang === 'am' && isValidText(activeSlide.value?.tag_am)) return activeSlide.value.tag_am
+  if (lang === 'om' && isValidText(activeSlide.value?.tag_om)) return activeSlide.value.tag_om
+  return activeSlide.value?.tag_en || activeSlide.value?.tag_am || 'Kombolcha City'
 }
 
 const getSlideTitle = () => {
   const lang = langStore.currentLang
-  if (lang === 'am') return activeSlide.value.title_am
-  if (lang === 'om') return activeSlide.value.title_om || activeSlide.value.title_en
-  return activeSlide.value.title_en
+  if (lang === 'am' && isValidText(activeSlide.value?.title_am)) return activeSlide.value.title_am
+  if (lang === 'om' && isValidText(activeSlide.value?.title_om)) return activeSlide.value.title_om
+  return activeSlide.value?.title_en || activeSlide.value?.title_am || 'Kombolcha City Administration'
 }
 
 const getSlideDesc = () => {
   const lang = langStore.currentLang
-  if (lang === 'am') return activeSlide.value.desc_am
-  if (lang === 'om') return activeSlide.value.desc_om || activeSlide.value.desc_en
-  return activeSlide.value.desc_en
+  if (lang === 'am' && isValidText(activeSlide.value?.desc_am)) return activeSlide.value.desc_am
+  if (lang === 'om' && isValidText(activeSlide.value?.desc_om)) return activeSlide.value.desc_om
+  return activeSlide.value?.desc_en || activeSlide.value?.desc_am || ''
 }
 
 const getSlideCta = () => {
   const lang = langStore.currentLang
-  if (lang === 'am') return activeSlide.value.cta_am
-  if (lang === 'om') return activeSlide.value.cta_om || activeSlide.value.cta_en
-  return activeSlide.value.cta_en
+  if (lang === 'am' && isValidText(activeSlide.value?.cta_am)) return activeSlide.value.cta_am
+  if (lang === 'om' && isValidText(activeSlide.value?.cta_om)) return activeSlide.value.cta_om
+  return activeSlide.value?.cta_en || activeSlide.value?.cta_am || 'Explore'
 }
 
 const nextSlide = () => {

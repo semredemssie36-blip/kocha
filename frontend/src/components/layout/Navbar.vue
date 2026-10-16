@@ -106,9 +106,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 shadow-md">
+  <header class="relative z-30 shadow-xs">
     <!-- Top Utility Bar (White background, social icons, Internal Board, Language selector) -->
-    <div class="bg-white border-b border-slate-200 py-1.5 px-3 sm:px-6 2xl:px-12 text-xs text-slate-600 overflow-hidden">
+    <div class="bg-white border-b border-slate-200 py-1.5 px-3 sm:px-6 2xl:px-12 text-xs text-slate-600">
       <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2 min-w-0">
         <!-- Left: 24/7 Emergency Dispatch Hotlines -->
         <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full md:w-auto min-w-0">
@@ -185,14 +185,14 @@ onUnmounted(() => {
             <!-- Dropdown Menu -->
             <div 
               v-if="langDropdownOpen" 
-              class="absolute right-0 top-full mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-50 text-xs"
+              class="absolute right-0 top-full mt-1.5 w-44 bg-white border border-slate-200 rounded-xl shadow-2xl py-1.5 z-50 text-xs font-semibold"
             >
               <button 
                 v-for="l in languages" 
                 :key="l.code"
                 @click="switchLanguage(l.code)"
                 :class="[
-                  'w-full text-left px-3 py-1.5 font-medium transition-colors cursor-pointer flex items-center justify-between',
+                  'w-full text-left px-3.5 py-2 font-medium transition-colors cursor-pointer flex items-center justify-between',
                   langStore.currentLang === l.code ? 'bg-blue-50 text-[#0b3c5d] font-bold' : 'text-slate-700 hover:bg-slate-50'
                 ]"
               >
@@ -598,6 +598,24 @@ onUnmounted(() => {
         <LogIn class="w-4 h-4" />
         <span>{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
       </router-link>
+
+      <!-- Mobile Language Selector -->
+      <div class="pt-3 mt-3 pb-1 border-t border-white/10 flex items-center justify-between">
+        <span class="text-xs text-sky-200 uppercase font-bold tracking-wider">Language:</span>
+        <div class="flex items-center gap-1.5">
+          <button 
+            v-for="l in languages" 
+            :key="l.code"
+            @click="switchLanguage(l.code); mobileMenuOpen = false"
+            :class="[
+              'px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer',
+              langStore.currentLang === l.code ? 'bg-blue-600 text-white' : 'bg-white/10 text-sky-100 hover:bg-white/20'
+            ]"
+          >
+            {{ l.label }}
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 </template>
