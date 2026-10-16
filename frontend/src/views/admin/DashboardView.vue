@@ -1225,7 +1225,7 @@ onUnmounted(() => {
     <header class="bg-slate-900 border-b border-slate-800 text-white px-6 py-3 flex items-center justify-between shrink-0 z-30 shadow-md">
       <!-- Left: Logo & Portal Title -->
       <div class="flex items-center gap-3">
-        <img src="/assets/city_logo.png" alt="Seal" class="w-10 h-10 object-contain rounded-full border border-blue-400/40" />
+        <img src="/assets/logo.png" alt="Seal" class="w-10 h-10 object-contain rounded-full border border-blue-400/40 bg-white p-0.5" />
         <div>
           <h1 class="text-sm font-black tracking-tight text-white flex items-center gap-2">
             {{ adminT('portal_title') }}

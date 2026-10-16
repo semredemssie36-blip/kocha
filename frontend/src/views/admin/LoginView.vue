@@ -49,9 +49,7 @@ async function handleLogin() {
   <div class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-slate-100">
       <div class="text-center mb-8">
-        <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30">
-          <Building2 class="w-7 h-7" />
-        </div>
+        <img src="/assets/logo.png" alt="Kombolcha City Seal" class="w-16 h-16 object-contain rounded-full bg-white p-1 shadow-md border border-slate-100 mx-auto mb-3" />
         <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Login</h2>
         <p class="text-xs text-slate-500 mt-1">Kombolcha Metropolitan Administration CMS</p>
       </div>

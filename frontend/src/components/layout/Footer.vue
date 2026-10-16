@@ -11,9 +11,7 @@ const langStore = useLanguageStore()
       <!-- Col 1: About City -->
       <div class="space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-            <Building2 class="w-6 h-6" />
-          </div>
+          <img src="/assets/logo.png" alt="Kombolcha City Seal" class="w-10 h-10 object-contain rounded-full bg-white p-0.5 shadow-md" />
           <div>
             <h3 class="text-base font-bold text-white tracking-tight">{{ langStore.t('common.city_name') }}</h3>
             <p class="text-xs text-slate-400 font-medium">Kombolcha Metropolitan Administration</p>

@@ -211,7 +211,7 @@ onUnmounted(() => {
         <!-- Official Brand / Emblem -->
         <router-link to="/" class="flex items-center gap-3.5 group shrink-0">
           <img 
-            src="/assets/city_logo.png" 
+            src="/assets/logo.png" 
             alt="Kombolcha City Official Seal" 
             class="w-12 h-12 object-contain rounded-full bg-white p-0.5 shadow-md group-hover:scale-105 transition-transform duration-200"
           />
