@@ -55,7 +55,11 @@ import {
   Film,
   Play,
   Compass,
-  Menu
+  Menu,
+  PhoneCall,
+  ShieldAlert,
+  Flame,
+  Droplets
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -112,9 +116,12 @@ const adminTranslations = {
     nav_projects: 'Mega Infrastructure',
     nav_resources: 'Resources & Directives',
     nav_destinations: 'Tourism & Destinations',
+    nav_hotlines: '24/7 Hotlines & Dispatch',
     nav_messages: 'Citizen Inquiries',
     nav_staff: 'Staff Accounts',
     nav_settings: 'Site Settings & Maintenance',
+    hotlines_title: '24/7 Emergency Dispatch Hotlines',
+    add_hotline: 'Add Emergency Hotline',
 
     // Dashboard Overview
     overview_title: 'Dashboard Overview',
@@ -200,9 +207,12 @@ const adminTranslations = {
     nav_projects: 'ግዙፍ የመሰረተ ልማት ፕሮጀክቶች',
     nav_resources: 'መመሪያዎችና ሰነዶች',
     nav_destinations: 'ቱሪዝም እና መዳረሻዎች',
+    nav_hotlines: '24/7 ድንገተኛ ጥሪዎች',
     nav_messages: 'የዜጎች ጥያቄዎችና አስተያየቶች',
     nav_staff: 'የሠራተኞች መለያዎች',
     nav_settings: 'የስርዓት ቅንብሮች እና ጥገና',
+    hotlines_title: 'የ 24/7 ድንገተኛ ጥሪዎችና መረጃ መስመሮች',
+    add_hotline: 'አዲስ የድንገተኛ ስልክ አክል',
 
     // Dashboard Overview
     overview_title: 'ዳሽቦርድ አጠቃላይ እይታ',
@@ -251,6 +261,45 @@ const adminTranslations = {
     dict_synced: 'የሶስት ቋንቋዎች መዝገበ-ቃላት ተመሳስለዋል (አማርኛ፣ እንግሊዝኛ፣ አፋን ኦሮሞ)',
     pinia_verified: 'የስቴት ማከማቻ (Pinia) ተረጋግጧል',
     seeded_offices: '22 የመንግስት መስሪያ ቤቶችና 4 ክፍለ ከተሞች ተመዝግበዋል'
+  },
+  om: {
+    portal_title: 'Poortaalii Bulchiinsa Kombolchaa',
+    portal_sub: 'Bulchiinsa Magaalaa Kombolchaa',
+    search_placeholder: 'Oduu, caalbaasii, waajjiraalee, ergaa lammiilee barbaadaa...',
+    live_site: 'Marsariitii Kallattii',
+    notifications: 'Beeksisoota',
+    new: 'Haaraa',
+    mark_all_read: 'Hunda dubbiseera',
+    no_notifications: 'Beeksisni haaraa hin jiru',
+    all_caught_up: 'Gaaffiileen lammiilee fi beeksisoonni sirnaa hundi ilaalamaniiru.',
+    go_to_inbox: 'Gara Saanduqa Lammiilee Dhaqi',
+    sign_out: 'Ba\'i',
+    my_profile: 'Qindaa\'ina Eenyummaa fi Jecha Icchiitii',
+    cat_media_visuals: 'Miidiyaa fi Suuraa',
+    cat_content_media: 'Qabiyyee fi Miidiyaa',
+    cat_governance: 'Bulchiinsa fi Hoggansa',
+    cat_services_resources: 'Tajaajiloota fi Qabeenya',
+    cat_civic_feedback: 'Yaada Lammiilee',
+    cat_administration: 'Bulchiinsa Sirnaa',
+    nav_dashboard: 'Ilaalcha Waliigalaa',
+    nav_hero_slides: 'Qindeessaa Islaayidii',
+    nav_gallery: 'Kuusaa Suuraa fi Viidiyoo',
+    nav_news: 'Oduu fi Ibsa',
+    nav_tenders: 'Caalbaasii Mootummaa',
+    nav_vacancies: 'Banaa Hojii',
+    nav_mayor: 'Eenyummaa fi Ergaa Kantiibaa',
+    nav_leadership: 'Kaabinee fi Koree Magaalaa',
+    nav_offices: 'Baafata Waajjiraalee',
+    nav_services: 'Tajaajila Lammiilee',
+    nav_projects: 'Pirojektoota Gurguddoo',
+    nav_resources: 'Qajeelfamoota fi Sanadoota',
+    nav_destinations: 'Daawwannaa fi Bakkeewwan',
+    nav_hotlines: 'Sarara Balaa 24/7',
+    nav_messages: 'Gaaffiilee Lammiilee',
+    nav_staff: 'Hojjattoota Sirnaa',
+    nav_settings: 'Qindaa\'ina fi Suphaa',
+    hotlines_title: 'Sarara Balaa fi Tajaajila Tasaa (24/7)',
+    add_hotline: 'Lakkoofsa Balaa Haaraa Dabali'
   }
 }
 
@@ -329,6 +378,7 @@ const can = computed(() => ({
 
   manageStaff: isSuperAdmin.value,
   manageSettings: isSuperAdmin.value,
+  manageHotlines: isEditor.value,
   canDelete: isEditor.value
 }))
 
@@ -515,6 +565,7 @@ const leadershipList = ref([])
 const galleryList = ref([])
 const heroSlidesList = ref([])
 const destinationsList = ref([])
+const emergencyContactsList = ref([])
 const siteSettings = ref({
   site_name_en: 'Kombolcha City Administration',
   site_name_am: 'የኮምቦልቻ ከተማ አስተዳደር',
@@ -630,6 +681,48 @@ const officeForm = reactive({
   name_am: '', name_en: '', name_om: '', phone: '', email: '', building_location_am: '', room_number: ''
 })
 
+const emergencyContactForm = reactive({
+  name_en: '',
+  name_am: '',
+  name_om: '',
+  phone_number: '',
+  icon_name: 'PhoneCall',
+  badge_color: 'red',
+  order: 0,
+  is_active: 1
+})
+
+const hotlineIconMap = {
+  ShieldAlert,
+  Flame,
+  Activity,
+  Droplets,
+  Zap,
+  PhoneCall,
+  Phone,
+  Building2,
+  ShieldCheck
+}
+
+function getHotlineIcon(name) {
+  return hotlineIconMap[name] || PhoneCall
+}
+
+const hotlineColorClasses = {
+  red: 'bg-red-50 text-red-700 border-red-200',
+  orange: 'bg-orange-50 text-orange-700 border-orange-200',
+  rose: 'bg-rose-50 text-rose-700 border-rose-200',
+  blue: 'bg-blue-50 text-blue-700 border-blue-200',
+  amber: 'bg-amber-50 text-amber-700 border-amber-200',
+  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  purple: 'bg-purple-50 text-purple-700 border-purple-200'
+}
+
+function getHotlineBadgeClass(color) {
+  return hotlineColorClasses[color] || hotlineColorClasses.red
+}
+
 const leadershipForm = reactive({
   type: 'cabinet', name_am: '', name_en: '', name_om: '', position_am: '', position_en: '', position_om: '', photo_path: '', phone: '', email: ''
 })
@@ -658,7 +751,7 @@ async function fetchAllAdminData() {
 
     // 2. Editorial & Operational endpoints (editor, super_admin)
     if (isEditor.value) {
-      const [tendersRes, vacanciesRes, projectsRes, officesRes, msgsRes, mayorRes, leadershipRes, slidesRes, servicesRes, destinationsRes] = await Promise.all([
+      const [tendersRes, vacanciesRes, projectsRes, officesRes, msgsRes, mayorRes, leadershipRes, slidesRes, servicesRes, destinationsRes, emergencyRes] = await Promise.all([
         api.get('/tenders').catch(() => ({ data: [] })),
         api.get('/vacancies').catch(() => ({ data: [] })),
         api.get('/projects').catch(() => ({ data: [] })),
@@ -668,7 +761,8 @@ async function fetchAllAdminData() {
         api.get('/leadership').catch(() => ({ data: [] })),
         api.get('/admin/hero-slides').catch(() => ({ data: [] })),
         api.get('/services').catch(() => ({ data: [] })),
-        api.get('/admin/destinations').catch(() => ({ data: [] }))
+        api.get('/admin/destinations').catch(() => ({ data: [] })),
+        api.get('/admin/emergency-contacts').catch(() => ({ data: [] }))
       ])
 
       tendersList.value = tendersRes.data || []
@@ -682,6 +776,7 @@ async function fetchAllAdminData() {
       heroSlidesList.value = slidesRes.data || []
       servicesList.value = servicesRes.data || []
       destinationsList.value = destinationsRes.data || []
+      emergencyContactsList.value = emergencyRes.data || []
     }
 
     // 3. Super Admin Only endpoints
@@ -704,6 +799,29 @@ async function fetchAllAdminData() {
     console.error('Error fetching admin data:', err)
   } finally {
     loading.value = false
+  }
+}
+
+async function fetchEmergencyContacts() {
+  try {
+    const res = await api.get('/admin/emergency-contacts')
+    emergencyContactsList.value = res.data || []
+  } catch (err) {
+    console.error('Error fetching emergency contacts:', err)
+  }
+}
+
+async function toggleHotlineStatus(contact) {
+  try {
+    const newStatus = contact.is_active ? 0 : 1
+    await api.put(`/admin/emergency-contacts/${contact.id}`, {
+      ...contact,
+      is_active: newStatus
+    })
+    contact.is_active = newStatus
+    showToast(`Hotline "${contact.name_en}" ${newStatus ? 'activated on live portal' : 'deactivated'}.`)
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to toggle hotline status.')
   }
 }
 
@@ -806,6 +924,15 @@ function openNewModal(type) {
     destinationForm.features = ''
     destinationForm.image_path = ''
     destinationForm.order = 0
+  } else if (type === 'emergency_contact') {
+    emergencyContactForm.name_en = ''
+    emergencyContactForm.name_am = ''
+    emergencyContactForm.name_om = ''
+    emergencyContactForm.phone_number = ''
+    emergencyContactForm.icon_name = 'PhoneCall'
+    emergencyContactForm.badge_color = 'red'
+    emergencyContactForm.order = emergencyContactsList.value.length + 1
+    emergencyContactForm.is_active = 1
   }
 }
 
@@ -932,6 +1059,15 @@ function editItem(type, item) {
     destinationForm.features = item.features || ''
     destinationForm.image_path = item.image_path || ''
     destinationForm.order = item.order || 0
+  } else if (type === 'emergency_contact') {
+    emergencyContactForm.name_en = item.name_en || ''
+    emergencyContactForm.name_am = item.name_am || ''
+    emergencyContactForm.name_om = item.name_om || ''
+    emergencyContactForm.phone_number = item.phone_number || ''
+    emergencyContactForm.icon_name = item.icon_name || 'PhoneCall'
+    emergencyContactForm.badge_color = item.badge_color || 'red'
+    emergencyContactForm.order = item.order || 0
+    emergencyContactForm.is_active = item.is_active !== undefined ? (item.is_active ? 1 : 0) : 1
   }
 }
 
@@ -988,6 +1124,10 @@ async function submitActiveModal() {
       if (isEdit) await api.put(`/admin/destinations/${id}`, destinationForm)
       else await api.post('/admin/destinations', destinationForm)
       showToast(isEdit ? 'Destination spotlight updated!' : 'New destination spotlight created!')
+    } else if (modalType.value === 'emergency_contact') {
+      if (isEdit) await api.put(`/admin/emergency-contacts/${id}`, emergencyContactForm)
+      else await api.post('/admin/emergency-contacts', emergencyContactForm)
+      showToast(isEdit ? 'Emergency hotline updated successfully!' : 'Emergency hotline added successfully!')
     }
     modalType.value = ''
     editingId.value = null
@@ -1616,6 +1756,20 @@ onUnmounted(() => {
               <span>{{ adminT('nav_destinations') }}</span>
             </div>
             <span v-if="destinationsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ destinationsList.length }}</span>
+          </button>
+          <button 
+            v-if="can.manageHotlines"
+            @click="selectSection('hotlines')"
+            :class="[
+              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'hotlines' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            ]"
+          >
+            <div class="flex items-center gap-3">
+              <PhoneCall class="w-4 h-4 shrink-0 text-red-400" />
+              <span>{{ adminT('nav_hotlines') || '24/7 Hotlines' }}</span>
+            </div>
+            <span v-if="emergencyContactsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-red-500/30 text-red-200 font-mono font-bold">{{ emergencyContactsList.length }}</span>
           </button>
 
           <!-- Citizen Interaction Category -->
@@ -3004,6 +3158,27 @@ onUnmounted(() => {
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
+            <!-- Hotlines Management Quick Card in Settings -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-200 shadow-2xs">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <PhoneCall class="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-sm text-slate-900">24/7 Emergency Dispatch Hotlines</h4>
+                  <p class="text-xs text-slate-500">Manage telephone numbers, dispatch lines, icons and colors for Police, Fire, Ambulance and utilities.</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                @click="selectSection('hotlines')"
+                class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold cursor-pointer transition-colors shadow-xs shrink-0 flex items-center gap-1.5 self-start sm:self-auto"
+              >
+                <span>Manage Hotlines ({{ emergencyContactsList.length }})</span>
+                <ChevronRight class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             <!-- Maintenance Mode Toggle Switch -->
             <div 
               class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border transition-all"
@@ -3050,6 +3225,168 @@ onUnmounted(() => {
             <button @click="updateSettings" class="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer shadow-md">
               Save System Settings
             </button>
+          </div>
+        </div>
+
+        <!-- 14. 24/7 EMERGENCY HOTLINES MANAGEMENT -->
+        <div v-else-if="activeSection === 'hotlines'" class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 text-red-600 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <PhoneCall class="w-4 h-4 shrink-0" />
+                <span>{{ adminT('stat_hotlines_status') || '24/7 Rapid Emergency Response Desk' }}</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900">{{ adminT('hotlines_title') || '24/7 Emergency Dispatch Hotlines' }}</h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Manage telephone numbers, emergency dispatch services, and badge colors displayed on the top bar across the public portal.
+              </p>
+            </div>
+            <button 
+              @click="openNewModal('emergency_contact')" 
+              class="px-5 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-red-600/20 shrink-0 transition-colors"
+            >
+              <Plus class="w-4 h-4" />
+              <span>{{ adminT('add_hotline') || 'Add Emergency Hotline' }}</span>
+            </button>
+          </div>
+
+          <!-- Live Top Bar Public Preview -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+                <Eye class="w-3.5 h-3.5 text-blue-600" />
+                Live Top Bar Public Preview
+              </span>
+              <span class="text-[10px] text-slate-400 font-medium">Updates live instantly across the portal</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <div class="flex items-center gap-1.5 shrink-0 pr-1 text-slate-900 font-extrabold text-[11px]">
+                <PhoneCall class="w-3.5 h-3.5 text-red-600 shrink-0" />
+                <span class="uppercase tracking-wider whitespace-nowrap">24/7 HOTLINES:</span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span 
+                  v-for="item in emergencyContactsList.filter(c => c.is_active)" 
+                  :key="item.id"
+                  :class="[
+                    'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-[11px] font-bold shadow-2xs',
+                    getHotlineBadgeClass(item.badge_color)
+                  ]"
+                >
+                  <component :is="getHotlineIcon(item.icon_name)" class="w-3 h-3 shrink-0" />
+                  <span>{{ item.name_en }}:</span>
+                  <span class="font-mono font-black">{{ item.phone_number }}</span>
+                </span>
+                <span v-if="!emergencyContactsList.filter(c => c.is_active).length" class="text-xs text-slate-400 italic">
+                  No active hotlines currently published.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hotlines Data Table / Grid -->
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 class="font-black text-sm text-slate-900">Configured Emergency Numbers</h3>
+                <p class="text-xs text-slate-400">Total of {{ emergencyContactsList.length }} emergency services registered in the system.</p>
+              </div>
+              <button @click="fetchEmergencyContacts" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer hover:bg-slate-50" title="Refresh Hotlines">
+                <RefreshCw class="w-4 h-4" />
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-wider border-b border-slate-100">
+                  <tr>
+                    <th class="p-4">Service & Icon</th>
+                    <th class="p-4">Emergency Phone / Hotline</th>
+                    <th class="p-4">Amharic & Oromo Translations</th>
+                    <th class="p-4">Badge Color</th>
+                    <th class="p-4">Order</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                  <tr v-for="item in emergencyContactsList" :key="item.id" class="hover:bg-slate-50/50 transition-colors">
+                    <td class="p-4">
+                      <div class="flex items-center gap-3">
+                        <div 
+                          class="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
+                          :class="getHotlineBadgeClass(item.badge_color)"
+                        >
+                          <component :is="getHotlineIcon(item.icon_name)" class="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-900 text-sm">{{ item.name_en }}</div>
+                          <div class="text-[10px] text-slate-400 font-mono">Icon: {{ item.icon_name || 'PhoneCall' }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="p-4">
+                      <a :href="'tel:' + item.phone_number" class="inline-flex items-center gap-1.5 font-mono font-black text-sm text-slate-900 hover:text-blue-600 transition-colors">
+                        <Phone class="w-3.5 h-3.5 text-slate-400" />
+                        <span>{{ item.phone_number }}</span>
+                      </a>
+                    </td>
+                    <td class="p-4">
+                      <div class="space-y-0.5">
+                        <div class="text-xs text-slate-800 font-semibold">{{ item.name_am }}</div>
+                        <div v-if="item.name_om" class="text-[11px] text-slate-500 italic">{{ item.name_om }}</div>
+                      </div>
+                    </td>
+                    <td class="p-4">
+                      <span 
+                        class="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase border tracking-wider"
+                        :class="getHotlineBadgeClass(item.badge_color)"
+                      >
+                        {{ item.badge_color || 'red' }}
+                      </span>
+                    </td>
+                    <td class="p-4 font-mono font-bold text-slate-500">
+                      #{{ item.order || 0 }}
+                    </td>
+                    <td class="p-4">
+                      <button 
+                        type="button"
+                        @click="toggleHotlineStatus(item)"
+                        class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all border"
+                        :class="item.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'"
+                      >
+                        {{ item.is_active ? '● Live on Navbar' : '○ Disabled' }}
+                      </button>
+                    </td>
+                    <td class="p-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button 
+                          @click="editItem('emergency_contact', item)" 
+                          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
+                          title="Edit Hotline"
+                        >
+                          <Edit class="w-4 h-4" />
+                        </button>
+                        <button 
+                          @click="deleteItem('/admin/emergency-contacts', item.id, item.name_en)" 
+                          class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                          title="Delete Hotline"
+                        >
+                          <Trash2 class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="!emergencyContactsList.length">
+                    <td colspan="7" class="p-12 text-center text-slate-400">
+                      <PhoneCall class="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                      <p class="font-bold text-slate-600">No emergency hotlines configured.</p>
+                      <p class="text-xs text-slate-400 mt-1">Click the button above to add a new 24/7 hotline service.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>
@@ -3809,6 +4146,75 @@ onUnmounted(() => {
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Key Features & Amenities (ልዩ መገለጫዎች - በነጠላ ሰረዝ ይለዩ)</label>
               <input v-model="destinationForm.features" type="text" placeholder="e.g. Hiking Trails, Bird Watching, Parking, Scenic Viewpoint, Camping" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+            </div>
+          </div>
+
+          <!-- Emergency Contact / Hotline Fields -->
+          <div v-else-if="modalType === 'emergency_contact'" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Service Name (English) *</label>
+                <input v-model="emergencyContactForm.name_en" type="text" required placeholder="e.g. City Police Station" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Name (የአገልግሎቱ ስም በአማርኛ) *</label>
+                <input v-model="emergencyContactForm.name_am" type="text" required placeholder="ለምሳሌ፡ የከተማ ፖሊስ መምሪያ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Name</label>
+                <input v-model="emergencyContactForm.name_om" type="text" placeholder="Fkn: Waajjira Poolisii Magaalaa" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Hotline / Phone Number *</label>
+                <input v-model="emergencyContactForm.phone_number" type="text" required placeholder="e.g. 991 or +251 33 551 0145" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold text-blue-700" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Icon Style</label>
+                <select v-model="emergencyContactForm.icon_name" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                  <option value="ShieldAlert">ShieldAlert (Police / Security)</option>
+                  <option value="Flame">Flame (Fire & Rescue)</option>
+                  <option value="Activity">Activity (Ambulance / Medical)</option>
+                  <option value="Droplets">Droplets (Water & Sanitation)</option>
+                  <option value="Zap">Zap (Power Grid & Electric)</option>
+                  <option value="PhoneCall">PhoneCall (Dispatch Hotline)</option>
+                  <option value="Phone">Phone (General Telephone)</option>
+                  <option value="Building2">Building2 (Municipal HQ)</option>
+                  <option value="ShieldCheck">ShieldCheck (Public Safety)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Badge Color</label>
+                <select v-model="emergencyContactForm.badge_color" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                  <option value="red">Red (Urgent / Police)</option>
+                  <option value="orange">Orange (Fire / Warning)</option>
+                  <option value="rose">Rose (Medical / Ambulance)</option>
+                  <option value="blue">Blue (Water / Utility)</option>
+                  <option value="amber">Amber (Electric / Power)</option>
+                  <option value="emerald">Emerald (Health / Rescue)</option>
+                  <option value="indigo">Indigo (Corporate / Civil)</option>
+                  <option value="purple">Purple (Support / Info)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Display Order</label>
+                <input v-model.number="emergencyContactForm.order" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status on Public Navbar</label>
+              <select v-model.number="emergencyContactForm.is_active" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                <option :value="1">Active (Displayed on Top Bar)</option>
+                <option :value="0">Disabled (Hidden from Top Bar)</option>
+              </select>
             </div>
           </div>
 

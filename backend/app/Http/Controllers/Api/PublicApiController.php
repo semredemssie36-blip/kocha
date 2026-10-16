@@ -39,6 +39,15 @@ class PublicApiController extends Controller
         ]);
     }
 
+    public function getEmergencyContacts()
+    {
+        $contacts = DB::table('emergency_contacts')
+            ->where('is_active', true)
+            ->orderBy('order')
+            ->get();
+        return response()->json($contacts);
+    }
+
     // 4 Sub-Cities (ክፍለ ከተሞች)
     public function getSubCities()
     {

@@ -1034,4 +1034,76 @@ class AdminContentController extends Controller
         DB::table('destinations')->where('id', $id)->delete();
         return response()->json(['message' => 'Destination deleted']);
     }
+
+    // ==========================================
+    // EMERGENCY CONTACTS & 24/7 HOTLINES
+    // ==========================================
+    public function getEmergencyContacts()
+    {
+        $contacts = DB::table('emergency_contacts')->orderBy('order')->get();
+        return response()->json($contacts);
+    }
+
+    public function storeEmergencyContact(Request $request)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
+            'name_om' => 'nullable|string|max:255',
+            'phone_number' => 'required|string|max:100',
+            'icon_name' => 'nullable|string|max:50',
+            'badge_color' => 'nullable|string|max:50',
+            'order' => 'nullable|integer',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $id = DB::table('emergency_contacts')->insertGetId([
+            'name_am' => $validated['name_am'],
+            'name_en' => $validated['name_en'],
+            'name_om' => $validated['name_om'] ?? $validated['name_en'],
+            'phone_number' => $validated['phone_number'],
+            'icon_name' => $validated['icon_name'] ?? 'PhoneCall',
+            'badge_color' => $validated['badge_color'] ?? 'red',
+            'order' => $validated['order'] ?? 0,
+            'is_active' => $request->has('is_active') ? ($request->boolean('is_active') ? 1 : 0) : 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Emergency contact created', 'id' => $id]);
+    }
+
+    public function updateEmergencyContact(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
+            'name_om' => 'nullable|string|max:255',
+            'phone_number' => 'required|string|max:100',
+            'icon_name' => 'nullable|string|max:50',
+            'badge_color' => 'nullable|string|max:50',
+            'order' => 'nullable|integer',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        DB::table('emergency_contacts')->where('id', $id)->update([
+            'name_am' => $validated['name_am'],
+            'name_en' => $validated['name_en'],
+            'name_om' => $validated['name_om'] ?? $validated['name_en'],
+            'phone_number' => $validated['phone_number'],
+            'icon_name' => $validated['icon_name'] ?? 'PhoneCall',
+            'badge_color' => $validated['badge_color'] ?? 'red',
+            'order' => $validated['order'] ?? 0,
+            'is_active' => $request->has('is_active') ? ($request->boolean('is_active') ? 1 : 0) : 1,
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Emergency contact updated successfully']);
+    }
+
+    public function deleteEmergencyContact($id)
+    {
+        DB::table('emergency_contacts')->where('id', $id)->delete();
+        return response()->json(['message' => 'Emergency contact deleted successfully']);
+    }
 }

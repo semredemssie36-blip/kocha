@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useLanguageStore } from '@/stores/language'
+import api from '@/services/api'
 import { 
   Building2, 
   Search, 
@@ -34,18 +35,55 @@ const isAuthenticated = computed(() => {
   return !!localStorage.getItem('kombolcha_admin_token')
 })
 
-const emergencyNumbers = [
-  { name_en: 'Police', name_am: 'ፖሊስ', name_om: 'Poolisii', phone: '991', icon: ShieldAlert, color: 'text-red-700 bg-red-50 border-red-200 hover:bg-red-100' },
-  { name_en: 'Fire & Rescue', name_am: 'እሳት አደጋ', name_om: 'Balaa Ibiddii', phone: '939', icon: Flame, color: 'text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100' },
-  { name_en: 'Ambulance', name_am: 'አምቡላንስ', name_om: 'Ambulaansii', phone: '907', icon: Activity, color: 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100' },
-  { name_en: 'Water Leak', name_am: 'የውሃ ጥገና', name_om: 'Tajaajila Bishaanii', phone: '+251 33 551 0145', icon: Droplets, color: 'text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100' },
-  { name_en: 'Power Grid', name_am: 'መብራት ኃይል', name_om: 'Tajaajila Ibsaa', phone: '905', icon: Zap, color: 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100' },
+const iconMap = {
+  ShieldAlert,
+  Flame,
+  Activity,
+  Droplets,
+  Zap,
+  PhoneCall,
+  Phone,
+  ShieldCheck,
+  Building2
+}
+
+const colorMap = {
+  red: 'text-red-700 bg-red-50 border-red-200 hover:bg-red-100',
+  orange: 'text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100',
+  rose: 'text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100',
+  blue: 'text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100',
+  amber: 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100',
+  emerald: 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100',
+  indigo: 'text-indigo-700 bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
+  purple: 'text-purple-700 bg-purple-50 border-purple-200 hover:bg-purple-100'
+}
+
+const defaultEmergencyNumbers = [
+  { id: 1, name_en: 'Police', name_am: 'ፖሊስ', name_om: 'Poolisii', phone_number: '991', icon_name: 'ShieldAlert', badge_color: 'red' },
+  { id: 2, name_en: 'Fire & Rescue', name_am: 'እሳት አደጋ', name_om: 'Balaa Ibiddii', phone_number: '939', icon_name: 'Flame', badge_color: 'orange' },
+  { id: 3, name_en: 'Ambulance', name_am: 'አምቡላንስ', name_om: 'Ambulaansii', phone_number: '907', icon_name: 'Activity', badge_color: 'rose' },
+  { id: 4, name_en: 'Water Leak', name_am: 'የውሃ ጥገና', name_om: 'Tajaajila Bishaanii', phone_number: '+251 33 551 0145', icon_name: 'Droplets', badge_color: 'blue' },
+  { id: 5, name_en: 'Power Grid', name_am: 'መብራት ኃይል', name_om: 'Tajaajila Ibsaa', phone_number: '905', icon_name: 'Zap', badge_color: 'amber' },
 ]
+
+const emergencyNumbers = ref(defaultEmergencyNumbers)
+
+const getEmergencyIcon = (icon) => {
+  if (!icon) return PhoneCall
+  if (typeof icon === 'object' || typeof icon === 'function') return icon
+  return iconMap[icon] || PhoneCall
+}
+
+const getEmergencyColor = (color) => {
+  if (!color) return colorMap.red
+  if (typeof color === 'string' && color.includes('text-')) return color
+  return colorMap[color] || colorMap.red
+}
 
 const getEmergencyName = (item) => {
   const lang = langStore.currentLang
-  if (lang === 'am') return item.name_am
-  if (lang === 'om') return item.name_om
+  if (lang === 'am') return item.name_am || item.name_en
+  if (lang === 'om') return item.name_om || item.name_en
   return item.name_en
 }
 
@@ -96,8 +134,20 @@ function handleClickOutside(e) {
   }
 }
 
+const fetchEmergencyContacts = async () => {
+  try {
+    const res = await api.get('/emergency-contacts')
+    if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+      emergencyNumbers.value = res.data
+    }
+  } catch (err) {
+    console.error('Failed to load emergency contacts:', err)
+  }
+}
+
 onMounted(() => {
   window.addEventListener('click', handleClickOutside)
+  fetchEmergencyContacts()
 })
 
 onUnmounted(() => {
@@ -122,17 +172,17 @@ onUnmounted(() => {
           <div class="flex items-center gap-1.5 shrink-0">
             <a 
               v-for="item in emergencyNumbers" 
-              :key="item.phone"
-              :href="'tel:' + item.phone"
+              :key="item.id || item.phone_number || item.phone"
+              :href="'tel:' + (item.phone_number || item.phone)"
               :class="[
                 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] sm:text-[11px] font-bold transition-colors shrink-0 shadow-2xs',
-                item.color
+                getEmergencyColor(item.badge_color || item.color)
               ]"
-              :title="getEmergencyName(item) + ': ' + item.phone"
+              :title="getEmergencyName(item) + ': ' + (item.phone_number || item.phone)"
             >
-              <component :is="item.icon" class="w-3 h-3 shrink-0" />
+              <component :is="getEmergencyIcon(item.icon_name || item.icon)" class="w-3 h-3 shrink-0" />
               <span class="hidden sm:inline">{{ getEmergencyName(item) }}:</span>
-              <span class="font-mono font-black">{{ item.phone }}</span>
+              <span class="font-mono font-black">{{ item.phone_number || item.phone }}</span>
             </a>
           </div>
         </div>

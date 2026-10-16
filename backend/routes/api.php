@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\AdminContentController;
 */
 // Site Identity & Emergency Contacts
 Route::get('/site-data', [PublicApiController::class, 'getSiteData']);
+Route::get('/emergency-contacts', [PublicApiController::class, 'getEmergencyContacts']);
 
 // Sub-Cities & Offices
 Route::get('/sub-cities', [PublicApiController::class, 'getSubCities']);
@@ -148,6 +149,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/destinations', [AdminContentController::class, 'storeDestination']);
         Route::put('/admin/destinations/{id}', [AdminContentController::class, 'updateDestination']);
         Route::delete('/admin/destinations/{id}', [AdminContentController::class, 'deleteDestination']);
+
+        // 24/7 Emergency Hotlines & Contacts Management
+        Route::get('/admin/emergency-contacts', [AdminContentController::class, 'getEmergencyContacts']);
+        Route::post('/admin/emergency-contacts', [AdminContentController::class, 'storeEmergencyContact']);
+        Route::put('/admin/emergency-contacts/{id}', [AdminContentController::class, 'updateEmergencyContact']);
+        Route::delete('/admin/emergency-contacts/{id}', [AdminContentController::class, 'deleteEmergencyContact']);
     });
 
     // ----------------------------------------------------
