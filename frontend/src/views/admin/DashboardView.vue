@@ -2147,30 +2147,6 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Audit Activity Feed from ASCII diagram -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-            <h4 class="font-extrabold text-slate-900 text-sm mb-4 flex items-center gap-2">
-              <Activity class="w-4 h-4 text-slate-700" />
-              <span>{{ adminT('recent_activity') }}</span>
-            </h4>
-            <div class="space-y-3 text-xs text-slate-600">
-              <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <span class="font-mono text-slate-400">[DB]</span>
-                <span class="font-bold text-slate-800">{{ adminT('seeded_offices') }}</span>
-                <span class="text-slate-400 font-mono ml-auto">{{ adminT('db_active') }}</span>
-              </div>
-              <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-                <span class="font-mono text-slate-400">[I18N]</span>
-                <span class="font-bold text-slate-800">{{ adminT('dict_synced') }}</span>
-                <span class="text-slate-400 font-mono ml-auto">{{ adminT('pinia_verified') }}</span>
-              </div>
-              <div class="flex items-center gap-3">
-                <span class="font-mono text-slate-400">[POLL]</span>
-                <span class="font-bold text-slate-800">Civic Opinion Poll Live & Anti-Spam Protected</span>
-                <span class="text-slate-400 font-mono ml-auto">SHA-256 Voter Hashing</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- HERO SLIDER MANAGEMENT -->
