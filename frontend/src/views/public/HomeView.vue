@@ -467,7 +467,8 @@ onUnmounted(() => {
         <article 
           v-for="news in newsList" 
           :key="news.id" 
-          class="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group"
+          @click="$router.push(`/media/news/${news.slug || news.id}`)"
+          class="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group cursor-pointer"
         >
           <div>
             <div class="h-44 bg-slate-100 relative overflow-hidden">
@@ -496,7 +497,7 @@ onUnmounted(() => {
           </div>
 
           <div class="p-6 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between">
-            <router-link to="/media/news" class="text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-1">
+            <router-link :to="`/media/news/${news.slug || news.id}`" class="text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-1">
               {{ langStore.t('common.read_more') }}
               <ArrowRight class="w-3.5 h-3.5" />
             </router-link>

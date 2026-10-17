@@ -1,15 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useLanguageStore } from '@/stores/language'
 import api from '@/services/api'
 import SkeletonCard from '@/components/common/SkeletonCard.vue'
 import { TrendingUp, Clock, Eye, ArrowRight, X, ChevronRight, Share2, Search, ChevronLeft } from 'lucide-vue-next'
 
+const router = useRouter()
+const route = useRoute()
 const langStore = useLanguageStore()
 const newsArticles = ref([])
 const activeCategory = ref('all')
 const searchQuery = ref('')
-const selectedArticle = ref(null)
 const loading = ref(true)
 
 const currentPage = ref(1)
@@ -59,7 +61,7 @@ function handleSearch() {
 }
 
 function openArticle(article) {
-  selectedArticle.value = article
+  router.push(`/media/news/${article.slug || article.id}`)
 }
 
 function filterCategory(cat) {
@@ -82,6 +84,9 @@ function getNewsTitle(news) {
 }
 
 onMounted(() => {
+  if (route.query.category) {
+    activeCategory.value = route.query.category
+  }
   fetchNews(1)
 })
 </script>
@@ -250,40 +255,6 @@ onMounted(() => {
       <TrendingUp class="w-12 h-12 text-slate-300 mx-auto mb-3" />
       <h4 class="text-base font-bold text-slate-700">No news articles found</h4>
       <p class="text-xs text-slate-400 mt-1">Try adjusting your search query or select another category filter.</p>
-    </div>
-
-    <!-- Article Reader Lightbox Modal -->
-    <div v-if="selectedArticle" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative">
-        <button @click="selectedArticle = null" class="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 text-slate-500">
-          <X class="w-5 h-5" />
-        </button>
-
-        <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider">
-          {{ selectedArticle.category }}
-        </span>
-
-        <h2 class="text-2xl font-extrabold text-slate-900 mt-4 leading-tight">
-          {{ langStore.currentLang === 'am' ? selectedArticle.title_am : (langStore.currentLang === 'om' ? selectedArticle.title_om : selectedArticle.title_en) }}
-        </h2>
-
-        <img 
-          v-if="selectedArticle.thumbnail_path || selectedArticle.featured_image" 
-          :src="selectedArticle.thumbnail_path || selectedArticle.featured_image" 
-          :alt="selectedArticle.title_en || selectedArticle.title_am" 
-          class="w-full h-56 sm:h-72 object-cover rounded-xl mt-4 border border-slate-200 shadow-xs" 
-        />
-
-        <div class="flex items-center gap-4 text-xs text-slate-400 py-3 border-b border-slate-100 mt-2 mb-6">
-          <span>Published on: {{ new Date(selectedArticle.published_at || selectedArticle.created_at).toLocaleDateString() }}</span>
-          <span>•</span>
-          <span>{{ selectedArticle.views_count }} reads</span>
-        </div>
-
-        <div class="prose text-slate-700 text-sm leading-relaxed whitespace-pre-line">
-          {{ langStore.currentLang === 'am' ? selectedArticle.content_am : (langStore.currentLang === 'om' ? (selectedArticle.content_om || selectedArticle.content_am) : (selectedArticle.content_en || selectedArticle.content_am)) }}
-        </div>
-      </div>
     </div>
   </div>
 </template>

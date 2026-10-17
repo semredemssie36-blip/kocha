@@ -46,6 +46,12 @@ const routes = [
     meta: { title: 'Latest News' }
   },
   {
+    path: '/media/news/:slug',
+    name: 'NewsDetail',
+    component: () => import('@/views/public/NewsDetailView.vue'),
+    meta: { title: 'News Article' }
+  },
+  {
     path: '/media/tenders',
     name: 'Tenders',
     component: () => import('@/views/public/TendersView.vue'),

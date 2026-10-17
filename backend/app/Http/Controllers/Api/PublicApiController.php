@@ -198,15 +198,39 @@ class PublicApiController extends Controller
 
     public function getNewsDetail($slug)
     {
-        $article = DB::table('news_articles')->where('slug', $slug)->first();
+        $article = DB::table('news_articles')
+            ->where('slug', $slug)
+            ->orWhere('id', $slug)
+            ->first();
+
         if (!$article) {
             return response()->json(['message' => 'Article not found'], 404);
         }
 
         // Increment view count
         DB::table('news_articles')->where('id', $article->id)->increment('views_count');
+        $article->views_count++;
 
-        return response()->json($article);
+        // Fetch recent news for the sidebar widget
+        $recent = DB::table('news_articles')
+            ->where('id', '!=', $article->id)
+            ->where('status', 'published')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Fetch category counts
+        $categories = DB::table('news_articles')
+            ->where('status', 'published')
+            ->select('category', DB::raw('count(*) as count'))
+            ->groupBy('category')
+            ->get();
+
+        return response()->json([
+            'article' => $article,
+            'recent' => $recent,
+            'categories' => $categories
+        ]);
     }
 
     // Mega Projects & Infrastructure Tracker
