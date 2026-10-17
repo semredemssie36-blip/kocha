@@ -136,8 +136,16 @@ class AdminContentController extends Controller
         $summaryAm = $validated['summary_am'] ?? mb_substr(strip_tags($validated['content_am']), 0, 160) . '...';
         $summaryEn = $validated['summary_en'] ?? (!empty($validated['content_en']) ? mb_substr(strip_tags($validated['content_en']), 0, 160) . '...' : null);
 
+        $user = $request->user();
+        $status = $validated['status'];
+
+        // Role Permission Enforcement: Authors cannot publish live directly
+        if ($user->role === 'author' && $status === 'published') {
+            $status = 'pending'; // Automatically submit for editorial review
+        }
+
         $id = DB::table('news_articles')->insertGetId([
-            'author_id' => $request->user()->id,
+            'author_id' => $user->id,
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
@@ -150,13 +158,17 @@ class AdminContentController extends Controller
             'content_en' => $validated['content_en'] ?? null,
             'content_om' => $validated['content_om'] ?? null,
             'thumbnail_path' => $validated['thumbnail_path'] ?? null,
-            'status' => $validated['status'],
-            'published_at' => $validated['status'] === 'published' ? now() : null,
+            'status' => $status,
+            'published_at' => $status === 'published' ? now() : null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Article saved successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $validated['status'] === 'published')
+            ? 'Article submitted for editorial approval.'
+            : 'Article saved successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateNews(Request $request, $id)
@@ -176,10 +188,34 @@ class AdminContentController extends Controller
             'status' => 'required|in:published,draft,pending,archived',
         ]);
 
+        $user = $request->user();
+        $existing = DB::table('news_articles')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Article not found'], 404);
+        }
+
+        $targetStatus = $validated['status'];
+
+        // Role Permission Enforcement per Municipal Matrix:
+        if ($user->role === 'author') {
+            // Authors cannot edit other authors' content
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            // Authors cannot modify published content
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published articles can only be edited or unpublished by an Editor or Super Admin.'], 403);
+            }
+            // Authors cannot publish directly
+            if ($targetStatus === 'published') {
+                $targetStatus = 'pending';
+            }
+        }
+
         $summaryAm = $validated['summary_am'] ?? mb_substr(strip_tags($validated['content_am']), 0, 160) . '...';
         $summaryEn = $validated['summary_en'] ?? (!empty($validated['content_en']) ? mb_substr(strip_tags($validated['content_en']), 0, 160) . '...' : null);
 
-        DB::table('news_articles')->where('id', $id)->update([
+        $updateData = [
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
@@ -191,15 +227,37 @@ class AdminContentController extends Controller
             'content_en' => $validated['content_en'] ?? null,
             'content_om' => $validated['content_om'] ?? null,
             'thumbnail_path' => $validated['thumbnail_path'] ?? null,
-            'status' => $validated['status'],
+            'status' => $targetStatus,
             'updated_at' => now(),
-        ]);
+        ];
 
-        return response()->json(['message' => 'Article updated successfully']);
+        if ($targetStatus === 'published' && empty($existing->published_at)) {
+            $updateData['published_at'] = now();
+        }
+
+        DB::table('news_articles')->where('id', $id)->update($updateData);
+
+        return response()->json(['message' => 'Article updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteNews($id)
+    public function deleteNews(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('news_articles')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Article not found'], 404);
+        }
+
+        // Author Role Enforcement: Own drafts only, subject to policy
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published articles. Contact an Editor.'], 403);
+            }
+        }
+
         DB::table('news_articles')->where('id', $id)->delete();
         return response()->json(['message' => 'Article deleted successfully']);
     }

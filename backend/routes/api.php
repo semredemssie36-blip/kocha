@@ -57,6 +57,10 @@ Route::get('/search', [PublicApiController::class, 'globalSearch']);
 Route::get('/gallery', [PublicApiController::class, 'getGallery']);
 Route::get('/hero-slides', [PublicApiController::class, 'getHeroSlides']);
 Route::get('/destinations', [PublicApiController::class, 'getDestinations']);
+Route::get('/destinations/{slug}', [PublicApiController::class, 'getDestinationDetail']);
+
+// High-speed consolidated home portal bundle (sub-second load)
+Route::get('/home-bundle', [PublicApiController::class, 'getHomeBundle']);
 
 
 /*
@@ -82,9 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // AUTHOR, EDITOR & SUPER_ADMIN (Content Creation & Drafting)
     // ----------------------------------------------------
     Route::middleware('role:author,editor,super_admin')->group(function () {
-        // Articles Management (Create & Edit)
+        // Articles Management (Create, Edit & Delete own drafts)
         Route::post('/admin/news', [AdminContentController::class, 'storeNews']);
         Route::put('/admin/news/{id}', [AdminContentController::class, 'updateNews']);
+        Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);
 
         // Gallery Management (Upload & Edit)
         Route::get('/admin/gallery', [AdminContentController::class, 'getGallery']);
@@ -101,7 +106,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // ----------------------------------------------------
     Route::middleware('role:editor,super_admin')->group(function () {
         // Content Deletion
-        Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);
         Route::delete('/admin/gallery/{id}', [AdminContentController::class, 'deleteGalleryItem']);
         Route::delete('/admin/resources/{id}', [AdminContentController::class, 'deleteResource']);
 

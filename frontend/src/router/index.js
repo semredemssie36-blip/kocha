@@ -82,6 +82,12 @@ const routes = [
     meta: { title: 'Explore Kombolcha' }
   },
   {
+    path: '/explore/:slug',
+    name: 'ExploreDetail',
+    component: () => import('@/views/public/ExploreDetailView.vue'),
+    meta: { title: 'Explore Destination' }
+  },
+  {
     path: '/gallery',
     name: 'Gallery',
     component: () => import('@/views/public/GalleryView.vue'),

@@ -1170,9 +1170,16 @@ async function submitActiveModal() {
     const isEdit = !!editingId.value
     const id = editingId.value
     if (modalType.value === 'news') {
-      if (isEdit) await api.put(`/admin/news/${id}`, newsForm)
-      else await api.post('/admin/news', newsForm)
-      showToast(isEdit ? 'Article updated successfully!' : 'News article published successfully!')
+      if (isAuthor.value && !isEditor.value) {
+        newsForm.status = 'pending' // Route to editorial review
+      }
+      if (isEdit) {
+        const res = await api.put(`/admin/news/${id}`, newsForm)
+        showToast(res.data?.message || 'Article updated successfully!')
+      } else {
+        const res = await api.post('/admin/news', newsForm)
+        showToast(res.data?.message || (isAuthor.value ? 'Article submitted for editorial approval!' : 'News article published!'))
+      }
     } else if (modalType.value === 'tender') {
       if (isEdit) await api.put(`/admin/tenders/${id}`, tenderForm)
       else await api.post('/admin/tenders', tenderForm)
@@ -1237,7 +1244,9 @@ async function submitActiveModal() {
 
 // Delete Helpers with automatic live refresh
 async function deleteItem(endpoint, id, name) {
-  if (!can.value.canDelete) {
+  if (endpoint === '/admin/news') {
+    // Handled by backend check (author can delete own draft, editor can delete per policy)
+  } else if (!can.value.canDelete) {
     alert('Permission Denied: Authors are not authorized to delete records. Only Editors and Administrators have delete privileges.')
     return
   }
@@ -1252,6 +1261,40 @@ async function deleteItem(endpoint, id, name) {
     await fetchAllAdminData()
   } catch (err) {
     alert(err.response?.data?.message || 'Failed to delete item.')
+  }
+}
+
+// Editorial Governance & Approval Pipeline Actions
+async function approveAndPublishNews(item) {
+  try {
+    const res = await api.put(`/admin/news/${item.id}`, { ...item, status: 'published' })
+    item.status = 'published'
+    showToast(res.data?.message || `"${item.title_en || item.title_am}" has been approved & published live!`)
+    await fetchAllAdminData()
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to approve article.')
+  }
+}
+
+async function unpublishNews(item) {
+  try {
+    const res = await api.put(`/admin/news/${item.id}`, { ...item, status: 'draft' })
+    item.status = 'draft'
+    showToast(res.data?.message || `"${item.title_en || item.title_am}" has been moved to drafts.`)
+    await fetchAllAdminData()
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to unpublish article.')
+  }
+}
+
+async function submitNewsForReview(item) {
+  try {
+    const res = await api.put(`/admin/news/${item.id}`, { ...item, status: 'pending' })
+    item.status = 'pending'
+    showToast(res.data?.message || `"${item.title_en || item.title_am}" submitted for editorial review.`)
+    await fetchAllAdminData()
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to submit article for review.')
   }
 }
 
@@ -2350,12 +2393,66 @@ onUnmounted(() => {
                     <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ item.title_am }}</p>
                   </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700">{{ item.status }}</span>
-                  <button @click="editItem('news', item)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Article">
+                <div class="flex items-center gap-2 flex-wrap justify-end">
+                  <!-- Status Badge -->
+                  <span 
+                    :class="[
+                      'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border',
+                      item.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                      item.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                      'bg-slate-100 text-slate-700 border-slate-200'
+                    ]"
+                  >
+                    {{ item.status === 'pending' ? 'Pending Review' : (item.status || 'Draft') }}
+                  </span>
+
+                  <!-- Editorial Action: Editor / Super Admin can Approve & Publish -->
+                  <button 
+                    v-if="isEditor && item.status !== 'published'" 
+                    @click="approveAndPublishNews(item)"
+                    class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                    title="Approve and publish to live site"
+                  >
+                    Approve & Publish
+                  </button>
+
+                  <!-- Editorial Action: Editor / Super Admin can Unpublish -->
+                  <button 
+                    v-else-if="isEditor && item.status === 'published'" 
+                    @click="unpublishNews(item)"
+                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition-colors cursor-pointer border border-slate-200"
+                    title="Move back to draft"
+                  >
+                    Unpublish
+                  </button>
+
+                  <!-- Author Action: Submit own draft for Editorial Review -->
+                  <button 
+                    v-if="isAuthor && item.status === 'draft' && (!item.author_id || item.author_id === currentUser.id)" 
+                    @click="submitNewsForReview(item)"
+                    class="px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                    title="Submit to Editor for live approval"
+                  >
+                    Submit for Review
+                  </button>
+
+                  <!-- Edit Article: Editors can edit all; Authors can edit own drafts -->
+                  <button 
+                    v-if="isEditor || (isAuthor && item.status !== 'published' && (!item.author_id || item.author_id === currentUser.id))"
+                    @click="editItem('news', item)" 
+                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" 
+                    title="Edit Article"
+                  >
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button v-if="can.deleteNews" @click="deleteItem('/admin/news', item.id, item.title_en || item.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Article">
+
+                  <!-- Delete Article: Editors can delete; Authors can delete own drafts -->
+                  <button 
+                    v-if="isEditor || (isAuthor && item.status !== 'published' && (!item.author_id || item.author_id === currentUser.id))"
+                    @click="deleteItem('/admin/news', item.id, item.title_en || item.title_am)" 
+                    class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" 
+                    title="Delete Article"
+                  >
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -3742,6 +3839,25 @@ onUnmounted(() => {
               </div>
               <img v-if="newsForm.thumbnail_path" :src="newsForm.thumbnail_path" class="mt-2 h-20 w-32 object-cover rounded-lg border border-slate-200 shadow-2xs" />
             </div>
+
+            <!-- Publication / Editorial Review Status -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Editorial Lifecycle Status *</label>
+              <select v-model="newsForm.status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white">
+                <template v-if="isEditor">
+                  <option value="published">Publish Live (ይፋ አድርግ / Live on Website)</option>
+                  <option value="pending">Pending Editorial Review (ለግምገማ የቀረበ)</option>
+                  <option value="draft">Draft (ረቂቅ / Private Draft)</option>
+                </template>
+                <template v-else>
+                  <option value="pending">Submit for Editorial Approval (ለግምገማ ይላክ)</option>
+                  <option value="draft">Save as Draft (ረቂቅ አድርገህ አስቀምጥ)</option>
+                </template>
+              </select>
+              <p v-if="isAuthor" class="text-[11px] text-amber-700 mt-1 font-medium">
+                * Note: As an Author, articles are submitted to the Communications Editor for verification and cannot be published directly to the public portal.
+              </p>
+            </div>
           </div>
 
           <!-- Tender Fields -->
@@ -4619,9 +4735,9 @@ onUnmounted(() => {
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" @click="modalType = ''; editingId = null" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
+            <button type="button" @click="modalType = ''; editingId = null" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
             <button type="submit" :disabled="submitting" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
-              {{ submitting ? 'Saving...' : (editingId ? 'Update & Save Changes' : 'Confirm & Publish Live') }}
+              {{ submitting ? 'Saving...' : (isAuthor && modalType === 'news' ? (editingId ? 'Save & Submit for Review' : 'Submit for Editorial Review') : (editingId ? 'Update & Save Changes' : 'Confirm & Publish Live')) }}
             </button>
           </div>
         </form>

@@ -43,6 +43,9 @@ api.getVacancies = () => api.get('/vacancies')
 api.getInternalBoard = () => api.get('/internal-board')
 api.getPoll = () => api.get('/polls/active')
 api.votePoll = (pollId, optionId) => api.post(`/polls/${pollId}/vote`, { option_id: optionId })
+api.getHomeBundle = () => api.get('/home-bundle')
+api.getDestination = (idOrSlug) => api.get(`/destinations/${idOrSlug}`)
+api.getEmergencyContacts = () => api.get('/emergency-contacts')
 
 export { api }
 export default api

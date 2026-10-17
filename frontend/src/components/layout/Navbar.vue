@@ -58,15 +58,8 @@ const colorMap = {
   purple: 'text-purple-700 bg-purple-50 border-purple-200 hover:bg-purple-100'
 }
 
-const defaultEmergencyNumbers = [
-  { id: 1, name_en: 'Police', name_am: 'ፖሊስ', name_om: 'Poolisii', phone_number: '991', icon_name: 'ShieldAlert', badge_color: 'red' },
-  { id: 2, name_en: 'Fire & Rescue', name_am: 'እሳት አደጋ', name_om: 'Balaa Ibiddii', phone_number: '939', icon_name: 'Flame', badge_color: 'orange' },
-  { id: 3, name_en: 'Ambulance', name_am: 'አምቡላንስ', name_om: 'Ambulaansii', phone_number: '907', icon_name: 'Activity', badge_color: 'rose' },
-  { id: 4, name_en: 'Water Leak', name_am: 'የውሃ ጥገና', name_om: 'Tajaajila Bishaanii', phone_number: '+251 33 551 0145', icon_name: 'Droplets', badge_color: 'blue' },
-  { id: 5, name_en: 'Power Grid', name_am: 'መብራት ኃይል', name_om: 'Tajaajila Ibsaa', phone_number: '905', icon_name: 'Zap', badge_color: 'amber' },
-]
-
-const emergencyNumbers = ref(defaultEmergencyNumbers)
+const emergencyNumbers = ref([])
+const emergencyLoading = ref(true)
 
 const getEmergencyIcon = (icon) => {
   if (!icon) return PhoneCall
@@ -136,12 +129,14 @@ function handleClickOutside(e) {
 
 const fetchEmergencyContacts = async () => {
   try {
-    const res = await api.get('/emergency-contacts')
+    const res = await api.getEmergencyContacts()
     if (res.data && Array.isArray(res.data) && res.data.length > 0) {
       emergencyNumbers.value = res.data
     }
   } catch (err) {
     console.error('Failed to load emergency contacts:', err)
+  } finally {
+    emergencyLoading.value = false
   }
 }
 
@@ -169,7 +164,14 @@ onUnmounted(() => {
             </span>
           </div>
 
-          <div class="flex items-center gap-1.5 shrink-0">
+          <!-- Loading Skeleton -->
+          <div v-if="emergencyLoading && emergencyNumbers.length === 0" class="flex items-center gap-1.5 shrink-0">
+            <div class="h-5 w-20 bg-slate-200 animate-pulse rounded-md"></div>
+            <div class="h-5 w-24 bg-slate-200 animate-pulse rounded-md"></div>
+            <div class="h-5 w-20 bg-slate-200 animate-pulse rounded-md"></div>
+          </div>
+
+          <div v-else class="flex items-center gap-1.5 shrink-0">
             <a 
               v-for="item in emergencyNumbers" 
               :key="item.id || item.phone_number || item.phone"

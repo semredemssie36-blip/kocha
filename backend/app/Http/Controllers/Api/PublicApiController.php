@@ -505,4 +505,114 @@ class PublicApiController extends Controller
         $items = $query->orderBy('order', 'asc')->orderBy('id', 'asc')->get();
         return response()->json($items);
     }
+
+    // Destination Detail with related attractions for sidebar
+    public function getDestinationDetail($idOrSlug)
+    {
+        $item = null;
+        if (is_numeric($idOrSlug)) {
+            $item = DB::table('destinations')->where('id', $idOrSlug)->first();
+        } else {
+            $idPrefix = intval(explode('-', $idOrSlug)[0]);
+            if ($idPrefix > 0) {
+                $item = DB::table('destinations')->where('id', $idPrefix)->first();
+            }
+            if (!$item) {
+                $item = DB::table('destinations')
+                    ->where('title_en', 'like', '%' . str_replace('-', ' ', $idOrSlug) . '%')
+                    ->first();
+            }
+        }
+
+        if (!$item) {
+            return response()->json(['message' => 'Destination not found'], 404);
+        }
+
+        $related = DB::table('destinations')
+            ->where('id', '!=', $item->id)
+            ->where('is_active', true)
+            ->orderBy('order', 'asc')
+            ->limit(4)
+            ->get();
+
+        return response()->json([
+            'destination' => $item,
+            'related' => $related
+        ]);
+    }
+
+    // High-Performance Consolidated Homepage Bundle (Sub-second single network request)
+    public function getHomeBundle(Request $request)
+    {
+        // 1. Hero Slides
+        $heroSlides = DB::table('hero_slides')
+            ->where('is_active', true)
+            ->orderBy('order', 'asc')
+            ->get();
+
+        // 2. Mayor Keynote
+        $mayor = DB::table('mayors')->where('is_current', true)->first();
+
+        // 3. Top News (Published only)
+        $news = DB::table('news_articles')
+            ->where('status', 'published')
+            ->orderBy('published_at', 'desc')
+            ->limit(3)
+            ->get();
+
+        // 4. Open Tenders (Auto-close expired first)
+        DB::table('tenders')
+            ->where('status', 'open')
+            ->where('closing_datetime', '<', Carbon::now())
+            ->update(['status' => 'closed']);
+
+        $tenders = DB::table('tenders')
+            ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
+            ->orderBy('closing_datetime', 'asc')
+            ->limit(2)
+            ->get();
+
+        // 5. Emergency Contacts
+        $emergencyContacts = DB::table('emergency_contacts')
+            ->where('is_active', true)
+            ->orderBy('order', 'asc')
+            ->get();
+
+        // 6. Active Poll
+        $poll = DB::table('polls')->where('is_active', true)->latest()->first();
+        $pollData = null;
+        if ($poll) {
+            $isExpired = false;
+            if (!empty($poll->expires_at)) {
+                $isExpired = Carbon::parse($poll->expires_at)->endOfDay()->isPast();
+            }
+            $options = DB::table('poll_options')->where('poll_id', $poll->id)->orderBy('order')->get();
+            $ipHash = hash('sha256', $request->ip() . '_' . $request->header('User-Agent'));
+            $hasVoted = DB::table('poll_votes')
+                ->where('poll_id', $poll->id)
+                ->where('voter_ip_hash', $ipHash)
+                ->exists();
+
+            $pollData = [
+                'poll' => $poll,
+                'options' => $options,
+                'has_voted' => $hasVoted,
+                'is_expired' => $isExpired,
+                'is_closed' => $isExpired
+            ];
+        }
+
+        // 7. Sub-cities
+        $subCities = DB::table('sub_cities')->orderBy('order')->get();
+
+        return response()->json([
+            'hero_slides' => $heroSlides,
+            'mayor' => $mayor,
+            'news' => $news,
+            'tenders' => $tenders,
+            'emergency_contacts' => $emergencyContacts,
+            'poll' => $pollData,
+            'sub_cities' => $subCities,
+        ]);
+    }
 }

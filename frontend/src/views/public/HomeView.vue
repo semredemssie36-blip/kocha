@@ -131,24 +131,22 @@ const prevSlide = () => {
   currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length
 }
 
+const homeLoading = ref(true)
+
 const fetchHomeData = async () => {
+  homeLoading.value = true
   try {
-    const [newsRes, tendersRes, pollRes, slidesRes, mayorRes] = await Promise.all([
-      api.get('/news'),
-      api.get('/tenders'),
-      api.getPoll(),
-      api.get('/hero-slides').catch(() => ({ data: [] })),
-      api.getMayor().catch(() => ({ data: {} }))
-    ])
-    newsList.value = (newsRes.data?.data || newsRes.data || []).slice(0, 3)
-    tendersList.value = (tendersRes.data || []).slice(0, 2)
-    mayorData.value = mayorRes.data || {}
-    if (pollRes.data && pollRes.data.poll) {
-      pollData.value = pollRes.data
-      hasVoted.value = Boolean(pollRes.data.has_voted || pollRes.data.is_expired || pollRes.data.is_closed)
+    const res = await api.getHomeBundle()
+    const bundle = res.data || {}
+    newsList.value = bundle.news || []
+    tendersList.value = bundle.tenders || []
+    mayorData.value = bundle.mayor || {}
+    if (bundle.poll && bundle.poll.poll) {
+      pollData.value = bundle.poll
+      hasVoted.value = Boolean(bundle.poll.has_voted || bundle.poll.is_expired || bundle.poll.is_closed)
     }
-    if (slidesRes.data && slidesRes.data.length > 0) {
-      slides.value = slidesRes.data.map(s => ({
+    if (bundle.hero_slides && bundle.hero_slides.length > 0) {
+      slides.value = bundle.hero_slides.map(s => ({
         image: s.image_path,
         tag_am: s.tag_am || 'የኮምቦልቻ ከተማ አስተዳደር',
         tag_en: s.tag_en || 'Kombolcha City Administration',
@@ -166,7 +164,9 @@ const fetchHomeData = async () => {
       }))
     }
   } catch (err) {
-    console.error('Failed to load home page dynamic data:', err)
+    console.error('Failed to load home portal bundle:', err)
+  } finally {
+    homeLoading.value = false
   }
 }
 
@@ -396,25 +396,35 @@ onUnmounted(() => {
           <!-- Portrait -->
           <div class="lg:col-span-4 flex flex-col items-center text-center">
             <div class="w-44 h-44 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-4 bg-slate-100 relative flex items-center justify-center">
-              <div v-if="!mayorData.portrait_path" class="w-full h-full bg-slate-100 flex flex-col items-center justify-center animate-pulse text-slate-300">
-                <Building2 class="w-12 h-12 opacity-30 text-blue-700" />
-              </div>
+              <!-- Shimmer Skeleton while loading -->
+              <div v-if="homeLoading && !mayorData.name_en" class="w-full h-full bg-slate-200 animate-pulse"></div>
               <img 
-                v-else
+                v-else-if="mayorData.portrait_path"
                 :src="mayorData.portrait_path" 
                 :alt="getMayorName()" 
                 class="w-full h-full object-cover object-top"
               />
+              <div v-else class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400">
+                <Building2 class="w-12 h-12 opacity-30 text-blue-700" />
+              </div>
             </div>
-            <h3 class="text-lg font-black text-slate-900">
-              {{ getMayorName() }}
-            </h3>
-            <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mt-0.5">
-              {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Mayor of Kombolcha City') }}
-            </p>
-            <p v-if="mayorData.term_start" class="text-xs text-slate-400 font-mono mt-1">
-              {{ mayorData.term_start }} - {{ mayorData.term_end || 'Present' }}
-            </p>
+
+            <!-- Mayor Name / Title Skeleton or Content -->
+            <div v-if="homeLoading && !mayorData.name_en" class="space-y-2 w-36">
+              <div class="h-4 bg-slate-200 rounded animate-pulse mx-auto w-3/4"></div>
+              <div class="h-3 bg-slate-200 rounded animate-pulse mx-auto w-1/2"></div>
+            </div>
+            <template v-else>
+              <h3 class="text-lg font-black text-slate-900">
+                {{ getMayorName() }}
+              </h3>
+              <p class="text-xs font-bold text-blue-700 uppercase tracking-wider mt-0.5">
+                {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Mayor of Kombolcha City') }}
+              </p>
+              <p v-if="mayorData.term_start" class="text-xs text-slate-400 font-mono mt-1">
+                {{ mayorData.term_start }} - {{ mayorData.term_end || 'Present' }}
+              </p>
+            </template>
           </div>
 
           <!-- Keynote Message -->
@@ -424,11 +434,16 @@ onUnmounted(() => {
               <span>{{ langStore.currentLang === 'am' ? 'የከንቲባው የክብር መልእክት' : "Mayor's Keynote Message" }}</span>
             </div>
 
-            <blockquote class="text-base sm:text-lg font-medium text-slate-700 italic leading-relaxed border-l-4 border-blue-700 pl-4 py-1">
-              "{{ getMayorKeynote() || (langStore.currentLang === 'am' 
-                ? 'እንኳን ወደ ታሪካዊቷ፣ የኢንዱስትሪና የንግድ እምብርት ወደ ሆነችው ውቧ ኮምቦልቻ ከተማ አስተዳደር ዲጂታል ፖርታል በደህና መጡ! ከተማችንን ለነዋሪዎቿ ምቹ፣ ለባለሀብቶች ተመራጭ፣ በቴክኖሎጂ የታገዘ ፈጣን አገልግሎት የምትሰጥ ለማድረግ በቁርጠኝነት እየሰራን ነው።'
-                : 'Welcome to the official portal of Kombolcha City Administration. We are resolutely focused on building a resilient, prosperous metropolis powered by transparent digital governance, vibrant industrial growth, and citizen-first municipal service delivery.'
-              ) }}"
+            <!-- Loading Keynote Skeleton -->
+            <div v-if="homeLoading && !mayorData.name_en" class="space-y-3 py-2 border-l-4 border-slate-200 pl-4">
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-full"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-5/6"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-3/4"></div>
+            </div>
+
+            <!-- Real Database Keynote Quote -->
+            <blockquote v-else class="text-base sm:text-lg font-medium text-slate-700 italic leading-relaxed border-l-4 border-blue-700 pl-4 py-1">
+              "{{ getMayorKeynote() }}"
             </blockquote>
 
             <div class="pt-2">
@@ -462,8 +477,22 @@ onUnmounted(() => {
         </router-link>
       </div>
 
+      <!-- Loading News Skeletons -->
+      <div v-if="homeLoading && newsList.length === 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div v-for="i in 3" :key="i" class="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col justify-between">
+          <div>
+            <div class="h-44 bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-3 w-24 bg-slate-200 animate-pulse rounded"></div>
+              <div class="h-5 w-full bg-slate-200 animate-pulse rounded"></div>
+              <div class="h-3.5 w-4/5 bg-slate-200 animate-pulse rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- News Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <article 
           v-for="news in newsList" 
           :key="news.id" 
