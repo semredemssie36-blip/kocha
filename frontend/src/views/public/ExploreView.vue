@@ -41,7 +41,7 @@ const fetchDestinations = async () => {
   loading.value = true
   try {
     const res = await api.get('/destinations')
-    destinations.value = res.data || []
+    destinations.value = Array.isArray(res.data) ? res.data : (res.data?.data || [])
   } catch (err) {
     console.error('Failed to load destinations:', err)
   } finally {

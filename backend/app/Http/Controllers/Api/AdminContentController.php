@@ -6,6 +6,20 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\NewsArticle;
+use App\Models\Tender;
+use App\Models\EmergencyContact;
+use App\Models\Destination;
+use App\Models\ContactMessage;
+use App\Models\Office;
+use App\Models\Project;
+use App\Services\AdminContentService;
+use App\Http\Resources\NewsResource;
+use App\Http\Resources\TenderResource;
+use App\Http\Resources\DestinationResource;
+use App\Http\Resources\EmergencyContactResource;
+use App\Http\Resources\ContactMessageResource;
+use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -13,46 +27,27 @@ use Carbon\Carbon;
 class AdminContentController extends Controller
 {
     // Dashboard Stats Overview
-    public function getDashboardStats()
+    public function getDashboardStats(AdminContentService $service)
     {
-        $totalNews = DB::table('news_articles')->count();
-        $publishedNews = DB::table('news_articles')->where('status', 'published')->count();
-        $pendingDrafts = DB::table('news_articles')->where('status', 'pending')->count();
-        
-        $activeTenders = DB::table('tenders')->where('status', 'open')->count();
-        $totalOffices = DB::table('offices')->count();
-        $unreadMessages = DB::table('contact_messages')->where('status', 'unread')->count();
-        $totalProjects = DB::table('projects')->count();
-
-        return response()->json([
-            'news_count' => $totalNews,
-            'published_news' => $publishedNews,
-            'pending_drafts' => $pendingDrafts,
-            'active_tenders' => $activeTenders,
-            'offices_count' => $totalOffices,
-            'unread_messages' => $unreadMessages,
-            'projects_count' => $totalProjects,
-        ]);
+        return response()->json($service->getDashboardStats());
     }
 
     // Citizen Inquiries Management
     public function getContactMessages(Request $request)
     {
-        $query = DB::table('contact_messages');
-        if ($request->has('status') && $request->status !== 'all') {
+        $query = ContactMessage::orderBy('created_at', 'desc');
+        if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
-        $messages = $query->orderBy('created_at', 'desc')->paginate(15);
-        return response()->json($messages);
+        $messages = $query->paginate(15);
+        return ContactMessageResource::collection($messages);
     }
 
     public function updateMessageStatus(Request $request, $id)
     {
         $request->validate(['status' => 'required|in:unread,read,resolved,archived']);
-        DB::table('contact_messages')->where('id', $id)->update([
-            'status' => $request->status,
-            'updated_at' => now()
-        ]);
+        $msg = ContactMessage::findOrFail($id);
+        $msg->update(['status' => $request->status]);
         return response()->json(['message' => 'Status updated']);
     }
 

@@ -2,6 +2,13 @@
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
+import OverviewTab from './tabs/OverviewTab.vue'
+import NewsTab from './tabs/NewsTab.vue'
+import TendersTab from './tabs/TendersTab.vue'
+import HotlinesTab from './tabs/HotlinesTab.vue'
+import DestinationsTab from './tabs/DestinationsTab.vue'
+import MessagesTab from './tabs/MessagesTab.vue'
+import StaffTab from './tabs/StaffTab.vue'
 import { 
   Building2, 
   LayoutDashboard, 
@@ -1978,219 +1985,21 @@ onUnmounted(() => {
 
       <!-- Dynamic Workspace Area (Independent Scrollable Container) -->
       <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6 sm:space-y-8 bg-slate-100 min-w-0">
-        <!-- 1. DASHBOARD OVERVIEW (Role Adaptive Workspace) -->
-        <div v-if="activeSection === 'dashboard'" class="space-y-8">
-          <!-- Author Contributor Workspace Header (when isAuthor) -->
-          <div v-if="isAuthor" class="p-6 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2 text-emerald-200 text-xs font-bold uppercase tracking-wider mb-1">
-                <PenTool class="w-4 h-4" />
-                <span>Journalist & Contributor Workspace</span>
-              </div>
-              <h2 class="text-2xl font-black">Welcome, {{ currentUser?.name || 'Author' }}!</h2>
-              <p class="text-xs text-emerald-100 mt-1 max-w-xl">
-                You have authoring privileges to compose and publish bilingual press releases, upload public event photography, and catalog official municipal resources.
-              </p>
-            </div>
-            <div class="flex gap-3 shrink-0">
-              <button @click="modalType = 'news'" class="px-4 py-2.5 rounded-2xl bg-white text-emerald-800 font-bold text-xs hover:bg-emerald-50 transition-colors shadow-sm flex items-center gap-2 cursor-pointer">
-                <Plus class="w-4 h-4" />
-                <span>Write Press Release</span>
-              </button>
-            </div>
-          </div>
-
-          <div v-else>
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <LayoutDashboard class="w-6 h-6 text-blue-600" />
-              <span>{{ adminT('overview_title') }}</span>
-            </h2>
-            <p class="text-xs text-slate-500">{{ adminT('overview_sub') }}</p>
-          </div>
-
-          <!-- The 4 Stat Cards: Author vs Municipal Admin/Editor -->
-          <div v-if="isAuthor" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_news') }}</span>
-              <div class="text-3xl font-black text-emerald-600 mt-2 font-mono">{{ newsList.length }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_news_sub') }}</span>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_media') }}</span>
-              <div class="text-3xl font-black text-blue-600 mt-2 font-mono">{{ galleryList.length }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_media_sub') }}</span>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_resources') }}</span>
-              <div class="text-3xl font-black text-indigo-600 mt-2 font-mono">{{ resourcesList.length }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_resources_sub') }}</span>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('author_privileges') }}</span>
-              <div class="text-sm font-black text-emerald-700 mt-2 uppercase tracking-wide">
-                {{ adminT('author_privileges_status') }}
-              </div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('author_privileges_sub') }}</span>
-            </div>
-          </div>
-
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_views') }}</span>
-              <div class="text-3xl font-black text-slate-900 mt-2 font-mono">{{ stats.monthly_views }}</div>
-              <span class="text-xs text-emerald-600 font-bold mt-1 block">{{ adminT('stat_traffic') }}</span>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_articles') }}</span>
-              <div class="text-3xl font-black text-blue-600 mt-2 font-mono">{{ stats.news_count }}</div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('stat_articles_sub') }}</span>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_tenders') }}</span>
-              <div class="text-3xl font-black text-amber-600 mt-2 font-mono">{{ stats.active_tenders }}</div>
-              <span class="text-xs text-amber-600 font-medium mt-1 block">{{ adminT('stat_tenders_sub') }}</span>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ adminT('stat_hotlines') }}</span>
-              <div class="text-sm font-black text-emerald-700 mt-2 uppercase tracking-wide">
-                {{ adminT('stat_hotlines_status') }}
-              </div>
-              <span class="text-xs text-slate-500 font-medium mt-1 block">{{ adminT('stat_hotlines_sub') }}</span>
-            </div>
-          </div>
-
-          <!-- Quick Action Center -->
-          <div v-if="isAuthor">
-            <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
-              <Zap class="w-5 h-5 text-emerald-600" />
-              <span>{{ adminT('quick_action_center') }}</span>
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                  <h4 class="font-extrabold text-slate-900 text-sm">{{ adminT('rapid_shortcuts') }}</h4>
-                  <span class="text-xs font-bold text-emerald-600">{{ adminT('quick_create') }}</span>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button @click="modalType = 'news'" class="p-3.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_new_news') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                  <button @click="modalType = 'gallery'" class="p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_upload_photo') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                  <button @click="modalType = 'resource'" class="p-3.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_catalog_directive') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Editorial Guidelines & Policy -->
-              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                  <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                    <BookOpen class="w-4 h-4 text-emerald-600" />
-                    <span>Editorial Standards</span>
-                  </h4>
-                  <span class="text-xs font-bold text-slate-400">Policy</span>
-                </div>
-                <ul class="text-xs text-slate-600 space-y-2">
-                  <li class="flex items-start gap-2">
-                    <span class="text-emerald-600 font-bold">•</span>
-                    <span>Always provide Amharic (primary) and English titles for accurate multilingual indexing.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="text-emerald-600 font-bold">•</span>
-                    <span>Use high-resolution 16:9 imagery for article banners and event galleries.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="text-emerald-600 font-bold">•</span>
-                    <span>Deleting published releases or directives requires Editor approval.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div v-else>
-            <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
-              <Zap class="w-5 h-5 text-blue-600" />
-              <span>{{ adminT('quick_action_center') }}</span>
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <!-- Pending Approvals & Operations Card -->
-              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                  <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                    <span>{{ adminT('rapid_shortcuts') }}</span>
-                  </h4>
-                  <span class="text-xs font-bold text-blue-600">{{ adminT('quick_create') }}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                  <button @click="modalType = 'news'" class="p-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_new_news') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                  <button @click="modalType = 'tender'" class="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_post_tender') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                  <button @click="modalType = 'vacancy'" class="p-3.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_post_vacancy') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                  <button @click="modalType = 'project'" class="p-3.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-bold text-left transition-colors cursor-pointer flex items-center justify-between">
-                    <span>{{ adminT('action_track_project') }}</span>
-                    <Plus class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <!-- Recent Inquiries from ASCII diagram -->
-              <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                  <h4 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                    <span>{{ adminT('recent_inquiries') }}</span>
-                    <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black">
-                      {{ stats.unread_messages }} {{ adminT('unread') }}
-                    </span>
-                  </h4>
-                  <button @click="activeSection = 'messages'" class="text-xs font-bold text-blue-600 hover:underline">{{ adminT('view_all_inbox') }}</button>
-                </div>
-
-                <div v-if="messagesList.length === 0" class="text-xs text-slate-400 py-6 text-center">
-                  {{ adminT('no_inquiries') }}
-                </div>
-                <div v-else class="space-y-3">
-                  <div 
-                    v-for="msg in messagesList.slice(0, 2)" 
-                    :key="msg.id"
-                    class="p-3 rounded-2xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between"
-                  >
-                    <div>
-                      <span class="font-bold text-slate-900 block">{{ msg.sender_name }} ({{ msg.target_sub_city || 'Central' }})</span>
-                      <span class="text-slate-500 truncate block max-w-xs">{{ msg.subject }}</span>
-                    </div>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                      :class="msg.status === 'unread' ? 'bg-rose-100 text-rose-700' : 'bg-slate-200 text-slate-700'"
-                    >
-                      {{ msg.status }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
+        <!-- 1. DASHBOARD OVERVIEW (Modularized Enterprise Tab) -->
+        <OverviewTab
+          v-if="activeSection === 'dashboard'"
+          :stats="stats"
+          :currentUser="currentUser"
+          :isAuthor="isAuthor"
+          :isEditor="isEditor"
+          :isSuperAdmin="isSuperAdmin"
+          :adminT="adminT"
+          :newsCount="newsList.length"
+          :galleryCount="galleryList.length"
+          :resourcesCount="resourcesList.length"
+          @navigate="selectSection"
+          @openModal="openNewModal"
+        />
 
         <!-- HERO SLIDER MANAGEMENT -->
         <div v-else-if="activeSection === 'hero_slides'" class="space-y-6">
@@ -2347,243 +2156,28 @@ onUnmounted(() => {
         </div>
 
         <!-- 2. NEWS & PRESS RELEASES -->
-        <div v-else-if="activeSection === 'news'" class="space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                News Articles & Press Releases
-                <span class="text-blue-600 font-mono text-xl">({{ filteredNews.length }})</span>
-              </h2>
-              <p class="text-xs text-slate-500">Publish and manage trilingual municipal announcements.</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="relative w-64">
-                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input 
-                  v-model="newsSearch"
-                  type="text"
-                  placeholder="Filter news by title, category..."
-                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
-                />
-              </div>
-              <button @click="openNewModal('news')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-blue-600/20 shrink-0">
-                <Plus class="w-4 h-4" />
-                <span>Create Press Release</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div v-if="filteredNews.length === 0" class="p-12 text-center text-slate-400 text-xs">
-              No news articles found matching "<span class="font-bold text-slate-600">{{ newsSearch }}</span>".
-            </div>
-            <div v-else class="divide-y divide-slate-100">
-              <div v-for="item in paginatedNews" :key="item.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
-                <div class="flex items-center gap-4">
-                  <img 
-                    :src="item.thumbnail_path || '/assets/hero_industry.jpg'" 
-                    class="w-16 h-12 object-cover rounded-lg border border-slate-200 shrink-0 shadow-2xs" 
-                  />
-                  <div>
-                    <div class="flex items-center gap-2 mb-1">
-                      <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase">{{ item.category }}</span>
-                      <span class="text-xs text-slate-400 font-mono">{{ new Date(item.created_at).toLocaleDateString() }}</span>
-                    </div>
-                    <h4 class="font-bold text-base text-slate-900">{{ item.title_en || item.title_am }}</h4>
-                    <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ item.title_am }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 flex-wrap justify-end">
-                  <!-- Status Badge -->
-                  <span 
-                    :class="[
-                      'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border',
-                      item.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-                      item.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
-                      'bg-slate-100 text-slate-700 border-slate-200'
-                    ]"
-                  >
-                    {{ item.status === 'pending' ? 'Pending Review' : (item.status || 'Draft') }}
-                  </span>
-
-                  <!-- Editorial Action: Editor / Super Admin can Approve & Publish -->
-                  <button 
-                    v-if="isEditor && item.status !== 'published'" 
-                    @click="approveAndPublishNews(item)"
-                    class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
-                    title="Approve and publish to live site"
-                  >
-                    Approve & Publish
-                  </button>
-
-                  <!-- Editorial Action: Editor / Super Admin can Unpublish -->
-                  <button 
-                    v-else-if="isEditor && item.status === 'published'" 
-                    @click="unpublishNews(item)"
-                    class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition-colors cursor-pointer border border-slate-200"
-                    title="Move back to draft"
-                  >
-                    Unpublish
-                  </button>
-
-                  <!-- Author Action: Submit own draft for Editorial Review -->
-                  <button 
-                    v-if="isAuthor && item.status === 'draft' && (!item.author_id || item.author_id === currentUser.id)" 
-                    @click="submitNewsForReview(item)"
-                    class="px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
-                    title="Submit to Editor for live approval"
-                  >
-                    Submit for Review
-                  </button>
-
-                  <!-- Edit Article: Editors can edit all; Authors can edit own drafts -->
-                  <button 
-                    v-if="isEditor || (isAuthor && item.status !== 'published' && (!item.author_id || item.author_id === currentUser.id))"
-                    @click="editItem('news', item)" 
-                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" 
-                    title="Edit Article"
-                  >
-                    <Edit class="w-4 h-4" />
-                  </button>
-
-                  <!-- Delete Article: Editors can delete; Authors can delete own drafts -->
-                  <button 
-                    v-if="isEditor || (isAuthor && item.status !== 'published' && (!item.author_id || item.author_id === currentUser.id))"
-                    @click="deleteItem('/admin/news', item.id, item.title_en || item.title_am)" 
-                    class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" 
-                    title="Delete Article"
-                  >
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- News Pagination Controls Bar -->
-            <div v-if="filteredNews.length > newsPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-              <div>
-                Showing <span class="font-bold text-slate-900">{{ (newsPage - 1) * newsPerPage + 1 }}</span> to 
-                <span class="font-bold text-slate-900">{{ Math.min(newsPage * newsPerPage, filteredNews.length) }}</span> of 
-                <span class="font-bold text-slate-900">{{ filteredNews.length }}</span> articles
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button 
-                  :disabled="newsPage === 1" 
-                  @click="newsPage--"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
-                >
-                  Previous
-                </button>
-                <button 
-                  v-for="p in totalNewsPages" 
-                  :key="p"
-                  @click="newsPage = p"
-                  :class="[
-                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
-                    newsPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
-                  ]"
-                >
-                  {{ p }}
-                </button>
-                <button 
-                  :disabled="newsPage === totalNewsPages" 
-                  @click="newsPage++"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <NewsTab
+          v-else-if="activeSection === 'news'"
+          :newsList="newsList"
+          :isEditor="isEditor"
+          :isAuthor="isAuthor"
+          :currentUserId="currentUser?.id"
+          @openCreate="openNewModal('news')"
+          @openEdit="(item) => editItem('news', item)"
+          @deleteItem="(id) => deleteItem('/admin/news', id, 'News Article')"
+          @approveItem="approveAndPublishNews"
+          @unpublishItem="unpublishNews"
+        />
 
         <!-- 3. PUBLIC TENDERS -->
-        <div v-else-if="activeSection === 'tenders'" class="space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                Public Procurement & Tenders
-                <span class="text-amber-600 font-mono text-xl">({{ filteredTenders.length }})</span>
-              </h2>
-              <p class="text-xs text-slate-500">Create public bids with live countdowns and bid bond requirements.</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="relative w-64">
-                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input 
-                  v-model="tendersSearch"
-                  type="text"
-                  placeholder="Filter by ref, category, title..."
-                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-amber-600 focus:border-amber-600 outline-none shadow-xs"
-                />
-              </div>
-              <button @click="openNewModal('tender')" class="px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
-                <Plus class="w-4 h-4" />
-                <span>Post New Tender</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div v-if="filteredTenders.length === 0" class="p-12 text-center text-slate-400 text-xs">
-              No tenders found matching "<span class="font-bold text-slate-600">{{ tendersSearch }}</span>".
-            </div>
-            <div v-else class="divide-y divide-slate-100">
-              <div v-for="tender in paginatedTenders" :key="tender.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
-                <div>
-                  <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-mono font-bold mr-2">{{ tender.reference_number }}</span>
-                  <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase">{{ tender.category }}</span>
-                  <h4 class="font-bold text-base text-slate-900 mt-2">{{ tender.title_en || tender.title_am }}</h4>
-                  <div class="text-xs text-slate-500 mt-1 font-mono">Closes: {{ tender.closing_datetime }} | Bond: {{ tender.bid_bond_amount ? `${tender.bid_bond_amount} ETB` : 'Exempt' }}</div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button @click="editItem('tender', tender)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Tender">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button v-if="can.canDelete" @click="deleteItem('/admin/tenders', tender.id, tender.reference_number)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Tender">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tenders Pagination Controls Bar -->
-            <div v-if="filteredTenders.length > tendersPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-              <div>
-                Showing <span class="font-bold text-slate-900">{{ (tendersPage - 1) * tendersPerPage + 1 }}</span> to 
-                <span class="font-bold text-slate-900">{{ Math.min(tendersPage * tendersPerPage, filteredTenders.length) }}</span> of 
-                <span class="font-bold text-slate-900">{{ filteredTenders.length }}</span> tenders
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button 
-                  :disabled="tendersPage === 1" 
-                  @click="tendersPage--"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
-                >
-                  Previous
-                </button>
-                <button 
-                  v-for="p in totalTendersPages" 
-                  :key="p"
-                  @click="tendersPage = p"
-                  :class="[
-                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
-                    tendersPage === p ? 'bg-amber-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
-                  ]"
-                >
-                  {{ p }}
-                </button>
-                <button 
-                  :disabled="tendersPage === totalTendersPages" 
-                  @click="tendersPage++"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TendersTab
+          v-else-if="activeSection === 'tenders'"
+          :tendersList="tendersList"
+          :isEditor="isEditor"
+          @openCreate="openNewModal('tender')"
+          @openEdit="(item) => editItem('tender', item)"
+          @deleteItem="(id) => deleteItem('/admin/tenders', id, 'Tender Notice')"
+        />
 
         <!-- 4. JOB VACANCIES -->
         <div v-else-if="activeSection === 'vacancies'" class="space-y-6">
@@ -3103,236 +2697,32 @@ onUnmounted(() => {
         </div>
 
         <!-- DESTINATIONS & TOURISM SPOTLIGHT -->
-        <div v-else-if="activeSection === 'destinations'" class="space-y-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-2xl font-black text-slate-900">Tourism, Culture & Investment Destinations</h2>
-              <p class="text-xs text-slate-500">Manage attractions, parks, industrial hubs, airports, and cultural bazaars for the public /explore portal.</p>
-            </div>
-            <button @click="openNewModal('destination')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Add Destination</span>
-            </button>
-          </div>
-
-          <div v-if="destinationsList.length === 0" class="p-12 text-center bg-white rounded-3xl border border-slate-200">
-            <Compass class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 class="text-base font-bold text-slate-700">No destinations registered</h3>
-            <p class="text-xs text-slate-500 mt-1">Click "Add Destination" above to catalog your first attraction.</p>
-          </div>
-
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="dest in destinationsList" :key="dest.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div class="h-44 bg-slate-100 relative overflow-hidden">
-                  <img v-if="dest.image_path" :src="dest.image_path" :alt="dest.title_en || dest.title_am" class="w-full h-full object-cover" />
-                  <div v-else class="w-full h-full flex items-center justify-center text-slate-400 bg-slate-50">
-                    <Compass class="w-10 h-10" />
-                  </div>
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-slate-800 text-[10px] font-bold uppercase tracking-wider shadow-xs">
-                    {{ dest.category }}
-                  </span>
-                </div>
-                <div class="p-5">
-                  <h4 class="font-bold text-base text-slate-900 mb-1">{{ dest.title_en || dest.title_am }}</h4>
-                  <div v-if="dest.title_am && dest.title_en" class="text-xs text-slate-500 font-medium mb-2">{{ dest.title_am }}</div>
-                  <div v-if="dest.location_en || dest.location_am" class="flex items-center gap-1.5 text-xs text-slate-600 mb-2">
-                    <MapPin class="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>{{ dest.location_en || dest.location_am }}</span>
-                  </div>
-                  <p class="text-xs text-slate-600 line-clamp-2 mb-3">{{ dest.summary_en || dest.summary_am }}</p>
-
-                  <!-- Detail badges in admin -->
-                  <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-1.5 text-[11px]">
-                    <span v-if="dest.visiting_hours" class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium flex items-center gap-1">
-                      <Clock class="w-3 h-3" />
-                      {{ dest.visiting_hours }}
-                    </span>
-                    <span v-if="dest.contact_phone" class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono font-medium flex items-center gap-1">
-                      <Phone class="w-3 h-3" />
-                      {{ dest.contact_phone }}
-                    </span>
-                    <span v-if="dest.admission_fee" class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium">
-                      {{ dest.admission_fee }}
-                    </span>
-                    <span v-if="dest.description_en || dest.description_am" class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 font-medium">
-                      ✓ Full Details
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                <span class="text-[11px] font-mono text-slate-400">Order: {{ dest.order || 0 }}</span>
-                <div class="flex items-center gap-2">
-                  <button @click="editItem('destination', dest)" class="p-2 text-blue-600 hover:bg-blue-100/50 rounded-xl cursor-pointer" title="Edit Destination">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button v-if="can.canDelete" @click="deleteItem('/admin/destinations', dest.id, dest.title_en || dest.title_am)" class="p-2 text-rose-500 hover:bg-rose-100/50 rounded-xl cursor-pointer" title="Delete Destination">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DestinationsTab
+          v-else-if="activeSection === 'destinations'"
+          :destinationsList="destinationsList"
+          :isEditor="isEditor"
+          @openCreate="openNewModal('destination')"
+          @openEdit="(item) => editItem('destination', item)"
+          @deleteItem="(id) => deleteItem('/admin/destinations', id, 'Destination')"
+        />
 
         <!-- 11. CITIZEN FEEDBACK INBOX -->
-        <div v-else-if="activeSection === 'messages'" class="space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                Citizen Feedback & Inquiries Desk
-                <span class="text-blue-600 font-mono text-xl">({{ filteredMessages.length }})</span>
-              </h2>
-              <p class="text-xs text-slate-500">Live submissions received via the public Contact Us portal.</p>
-            </div>
-            <div class="relative w-72">
-              <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input 
-                v-model="messagesSearch"
-                type="text"
-                placeholder="Search sender, subject, phone..."
-                class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
-              />
-            </div>
-          </div>
+        <MessagesTab
+          v-else-if="activeSection === 'messages'"
+          :messagesList="messagesList"
+          :isEditor="isEditor"
+          @updateStatus="({ id, status }) => updateMessageStatus(id, status)"
+          @refresh="fetchAllAdminData"
+        />
 
-          <div v-if="filteredMessages.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
-            No inquiries found matching "<span class="font-bold text-slate-600">{{ messagesSearch }}</span>".
-          </div>
-          <div v-else class="space-y-4">
-            <div v-for="msg in paginatedMessages" :key="msg.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-              <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-                <div class="flex items-center gap-3">
-                  <span class="font-extrabold text-slate-900 text-sm">{{ msg.sender_name }}</span>
-                  <span class="text-xs text-slate-500 font-mono">{{ msg.sender_phone }}</span>
-                  <span v-if="msg.sender_email" class="text-xs text-slate-500 font-mono">{{ msg.sender_email }}</span>
-                </div>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                  :class="msg.status === 'unread' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'"
-                >
-                  {{ msg.status }}
-                </span>
-              </div>
-              <h4 class="font-bold text-slate-900 text-sm mb-1">Subject: {{ msg.subject }}</h4>
-              <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl mb-4">{{ msg.message }}</p>
-              <div class="flex items-center justify-between pt-2">
-                <span class="text-xs text-blue-700 font-semibold">Assigned Desk: {{ msg.target_sub_city || 'Central Municipality' }}</span>
-                <div class="flex gap-2">
-                  <button v-if="msg.status === 'unread'" @click="updateMessageStatus(msg.id, 'read')" class="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold cursor-pointer">Mark Read</button>
-                  <button v-if="msg.status !== 'resolved'" @click="updateMessageStatus(msg.id, 'resolved')" class="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold cursor-pointer">Mark Resolved</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Messages Pagination Controls Bar -->
-            <div v-if="filteredMessages.length > messagesPerPage" class="p-4 px-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-              <div>
-                Showing <span class="font-bold text-slate-900">{{ (messagesPage - 1) * messagesPerPage + 1 }}</span> to 
-                <span class="font-bold text-slate-900">{{ Math.min(messagesPage * messagesPerPage, filteredMessages.length) }}</span> of 
-                <span class="font-bold text-slate-900">{{ filteredMessages.length }}</span> inquiries
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button 
-                  :disabled="messagesPage === 1" 
-                  @click="messagesPage--"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
-                >
-                  Previous
-                </button>
-                <button 
-                  v-for="p in totalMessagesPages" 
-                  :key="p"
-                  @click="messagesPage = p"
-                  :class="[
-                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
-                    messagesPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
-                  ]"
-                >
-                  {{ p }}
-                </button>
-                <button 
-                  :disabled="messagesPage === totalMessagesPages" 
-                  @click="messagesPage++"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 12. STAFF ACCOUNTS (Super Admin only) -->
-        <div v-else-if="activeSection === 'staff'" class="space-y-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-2xl font-black text-slate-900">Municipal Staff & Roles</h2>
-              <p class="text-xs text-slate-500">Super Admin access control for editors and communications officers.</p>
-            </div>
-            <button @click="modalType = 'staff'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
-              <Plus class="w-4 h-4" />
-              <span>Create Staff Account</span>
-            </button>
-          </div>
-
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase">
-                <tr>
-                  <th class="p-4">Staff Member</th>
-                  <th class="p-4">Email</th>
-                  <th class="p-4">Role</th>
-                  <th class="p-4">Status</th>
-                  <th class="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <tr v-for="user in staffList" :key="user.id" class="hover:bg-slate-50/50">
-                  <td class="p-4 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 border border-slate-200">
-                      <img v-if="user.avatar_path" :src="user.avatar_path" class="w-full h-full object-cover" />
-                      <span v-else>{{ (user.name || 'S').substring(0, 2).toUpperCase() }}</span>
-                    </div>
-                    <div>
-                      <div class="font-bold text-slate-900">{{ user.name }}</div>
-                      <div v-if="user.phone" class="text-[11px] text-slate-400 font-mono">{{ user.phone }}</div>
-                    </div>
-                  </td>
-                  <td class="p-4 text-slate-600 font-mono">{{ user.email }}</td>
-                  <td class="p-4">
-                    <span 
-                      class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase"
-                      :class="user.role === 'super_admin' ? 'bg-purple-50 text-purple-700 border border-purple-200' : (user.role === 'editor' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')"
-                    >
-                      {{ user.role }}
-                    </span>
-                  </td>
-                  <td class="p-4">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="user.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'">
-                      {{ user.is_active ? 'Active' : 'Disabled' }}
-                    </span>
-                  </td>
-                  <td class="p-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <button 
-                        @click="openResetStaffPasswordModal(user)" 
-                        class="px-2.5 py-1 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                        title="Reset Staff Member Password"
-                      >
-                        <KeyRound class="w-3.5 h-3.5" />
-                        <span>Reset Password</span>
-                      </button>
-                      <button @click="api.patch(`/admin/staff/${user.id}/toggle`).then(fetchAllAdminData)" class="px-3 py-1 rounded-lg border text-xs font-bold cursor-pointer hover:bg-slate-50">
-                        {{ user.is_active ? 'Deactivate' : 'Activate' }}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <StaffTab
+          v-else-if="activeSection === 'staff'"
+          :staffList="staffList"
+          :isSuperAdmin="isSuperAdmin"
+          @openCreate="openNewModal('staff')"
+          @toggleStatus="(id) => api.patch('/admin/staff/' + id + '/toggle').then(fetchAllAdminData)"
+          @openResetPassword="openResetStaffPasswordModal"
+        />
 
         <!-- 13. SETTINGS & MAINTENANCE MODE -->
         <div v-else-if="activeSection === 'settings'" class="space-y-6 max-w-4xl">
@@ -3413,168 +2803,15 @@ onUnmounted(() => {
         </div>
 
         <!-- 14. 24/7 EMERGENCY HOTLINES MANAGEMENT -->
-        <div v-else-if="activeSection === 'hotlines'" class="space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2 text-red-600 font-extrabold text-xs uppercase tracking-wider mb-1">
-                <PhoneCall class="w-4 h-4 shrink-0" />
-                <span>{{ adminT('stat_hotlines_status') || '24/7 Rapid Emergency Response Desk' }}</span>
-              </div>
-              <h2 class="text-2xl font-black text-slate-900">{{ adminT('hotlines_title') || '24/7 Emergency Dispatch Hotlines' }}</h2>
-              <p class="text-xs text-slate-500 mt-0.5">
-                Manage telephone numbers, emergency dispatch services, and badge colors displayed on the top bar across the public portal.
-              </p>
-            </div>
-            <button 
-              @click="openNewModal('emergency_contact')" 
-              class="px-5 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-red-600/20 shrink-0 transition-colors"
-            >
-              <Plus class="w-4 h-4" />
-              <span>{{ adminT('add_hotline') || 'Add Emergency Hotline' }}</span>
-            </button>
-          </div>
+        <HotlinesTab
+          v-else-if="activeSection === 'hotlines'"
+          :hotlinesList="emergencyContactsList"
+          :isEditor="isEditor"
+          @openCreate="openNewModal('emergency_contact')"
+          @openEdit="(item) => editItem('emergency_contact', item)"
+          @deleteItem="(id) => deleteItem('/admin/emergency-contacts', id, 'Emergency Hotline')"
+        />
 
-          <!-- Live Top Bar Public Preview -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
-                <Eye class="w-3.5 h-3.5 text-blue-600" />
-                Live Top Bar Public Preview
-              </span>
-              <span class="text-[10px] text-slate-400 font-medium">Updates live instantly across the portal</span>
-            </div>
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <div class="flex items-center gap-1.5 shrink-0 pr-1 text-slate-900 font-extrabold text-[11px]">
-                <PhoneCall class="w-3.5 h-3.5 text-red-600 shrink-0" />
-                <span class="uppercase tracking-wider whitespace-nowrap">24/7 HOTLINES:</span>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <span 
-                  v-for="item in emergencyContactsList.filter(c => c.is_active)" 
-                  :key="item.id"
-                  :class="[
-                    'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-[11px] font-bold shadow-2xs',
-                    getHotlineBadgeClass(item.badge_color)
-                  ]"
-                >
-                  <component :is="getHotlineIcon(item.icon_name)" class="w-3 h-3 shrink-0" />
-                  <span>{{ item.name_en }}:</span>
-                  <span class="font-mono font-black">{{ item.phone_number }}</span>
-                </span>
-                <span v-if="!emergencyContactsList.filter(c => c.is_active).length" class="text-xs text-slate-400 italic">
-                  No active hotlines currently published.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Hotlines Data Table / Grid -->
-          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h3 class="font-black text-sm text-slate-900">Configured Emergency Numbers</h3>
-                <p class="text-xs text-slate-400">Total of {{ emergencyContactsList.length }} emergency services registered in the system.</p>
-              </div>
-              <button @click="fetchEmergencyContacts" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer hover:bg-slate-50" title="Refresh Hotlines">
-                <RefreshCw class="w-4 h-4" />
-              </button>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-wider border-b border-slate-100">
-                  <tr>
-                    <th class="p-4">Service & Icon</th>
-                    <th class="p-4">Emergency Phone / Hotline</th>
-                    <th class="p-4">Amharic & Oromo Translations</th>
-                    <th class="p-4">Badge Color</th>
-                    <th class="p-4">Order</th>
-                    <th class="p-4">Status</th>
-                    <th class="p-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-                  <tr v-for="item in emergencyContactsList" :key="item.id" class="hover:bg-slate-50/50 transition-colors">
-                    <td class="p-4">
-                      <div class="flex items-center gap-3">
-                        <div 
-                          class="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
-                          :class="getHotlineBadgeClass(item.badge_color)"
-                        >
-                          <component :is="getHotlineIcon(item.icon_name)" class="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div class="font-bold text-slate-900 text-sm">{{ item.name_en }}</div>
-                          <div class="text-[10px] text-slate-400 font-mono">Icon: {{ item.icon_name || 'PhoneCall' }}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="p-4">
-                      <a :href="'tel:' + item.phone_number" class="inline-flex items-center gap-1.5 font-mono font-black text-sm text-slate-900 hover:text-blue-600 transition-colors">
-                        <Phone class="w-3.5 h-3.5 text-slate-400" />
-                        <span>{{ item.phone_number }}</span>
-                      </a>
-                    </td>
-                    <td class="p-4">
-                      <div class="space-y-0.5">
-                        <div class="text-xs text-slate-800 font-semibold">{{ item.name_am }}</div>
-                        <div v-if="item.name_om" class="text-[11px] text-slate-500 italic">{{ item.name_om }}</div>
-                      </div>
-                    </td>
-                    <td class="p-4">
-                      <span 
-                        class="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase border tracking-wider"
-                        :class="getHotlineBadgeClass(item.badge_color)"
-                      >
-                        {{ item.badge_color || 'red' }}
-                      </span>
-                    </td>
-                    <td class="p-4 font-mono font-bold text-slate-500">
-                      #{{ item.order || 0 }}
-                    </td>
-                    <td class="p-4">
-                      <button 
-                        type="button"
-                        @click="toggleHotlineStatus(item)"
-                        class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all border"
-                        :class="item.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'"
-                      >
-                        {{ item.is_active ? '● Live on Navbar' : '○ Disabled' }}
-                      </button>
-                    </td>
-                    <td class="p-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <button 
-                          @click="editItem('emergency_contact', item)" 
-                          class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
-                          title="Edit Hotline"
-                        >
-                          <Edit class="w-4 h-4" />
-                        </button>
-                        <button 
-                          @click="deleteItem('/admin/emergency-contacts', item.id, item.name_en)" 
-                          class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
-                          title="Delete Hotline"
-                        >
-                          <Trash2 class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr v-if="!emergencyContactsList.length">
-                    <td colspan="7" class="p-12 text-center text-slate-400">
-                      <PhoneCall class="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                      <p class="font-bold text-slate-600">No emergency hotlines configured.</p>
-                      <p class="text-xs text-slate-400 mt-1">Click the button above to add a new 24/7 hotline service.</p>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 15. CIVIC OPINION POLLS MANAGEMENT -->
         <div v-else-if="activeSection === 'polls'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>

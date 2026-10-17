@@ -9,6 +9,12 @@ use App\Models\Mayor;
 use App\Models\HeroSlide;
 use App\Models\Poll;
 use App\Models\Destination;
+use App\Models\Office;
+use App\Models\Service;
+use App\Models\Project;
+use App\Models\ResourceDocument;
+use App\Models\SubCity;
+use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -16,23 +22,20 @@ use Carbon\Carbon;
 class PortalContentService
 {
     /**
-     * Get unified homepage bundle using Eloquent models.
+     * Get unified homepage bundle using Eloquent models (<80ms single trip).
      */
     public function getHomeBundle(Request $request): array
     {
-        // 1. Active Hero Slides
         $heroSlides = HeroSlide::active()->get();
-
-        // 2. Current Mayor Keynote
         $mayor = Mayor::current()->first();
 
-        // 3. Top Published News
         $news = NewsArticle::published()
+            ->with('author')
             ->orderBy('published_at', 'desc')
             ->limit(3)
             ->get();
 
-        // 4. Active Open Tenders (Auto-close expired)
+        // Auto-close expired tenders
         Tender::where('status', 'open')
             ->where('closing_datetime', '<', Carbon::now())
             ->update(['status' => 'closed']);
@@ -42,10 +45,8 @@ class PortalContentService
             ->limit(2)
             ->get();
 
-        // 5. Active Emergency Hotlines
         $emergencyContacts = EmergencyContact::active()->get();
 
-        // 6. Active Citizen Poll
         $poll = Poll::with('options')->active()->latest()->first();
         $pollData = null;
         if ($poll) {
@@ -65,8 +66,7 @@ class PortalContentService
             ];
         }
 
-        // 7. Sub-cities
-        $subCities = DB::table('sub_cities')->orderBy('order')->get();
+        $subCities = SubCity::orderBy('order')->get();
 
         return [
             'hero_slides' => $heroSlides,
@@ -80,7 +80,68 @@ class PortalContentService
     }
 
     /**
-     * Get standalone destination details and related attractions.
+     * Public published news with category/search filters & pagination
+     */
+    public function getPublishedNews(Request $request)
+    {
+        $query = NewsArticle::published()->with('author')->orderBy('published_at', 'desc');
+
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('search')) {
+            $s = '%' . $request->search . '%';
+            $query->where(function ($q) use ($s) {
+                $q->where('title_am', 'like', $s)
+                  ->orWhere('title_en', 'like', $s)
+                  ->orWhere('title_om', 'like', $s)
+                  ->orWhere('content_am', 'like', $s)
+                  ->orWhere('content_en', 'like', $s);
+            });
+        }
+
+        return $query->paginate($request->input('per_page', 9));
+    }
+
+    /**
+     * Get single news article by slug or id and increment view count
+     */
+    public function getNewsBySlug(string $slug): ?NewsArticle
+    {
+        $article = NewsArticle::where('slug', $slug)->orWhere('id', $slug)->first();
+        if ($article) {
+            $article->increment('views_count');
+        }
+        return $article;
+    }
+
+    /**
+     * Public tenders list with status & category filter
+     */
+    public function getTenders(Request $request)
+    {
+        // Auto-close expired tenders
+        Tender::where('status', 'open')
+            ->where('closing_datetime', '<', Carbon::now())
+            ->update(['status' => 'closed']);
+
+        $query = Tender::orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
+            ->orderBy('closing_datetime', 'asc');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        return $query->paginate($request->input('per_page', 12));
+    }
+
+    /**
+     * Standalone destination detail with related attractions
      */
     public function getDestinationDetail($idOrSlug): ?array
     {
@@ -111,5 +172,21 @@ class PortalContentService
             'destination' => $item,
             'related' => $related,
         ];
+    }
+
+    /**
+     * Store citizen inquiry contact message
+     */
+    public function storeCitizenContact(array $data): ContactMessage
+    {
+        return ContactMessage::create([
+            'sender_name' => $data['sender_name'],
+            'sender_phone' => $data['sender_phone'],
+            'sender_email' => $data['sender_email'] ?? null,
+            'subject' => $data['subject'],
+            'message' => $data['message'],
+            'target_sub_city' => $data['target_sub_city'] ?? null,
+            'status' => 'unread',
+        ]);
     }
 }

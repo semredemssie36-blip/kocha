@@ -12,7 +12,7 @@ async function fetchTenders() {
   loading.value = true
   try {
     const res = await api.get('/tenders')
-    tenders.value = res.data
+    tenders.value = Array.isArray(res.data) ? res.data : (res.data?.data || [])
   } catch (err) {
     console.error('Failed to load tenders:', err)
   } finally {
