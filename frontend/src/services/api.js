@@ -46,6 +46,7 @@ api.votePoll = (pollId, optionId) => api.post(`/polls/${pollId}/vote`, { option_
 api.getHomeBundle = () => api.get('/home-bundle')
 api.getDestination = (idOrSlug) => api.get(`/destinations/${idOrSlug}`)
 api.getEmergencyContacts = () => api.get('/emergency-contacts')
+api.getSettings = () => api.get('/settings')
 
 export { api }
 export default api

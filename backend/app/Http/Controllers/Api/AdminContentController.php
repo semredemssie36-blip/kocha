@@ -787,7 +787,9 @@ class AdminContentController extends Controller
         $data = $request->only([
             'site_name_am', 'site_name_en', 'site_name_om',
             'contact_phone', 'contact_email', 'emergency_notice_am',
-            'emergency_notice_en', 'emergency_notice_om'
+            'emergency_notice_en', 'emergency_notice_om',
+            'latitude', 'longitude', 'map_address_am', 'map_address_en',
+            'map_address_om', 'map_zoom'
         ]);
 
         if ($request->has('is_maintenance')) {

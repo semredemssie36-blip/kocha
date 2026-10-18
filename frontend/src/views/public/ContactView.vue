@@ -13,11 +13,58 @@ import {
   AlertCircle, 
   Building2, 
   ShieldCheck,
-  PhoneCall
+  PhoneCall,
+  Navigation,
+  ExternalLink,
+  Copy,
+  Check
 } from 'lucide-vue-next'
+import { computed } from 'vue'
 
 const route = useRoute()
 const langStore = useLanguageStore()
+
+const settings = ref(null)
+const copiedCoords = ref(false)
+
+const fetchSettings = async () => {
+  try {
+    const res = await api.getSettings()
+    settings.value = res.data || null
+  } catch (err) {
+    console.error('Failed to load municipal settings & map coordinates:', err)
+  }
+}
+
+const latitude = computed(() => Number(settings.value?.latitude) || 11.0845)
+const longitude = computed(() => Number(settings.value?.longitude) || 39.7390)
+
+const mapIframeUrl = computed(() => {
+  const lat = latitude.value
+  const lng = longitude.value
+  const dLng = 0.007
+  const dLat = 0.004
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - dLng}%2C${lat - dLat}%2C${lng + dLng}%2C${lat + dLat}&layer=mapnik&marker=${lat}%2C${lng}`
+})
+
+const directionsUrl = computed(() => {
+  return `https://www.google.com/maps/dir/?api=1&destination=${latitude.value},${longitude.value}`
+})
+
+const getMapAddress = () => {
+  if (!settings.value) return 'Main Administrative Corridor, Kebele 02, Kombolcha, Ethiopia'
+  const lang = langStore.currentLang
+  if (lang === 'am') return settings.value.map_address_am || settings.value.map_address_en
+  if (lang === 'om') return settings.value.map_address_om || settings.value.map_address_en
+  return settings.value.map_address_en
+}
+
+const copyCoordinates = () => {
+  const coords = `${latitude.value}, ${longitude.value}`
+  navigator.clipboard.writeText(coords)
+  copiedCoords.value = true
+  setTimeout(() => { copiedCoords.value = false }, 2500)
+}
 
 const form = reactive({
   name: '',
@@ -29,6 +76,7 @@ const form = reactive({
 })
 
 onMounted(() => {
+  fetchSettings()
   if (route.query.inquiry_target) {
     const target = route.query.inquiry_target
     form.subject = `Inquiry: ${target}`
@@ -259,7 +307,7 @@ const submitForm = async () => {
               <MapPin class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div>
                 <p class="font-bold text-slate-800">{{ langStore.currentLang === 'am' ? 'አድራሻ' : 'Physical Address' }}</p>
-                <p class="text-xs text-slate-500">Main Administrative Corridor, Kebele 02, Kombolcha, Amhara Region, Ethiopia</p>
+                <p class="text-xs text-slate-500">{{ getMapAddress() }}</p>
               </div>
             </div>
 
@@ -289,37 +337,72 @@ const submitForm = async () => {
           </div>
         </div>
 
-        <!-- 24/7 Rapid Emergency Dispatch Hotline Card: Clean White Bordered Card -->
-        <div class="bg-white border-2 border-red-200 text-slate-800 rounded-3xl p-8 shadow-xs">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="p-3 bg-red-50 text-red-700 rounded-2xl border border-red-200">
-              <PhoneCall class="w-6 h-6" />
+        <!-- Municipal Headquarters Live Interactive Map Card -->
+        <div class="bg-white border-2 border-blue-200 text-slate-800 rounded-3xl p-6 sm:p-7 shadow-xs overflow-hidden relative">
+          <!-- Card Header -->
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-blue-50 text-blue-700 rounded-2xl border border-blue-200">
+                <Navigation class="w-5 h-5" />
+              </div>
+              <div>
+                <h3 class="font-black text-slate-900 text-base sm:text-lg leading-tight">
+                  {{ langStore.currentLang === 'am' ? 'ይፋዊ የማዘጋጃ ቤት መገኛ ካርታ' : langStore.currentLang === 'om' ? 'Kaartaa Waajjira Bulchiinsaa' : 'Headquarters Geo-Location Map' }}
+                </h3>
+                <p class="text-xs text-slate-500">
+                  {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ዋና ማዕከል' : 'Kombolcha City Metropolitan Administration' }}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 class="font-black text-slate-900 text-lg">
-                {{ langStore.currentLang === 'am' ? 'የ 24/7 አደጋ ጊዜ ጥሪዎች' : '24/7 Rapid Emergency Dispatch' }}
-              </h3>
-              <p class="text-xs text-slate-500">Toll-Free Immediate Response</p>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live GPS
+            </span>
+          </div>
+
+          <!-- Physical Address Banner -->
+          <div class="mb-4 p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-start gap-2.5">
+            <MapPin class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <p class="text-xs text-slate-700 leading-relaxed font-medium">
+              {{ getMapAddress() }}
+            </p>
+          </div>
+
+          <!-- Embedded OpenStreetMap Iframe -->
+          <div class="relative w-full h-64 rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100 mb-4 group">
+            <iframe
+              :src="mapIframeUrl"
+              class="w-full h-full border-0"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Kombolcha City Hall Location"
+            ></iframe>
+            <div class="absolute bottom-2 left-2 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-slate-200 text-[10px] font-mono text-slate-600 shadow-xs flex items-center gap-1">
+              <span>📍 {{ latitude.toFixed(4) }}° N, {{ longitude.toFixed(4) }}° E</span>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <div class="text-[11px] text-slate-500 font-bold uppercase">City Police</div>
-              <div class="text-xl font-black text-slate-900 tracking-wider font-mono">991</div>
-            </div>
-            <div class="p-3.5 rounded-xl bg-red-50 border border-red-200">
-              <div class="text-[11px] text-red-700 font-bold uppercase">Fire & Rescue</div>
-              <div class="text-xl font-black text-red-700 tracking-wider font-mono">939</div>
-            </div>
-            <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-              <div class="text-[11px] text-emerald-800 font-bold uppercase">Ambulance Desk</div>
-              <div class="text-xl font-black text-emerald-800 tracking-wider font-mono">907</div>
-            </div>
-            <div class="p-3.5 rounded-xl bg-blue-50 border border-blue-200">
-              <div class="text-[11px] text-blue-800 font-bold uppercase">Water Leaks</div>
-              <div class="text-xs font-bold text-blue-900 mt-1 font-mono">+251 33 551 0145</div>
-            </div>
+          <!-- Navigation & Coordinates Actions -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <a
+              :href="directionsUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors"
+            >
+              <ExternalLink class="w-3.5 h-3.5" />
+              <span>{{ langStore.currentLang === 'am' ? 'የጉግል ካርታ አቅጣጫዎች (Google Maps)' : 'Get Driving Directions' }}</span>
+            </a>
+
+            <button
+              type="button"
+              @click="copyCoordinates"
+              class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors shrink-0"
+              :title="'Copy GPS Coordinates: ' + latitude + ', ' + longitude"
+            >
+              <component :is="copiedCoords ? Check : Copy" class="w-3.5 h-3.5" :class="copiedCoords ? 'text-emerald-600' : 'text-slate-600'" />
+              <span>{{ copiedCoords ? (langStore.currentLang === 'am' ? 'ተቀድቷል!' : 'Copied!') : (langStore.currentLang === 'am' ? 'ኮኦርዲኔት ቅዳ' : 'Copy GPS') }}</span>
+            </button>
           </div>
         </div>
       </div>

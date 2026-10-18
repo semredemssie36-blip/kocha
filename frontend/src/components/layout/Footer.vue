@@ -1,8 +1,34 @@
 <script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
+import { api } from '@/services/api'
 import { Building2, Phone, Mail, MapPin, ExternalLink } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
+const settings = ref(null)
+
+onMounted(async () => {
+  try {
+    const res = await api.getSettings()
+    settings.value = res.data || null
+  } catch (err) {
+    // fallback gracefully
+  }
+})
+
+const mapAddress = computed(() => {
+  if (!settings.value) return 'Kombolcha City Hall, Amhara Region, Ethiopia'
+  const lang = langStore.currentLang
+  if (lang === 'am') return settings.value.map_address_am || settings.value.map_address_en
+  if (lang === 'om') return settings.value.map_address_om || settings.value.map_address_en
+  return settings.value.map_address_en
+})
+
+const directionsUrl = computed(() => {
+  const lat = Number(settings.value?.latitude) || 11.0845
+  const lng = Number(settings.value?.longitude) || 39.7390
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+})
 </script>
 
 <template>
@@ -105,10 +131,10 @@ const langStore = useLanguageStore()
           {{ langStore.t('common.contact_us') }}
         </h4>
         <div class="space-y-3 text-sm text-slate-400">
-          <div class="flex items-start gap-2.5">
-            <MapPin class="w-4 h-4 text-blue-400 mt-1 shrink-0" />
-            <span>Kombolcha City Hall, Amhara Region, Ethiopia</span>
-          </div>
+          <a :href="directionsUrl" target="_blank" rel="noopener noreferrer" class="flex items-start gap-2.5 hover:text-blue-400 transition-colors group" title="Open in Google Maps">
+            <MapPin class="w-4 h-4 text-blue-400 mt-1 shrink-0 group-hover:scale-110 transition-transform" />
+            <span class="flex-1 underline decoration-slate-700 underline-offset-4 group-hover:decoration-blue-400">{{ mapAddress }}</span>
+          </a>
           <div class="flex items-center gap-2.5">
             <Phone class="w-4 h-4 text-emerald-400 shrink-0" />
             <span>+251 33 551 0022</span>
@@ -125,7 +151,7 @@ const langStore = useLanguageStore()
 
     <!-- Copyright Sub-footer -->
     <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 mt-12 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-      <p>© 2026 {{ langStore.t('common.city_name') }}. {{ langStore.t('common.all_rights_reserved') }}.</p>
+      <p>© 2026 {{ langStore.t('common.city_name') }}. {{ langStore.t('common.all_rights_reserved') }}. powered by <span class="text-white font-bold">AWDMA Technology 'Technology for a Better Tomorrow'</span></p>
       <div class="flex items-center gap-6">
         <a href="#" class="hover:text-slate-400">Privacy Policy</a>
         <a href="#" class="hover:text-slate-400">Terms of Service</a>

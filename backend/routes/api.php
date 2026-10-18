@@ -62,6 +62,9 @@ Route::get('/destinations/{slug}', [PublicApiController::class, 'getDestinationD
 // High-speed consolidated home portal bundle (sub-second load)
 Route::get('/home-bundle', [PublicApiController::class, 'getHomeBundle']);
 
+// Public Municipal Settings & Geo-Location Coordinates
+Route::get('/settings', [PublicApiController::class, 'getPublicSettings']);
+
 
 /*
 |--------------------------------------------------------------------------

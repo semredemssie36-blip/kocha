@@ -522,4 +522,14 @@ class PublicApiController extends Controller
     {
         return response()->json($portalService->getHomeBundle($request));
     }
+
+    // Public Municipal Settings & Geo-Location Coordinates
+    public function getPublicSettings()
+    {
+        $settings = DB::table('site_settings')->first();
+        if ($settings) {
+            $settings->is_maintenance = (bool)$settings->is_maintenance;
+        }
+        return response()->json($settings);
+    }
 }

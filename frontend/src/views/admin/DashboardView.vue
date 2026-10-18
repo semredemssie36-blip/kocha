@@ -21,6 +21,7 @@ import {
   Globe,
   HardHat,
   MapPin,
+  Navigation,
   Plus,
   CheckCircle2,
   AlertCircle,
@@ -582,8 +583,19 @@ const pollsList = ref([])
 const siteSettings = ref({
   site_name_en: 'Kombolcha City Administration',
   site_name_am: 'የኮምቦልቻ ከተማ አስተዳደር',
+  site_name_om: 'Bulchiinsa Magaalaa Kombolchaa',
+  contact_phone: '+251-33-551-0024',
+  contact_email: 'info@kombolcha.gov.et',
   emergency_notice_en: '',
-  is_maintenance: 0
+  emergency_notice_am: '',
+  emergency_notice_om: '',
+  is_maintenance: 0,
+  latitude: 11.0845000,
+  longitude: 39.7390000,
+  map_address_en: 'Main Administrative Corridor, Kebele 02, Kombolcha, Amhara Region, Ethiopia',
+  map_address_am: 'ዋናው አስተዳደር ኮሪደር፣ ቀበሌ 02፣ ኮምቦልቻ፣ አማራ ክልል፣ ኢትዮጵያ',
+  map_address_om: 'Kooridorii Bulchiinsa Magaalaa, Ganda 02, Kombolcha, Naannoo Amaaraa, Itoophiyaa',
+  map_zoom: 15
 })
 
 // Loading & Modal States
@@ -1326,13 +1338,46 @@ async function updateMayorProfile() {
   }
 }
 
+const detectingLocation = ref(false)
+const detectLiveLocation = () => {
+  if (!navigator.geolocation) {
+    showToast('Geolocation is not supported by your browser.')
+    return
+  }
+  detectingLocation.value = true
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      siteSettings.value.latitude = Number(pos.coords.latitude.toFixed(7))
+      siteSettings.value.longitude = Number(pos.coords.longitude.toFixed(7))
+      detectingLocation.value = false
+      showToast(`📍 GPS Coordinates Detected: Lat ${siteSettings.value.latitude}, Lng ${siteSettings.value.longitude}`)
+    },
+    (err) => {
+      detectingLocation.value = false
+      showToast('Could not retrieve live GPS coordinates: ' + err.message)
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  )
+}
+
 async function updateSettings() {
   try {
     const isMaint = Boolean(siteSettings.value.is_maintenance)
     const res = await api.post('/admin/settings', {
       site_name_en: siteSettings.value.site_name_en,
       site_name_am: siteSettings.value.site_name_am,
+      site_name_om: siteSettings.value.site_name_om,
+      contact_phone: siteSettings.value.contact_phone,
+      contact_email: siteSettings.value.contact_email,
       emergency_notice_en: siteSettings.value.emergency_notice_en,
+      emergency_notice_am: siteSettings.value.emergency_notice_am,
+      emergency_notice_om: siteSettings.value.emergency_notice_om,
+      latitude: Number(siteSettings.value.latitude) || 11.0845,
+      longitude: Number(siteSettings.value.longitude) || 39.7390,
+      map_address_en: siteSettings.value.map_address_en,
+      map_address_am: siteSettings.value.map_address_am,
+      map_address_om: siteSettings.value.map_address_om,
+      map_zoom: Number(siteSettings.value.map_zoom) || 15,
       is_maintenance: isMaint
     })
     if (res.data?.settings) {
@@ -1342,7 +1387,7 @@ async function updateSettings() {
         is_maintenance: Boolean(res.data.settings.is_maintenance)
       }
     }
-    showToast(siteSettings.value.is_maintenance ? 'Emergency Maintenance Mode is now ACTIVE on public portal!' : 'Maintenance mode DISABLED. Portal is now fully public.')
+    showToast('Municipal settings & geo-location coordinates saved successfully!')
   } catch (err) {
     console.error('Settings update error:', err)
     const msg = err.response?.data?.message || 'Error updating settings.'
@@ -2791,6 +2836,126 @@ onUnmounted(() => {
                   :class="siteSettings.is_maintenance ? 'translate-x-8' : 'translate-x-0'"
                 />
               </button>
+            </div>
+
+            <!-- 📍 Municipal Geographic Location & Interactive Map Coordinates -->
+            <div class="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100">
+                    <MapPin class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-sm text-slate-900">Municipal Headquarters Geographic Location & Map Pin</h4>
+                    <p class="text-xs text-slate-500">Manage GPS coordinates shown on the public Contact page and Footer map embed.</p>
+                  </div>
+                </div>
+
+                <!-- GPS Auto-Detect Button -->
+                <button 
+                  type="button"
+                  @click="detectLiveLocation"
+                  :disabled="detectingLocation"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                >
+                  <Navigation class="w-4 h-4" :class="detectingLocation ? 'animate-spin' : ''" />
+                  <span>{{ detectingLocation ? 'Detecting GPS...' : '📍 Detect Live GPS Location' }}</span>
+                </button>
+              </div>
+
+              <!-- Coordinates Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Latitude (° N) *
+                  </label>
+                  <input 
+                    v-model.number="siteSettings.latitude" 
+                    type="number" 
+                    step="0.0000001" 
+                    placeholder="11.0845000"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                  <span class="text-[10px] text-slate-400 mt-0.5 block">Kombolcha default: 11.0845</span>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Longitude (° E) *
+                  </label>
+                  <input 
+                    v-model.number="siteSettings.longitude" 
+                    type="number" 
+                    step="0.0000001" 
+                    placeholder="39.7390000"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                  <span class="text-[10px] text-slate-400 mt-0.5 block">Kombolcha default: 39.7390</span>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Map Zoom Level
+                  </label>
+                  <select 
+                    v-model.number="siteSettings.map_zoom"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option :value="13">13 - City Overview</option>
+                    <option :value="14">14 - District Level</option>
+                    <option :value="15">15 - Street & Building (Recommended)</option>
+                    <option :value="16">16 - Close Block Zoom</option>
+                    <option :value="17">17 - High Detail Building</option>
+                  </select>
+                  <span class="text-[10px] text-slate-400 mt-0.5 block">Recommended: 15</span>
+                </div>
+              </div>
+
+              <!-- Physical Address in 3 Languages -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Address (Amharic)</label>
+                  <input v-model="siteSettings.map_address_am" type="text" placeholder="ዋናው አስተዳደር ኮሪደር፣ ቀበሌ 02፣ ኮምቦልቻ" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Address (English)</label>
+                  <input v-model="siteSettings.map_address_en" type="text" placeholder="Main Administrative Corridor, Kebele 02, Kombolcha" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Address (Afaan Oromoo)</label>
+                  <input v-model="siteSettings.map_address_om" type="text" placeholder="Kooridorii Bulchiinsa Magaalaa, Ganda 02, Kombolcha" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                </div>
+              </div>
+
+              <!-- Live Interactive Admin Map Preview -->
+              <div class="pt-2">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
+                  <div class="flex items-center gap-1.5">
+                    <Eye class="w-3.5 h-3.5 text-blue-600" />
+                    <span>Live GPS Map Pin Preview</span>
+                  </div>
+                  <a 
+                    :href="'https://www.google.com/maps/search/?api=1&query=' + (siteSettings.latitude || 11.0845) + ',' + (siteSettings.longitude || 39.7390)" 
+                    target="_blank"
+                    class="text-blue-600 hover:text-blue-800 text-[11px] font-bold hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Verify in Google Maps</span>
+                    <ExternalLink class="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div class="h-64 w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 relative">
+                  <iframe 
+                    v-if="siteSettings.latitude && siteSettings.longitude"
+                    class="w-full h-full border-0"
+                    :src="`https://www.openstreetmap.org/export/embed.html?bbox=${Number(siteSettings.longitude) - 0.008}%2C${Number(siteSettings.latitude) - 0.005}%2C${Number(siteSettings.longitude) + 0.008}%2C${Number(siteSettings.latitude) + 0.005}&layer=mapnik&marker=${siteSettings.latitude}%2C${siteSettings.longitude}`"
+                    loading="lazy"
+                  ></iframe>
+                  <div v-else class="w-full h-full flex items-center justify-center text-xs text-slate-400">
+                    No coordinates configured yet.
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
