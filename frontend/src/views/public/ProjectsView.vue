@@ -21,48 +21,8 @@ async function fetchProjects() {
   }
 }
 
-// Sample fallback projects for initial state if DB is empty
-const defaultProjects = [
-  {
-    id: 1,
-    title_am: 'የቦርከና ወንዝ የተፋሰስ ልማት እና የጎርፍ መከላከያ ቦይ ግንባታ',
-    title_en: 'Borkena River Flood Mitigation & Drainage Basin Construction',
-    title_om: 'Pirojektii Misooma Sulula Laga Borkanaa fi Booyii Ittisa Lolaa',
-    progress_percent: 75,
-    budget_etb: 45000000,
-    contractor_name: 'Kombolcha Urban Civil Works Enterprise',
-    status: 'in_progress',
-    target_completion_date: 'Dec 2026'
-  },
-  {
-    id: 2,
-    title_am: 'የኢንዱስትሪ ፓርክ ወደ ደረቅ ወደብ የሚያገናኝ የጭነት መንገድ አስፋልት ስራ',
-    title_en: 'Industrial Park to Dry Port Heavy Freight Corridor Asphalt Paving',
-    title_om: 'Ijaarsa Daandii Asfaaltii Wiirtuu Indaastirii fi Buufata Gogaa Walqunnamsiisu',
-    progress_percent: 92,
-    budget_etb: 82000000,
-    contractor_name: 'Amhara Roads Authority',
-    status: 'in_progress',
-    target_completion_date: 'Nov 2026'
-  },
-  {
-    id: 3,
-    title_am: 'የኮምቦልቻ ዘመናዊ የህዝብ መዝናኛ ፓርክ እና አረንጓዴ ስፍራ ልማት',
-    title_en: 'Kombolcha Modern Civic Green Park & Recreation Facility',
-    title_om: 'Misooma Paarkii Magaalaa fi Iddoo Bashannanaa Magaalaa Kombolchaa',
-    progress_percent: 100,
-    budget_etb: 18500000,
-    contractor_name: 'Green Legacy Engineering',
-    status: 'completed',
-    target_completion_date: 'Aug 2026'
-  }
-]
-
 onMounted(async () => {
   await fetchProjects()
-  if (projects.value.length === 0) {
-    projects.value = defaultProjects
-  }
 })
 </script>
 

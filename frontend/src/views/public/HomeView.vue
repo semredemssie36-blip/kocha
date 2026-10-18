@@ -27,44 +27,7 @@ const langStore = useLanguageStore()
 
 // Real Photographic Hero Slides
 const currentSlide = ref(0)
-let slideTimer = null
-
-const defaultSlides = [
-  {
-    image: '/assets/hero_industry.jpg',
-    tag_am: 'የማኑፋክቸሪንግና የወጪ ንግድ ማዕከል',
-    tag_en: 'National Manufacturing & Logistics Hub',
-    tag_om: 'Wiirtuu Misooma Indaastirii fi Daldalaa',
-    title_am: 'የኮምቦልቻ ኢንዱስትሪ ፓርክ እና የንግድ መናኸሪያ',
-    title_en: 'Kombolcha Industrial Park & Strategic Commercial Center',
-    title_om: 'Paarkii Indaastirii Kombolchaa fi Wiirtuu Daldala Addunyaa',
-    desc_am: 'ለአገር ውስጥ እና ለዓለም አቀፍ ባለሀብቶች ምቹ የመሰረተ ልማት ዝርጋታ፣ ደረቅ ወደብ እና ዘመናዊ የማምረቻ ሼዶች።',
-    desc_en: 'A premier eco-industrial park, dry port customs terminal, and freight corridor driving Ethiopia’s economic transformation.',
-    desc_om: 'Abbootii qabeenyaa biyya keessaa fi alaa tiif bu\'uuraalee misoomaa ammayyaa fi tajaajila saffisaa.',
-    cta_am: 'የኢንቨስትመንት እድሎችን ያስሱ',
-    cta_en: 'Explore Investment Opportunities',
-    cta_om: 'Carraawwan Invastimantii Daawwadhaa',
-    cta_link: '/explore'
-  },
-  {
-    image: '/assets/hero_aerial.jpg',
-    tag_am: 'የከተማ ልማትና ዘመናዊ አስተዳደር',
-    tag_en: 'Metropolitan Urban Administration',
-    tag_om: 'Misooma Magaalaa fi Bulchiinsa Ammayyaa',
-    title_am: 'በቴክኖሎጂ የታገዘ ፈጣንና ግልጽ የከተማ አስተዳደር አገልግሎት',
-    title_en: 'Smart Municipal Governance & Citizen-First Public Services',
-    title_om: 'Bulchiinsa Magaalaa Saffisaa fi Iftoomina Qabu',
-    desc_am: 'የክፍለ ከተሞችና የመምሪያዎች ይፋዊ መመሪያዎች፣ የቀበሌ መታወቂያ እና ፈቃድ አሰጣጥ ያለ ወረፋ።',
-    desc_en: 'Connecting Sub-Cities and municipal directorates with transparent civic workflows and zero delays.',
-    desc_om: 'Tajaajilaalee kutaalee magaalaa fi waajjiraalee sekteeraa salphaatti argadhaa.',
-    cta_am: 'የዜጎች አገልግሎቶችን ይመልከቱ',
-    cta_en: 'Access Citizen Services',
-    cta_om: 'Tajaajilaalee Lammiilee',
-    cta_link: '/services'
-  }
-]
-
-// Real Photographic Hero Slides (Empty until API brings real database data)
+// Real Photographic Hero Slides (Exclusively fetched from municipal database)
 const slides = ref([])
 
 // Live Data States
@@ -166,7 +129,7 @@ const fetchHomeData = async () => {
         cta_link: s.button_url || '/explore'
       }))
     } else {
-      slides.value = defaultSlides
+      slides.value = []
     }
 
     // Preload hero photo before lifting skeleton to ensure zero flicker
@@ -182,7 +145,7 @@ const fetchHomeData = async () => {
     }
   } catch (err) {
     console.error('Failed to load home portal bundle:', err)
-    slides.value = defaultSlides
+    slides.value = []
     homeLoading.value = false
   }
 }
