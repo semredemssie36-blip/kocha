@@ -29,7 +29,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
+const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem', 'approveItem', 'unpublishItem'])
 
 function canEdit(item) {
   if (props.isEditor) return true
@@ -119,7 +119,25 @@ function canDelete(item) {
             <ExternalLink class="w-3.5 h-3.5" />
           </router-link>
 
-          <div v-if="canEdit(item) || canDelete(item)" class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <!-- Editorial Approve / Unpublish Buttons -->
+            <button 
+              v-if="isEditor && item.status !== 'published'"
+              @click="emit('approveItem', item)"
+              class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs cursor-pointer"
+              title="Approve and publish spotlight live"
+            >
+              Approve
+            </button>
+            <button 
+              v-if="isEditor && item.status === 'published'"
+              @click="emit('unpublishItem', item)"
+              class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition shadow-2xs cursor-pointer"
+              title="Move back to draft"
+            >
+              Unpublish
+            </button>
+
             <button 
               v-if="canEdit(item)"
               @click="emit('openEdit', item)"

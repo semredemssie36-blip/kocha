@@ -148,6 +148,7 @@ class PublicApiController extends Controller
             ->update(['status' => 'closed']);
 
         $tenders = DB::table('tenders')
+            ->whereIn('status', ['open', 'closed', 'cancelled'])
             ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
             ->orderBy('closing_datetime', 'asc')
             ->get();
@@ -165,6 +166,7 @@ class PublicApiController extends Controller
             ->update(['status' => 'closed']);
 
         $vacancies = DB::table('vacancies')
+            ->whereIn('status', ['open', 'closed'])
             ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
             ->orderBy('deadline', 'desc')
             ->get();
@@ -237,7 +239,11 @@ class PublicApiController extends Controller
     // Mega Projects & Infrastructure Tracker
     public function getProjects(Request $request)
     {
-        $query = DB::table('projects');
+        $query = DB::table('projects')
+            ->where(function ($q) {
+                $q->where('publication_status', 'published')
+                  ->orWhereNull('publication_status');
+            });
 
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
@@ -250,7 +256,11 @@ class PublicApiController extends Controller
     // Resources & Document Downloads
     public function getResources(Request $request)
     {
-        $query = DB::table('resources');
+        $query = DB::table('resources')
+            ->where(function ($q) {
+                $q->where('status', 'published')
+                  ->orWhereNull('status');
+            });
 
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
@@ -475,7 +485,12 @@ class PublicApiController extends Controller
     // Gallery Items (Images & Videos)
     public function getGallery(Request $request)
     {
-        $query = DB::table('gallery_items');
+        $query = DB::table('gallery_items')
+            ->where(function ($q) {
+                $q->where('status', 'published')
+                  ->orWhereNull('status');
+            });
+
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
         }
@@ -499,7 +514,13 @@ class PublicApiController extends Controller
     // Destinations & Tourism Spotlight
     public function getDestinations(Request $request)
     {
-        $query = DB::table('destinations')->where('is_active', true);
+        $query = DB::table('destinations')
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->where('status', 'published')
+                  ->orWhereNull('status');
+            });
+
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
         }

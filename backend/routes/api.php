@@ -138,6 +138,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // EDITOR & SUPER_ADMIN (Menus/Homepage, Inquiries, Civic Polls, Leadership & Direct Publishing)
     // ----------------------------------------------------
     Route::middleware('role:editor,super_admin')->group(function () {
+        // Editorial Content Approval & Lifecycle Status Management (Super Admin & Editor only)
+        Route::patch('/admin/content-status/{module}/{id}', [AdminContentController::class, 'updateContentLifecycleStatus']);
+
         // Citizen Inquiries & Feedback
         Route::get('/admin/messages', [AdminContentController::class, 'getContactMessages']);
         Route::patch('/admin/messages/{id}', [AdminContentController::class, 'updateMessageStatus']);

@@ -1723,4 +1723,81 @@ class AdminContentController extends Controller
         DB::table('polls')->where('id', $id)->delete();
         return response()->json(['message' => 'Poll deleted successfully']);
     }
+
+    // Editorial Content Approval & Lifecycle Status Management (Super Admin & Editor only)
+    public function updateContentLifecycleStatus(Request $request, $module, $id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:published,open,draft,pending,closed,cancelled',
+        ]);
+
+        $status = $request->status;
+
+        switch ($module) {
+            case 'news':
+                $table = 'news_articles';
+                $update = ['status' => $status];
+                if ($status === 'published') {
+                    $update['published_at'] = now();
+                }
+                break;
+            case 'tender':
+            case 'tenders':
+                $table = 'tenders';
+                $update = ['status' => $status];
+                break;
+            case 'vacancy':
+            case 'vacancies':
+                $table = 'vacancies';
+                $update = ['status' => $status];
+                break;
+            case 'service':
+            case 'services':
+                $table = 'services';
+                $update = [
+                    'status' => $status,
+                    'is_active' => ($status === 'published') ? 1 : 0,
+                ];
+                break;
+            case 'project':
+            case 'projects':
+                $table = 'projects';
+                $update = ['publication_status' => $status];
+                break;
+            case 'resource':
+            case 'resources':
+                $table = 'resources';
+                $update = ['status' => $status];
+                break;
+            case 'gallery':
+                $table = 'gallery_items';
+                $update = ['status' => $status];
+                break;
+            case 'destination':
+            case 'destinations':
+                $table = 'destinations';
+                $update = [
+                    'status' => $status,
+                    'is_active' => ($status === 'published') ? 1 : 0,
+                ];
+                break;
+            default:
+                return response()->json(['message' => 'Unknown content module: ' . $module], 400);
+        }
+
+        $record = DB::table($table)->where('id', $id)->first();
+        if (!$record) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $update['updated_at'] = now();
+        DB::table($table)->where('id', $id)->update($update);
+
+        $label = ($status === 'published' || $status === 'open') ? 'approved and published live' : 'moved to ' . $status;
+
+        return response()->json([
+            'message' => ucfirst($module) . ' has been ' . $label . ' successfully.',
+            'status' => $status
+        ]);
+    }
 }

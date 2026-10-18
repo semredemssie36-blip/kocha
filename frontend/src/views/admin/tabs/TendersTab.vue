@@ -41,7 +41,7 @@ function canDelete(item) {
   return props.isAuthor && (item.author_id === props.currentUserId || !item.author_id) && item.status === 'draft'
 }
 
-const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
+const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem', 'approveItem', 'unpublishItem'])
 
 const searchQuery = ref('')
 const statusFilter = ref('all')
@@ -176,7 +176,25 @@ function isClosed(item) {
           </a>
           <span v-else class="text-[11px] text-slate-400 italic">No document attached</span>
 
-          <div v-if="canEdit(item) || canDelete(item)" class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <!-- Editorial Approve / Unpublish Buttons -->
+            <button 
+              v-if="isEditor && item.status !== 'open'"
+              @click="emit('approveItem', item)"
+              class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs cursor-pointer"
+              title="Approve and open procurement bid live"
+            >
+              Approve
+            </button>
+            <button 
+              v-if="isEditor && item.status === 'open'"
+              @click="emit('unpublishItem', item)"
+              class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition shadow-2xs cursor-pointer"
+              title="Close or unpublish tender"
+            >
+              Unpublish
+            </button>
+
             <button 
               v-if="canEdit(item)"
               @click="emit('openEdit', item)"

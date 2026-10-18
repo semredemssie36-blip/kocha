@@ -1338,26 +1338,37 @@ async function deleteItem(endpoint, id, name) {
 }
 
 // Editorial Governance & Approval Pipeline Actions
-async function approveAndPublishNews(item) {
+async function approveAndPublishItem(moduleType, item) {
   try {
-    const res = await api.put(`/admin/news/${item.id}`, { ...item, status: 'published' })
-    item.status = 'published'
-    showToast(res.data?.message || `"${item.title_en || item.title_am}" has been approved & published live!`)
+    const targetStatus = (moduleType === 'tender' || moduleType === 'vacancy') ? 'open' : 'published'
+    const res = await api.patch(`/admin/content-status/${moduleType}/${item.id}`, { status: targetStatus })
+    item.status = targetStatus
+    if (moduleType === 'project') item.publication_status = targetStatus
+    showToast(res.data?.message || 'Item approved and published live!')
     await fetchAllAdminData()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to approve article.')
+    alert(err.response?.data?.message || 'Failed to approve item.')
   }
 }
 
-async function unpublishNews(item) {
+async function unpublishItem(moduleType, item) {
   try {
-    const res = await api.put(`/admin/news/${item.id}`, { ...item, status: 'draft' })
+    const res = await api.patch(`/admin/content-status/${moduleType}/${item.id}`, { status: 'draft' })
     item.status = 'draft'
-    showToast(res.data?.message || `"${item.title_en || item.title_am}" has been moved to drafts.`)
+    if (moduleType === 'project') item.publication_status = 'draft'
+    showToast(res.data?.message || 'Item unpublished and moved back to draft.')
     await fetchAllAdminData()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to unpublish article.')
+    alert(err.response?.data?.message || 'Failed to unpublish item.')
   }
+}
+
+async function approveAndPublishNews(item) {
+  return approveAndPublishItem('news', item)
+}
+
+async function unpublishNews(item) {
+  return unpublishItem('news', item)
 }
 
 async function submitNewsForReview(item) {
@@ -2207,6 +2218,22 @@ onUnmounted(() => {
                 <div class="p-3 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
                   <span class="text-slate-400 font-mono">Order: {{ item.order }}</span>
                   <div class="flex items-center gap-1">
+                    <button 
+                      v-if="isEditor && item.status !== 'published'" 
+                      @click="approveAndPublishItem('gallery', item)" 
+                      class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      title="Approve & publish media"
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      v-if="isEditor && item.status === 'published'" 
+                      @click="unpublishItem('gallery', item)" 
+                      class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      title="Move to draft"
+                    >
+                      Unpublish
+                    </button>
                     <button v-if="canEditItem(item)" @click="editItem('gallery', item)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer" title="Edit Item">
                       <Edit class="w-4 h-4" />
                     </button>
@@ -2280,6 +2307,8 @@ onUnmounted(() => {
           @openCreate="openNewModal('tender')"
           @openEdit="(item) => editItem('tender', item)"
           @deleteItem="(id) => deleteItem('/admin/tenders', id, 'Tender Notice')"
+          @approveItem="(item) => approveAndPublishItem('tender', item)"
+          @unpublishItem="(item) => unpublishItem('tender', item)"
         />
 
         <!-- 4. JOB VACANCIES -->
@@ -2320,18 +2349,36 @@ onUnmounted(() => {
                   <span 
                     :class="[
                       'px-2 py-0.5 rounded-full text-[10px] font-black uppercase mr-2 border',
+                      job.status === 'draft' ? 'bg-slate-100 text-slate-700 border-slate-300' :
+                      job.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-300' :
                       (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date())
                         ? 'bg-rose-50 text-rose-700 border-rose-200' 
                         : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     ]"
                   >
-                    {{ (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date()) ? 'Closed' : 'Open' }}
+                    {{ job.status === 'draft' ? 'Draft' : job.status === 'pending' ? 'Under Review' : (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date()) ? 'Closed' : 'Open' }}
                   </span>
                   <span class="text-xs font-mono text-slate-500 font-bold">Code: {{ job.position_code }}</span>
                   <h4 class="font-bold text-base text-slate-900 mt-1">{{ job.title_en || job.title_am }}</h4>
                   <div class="text-xs text-slate-500 mt-1">Scale: {{ job.salary_grade }} | Deadline: {{ job.deadline }}</div>
                 </div>
                 <div class="flex items-center gap-2">
+                  <button 
+                    v-if="isEditor && job.status !== 'open'" 
+                    @click="approveAndPublishItem('vacancy', job)" 
+                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                    title="Approve & open vacancy"
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    v-if="isEditor && job.status === 'open'" 
+                    @click="unpublishItem('vacancy', job)" 
+                    class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                    title="Move back to draft"
+                  >
+                    Unpublish
+                  </button>
                   <button v-if="canEditItem(job)" @click="editItem('vacancy', job)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Vacancy">
                     <Edit class="w-4 h-4" />
                   </button>
@@ -2632,6 +2679,22 @@ onUnmounted(() => {
                     {{ srv.type === 'step' ? 'Step-by-Step Walkthrough' : 'Direct Guide' }}
                   </span>
                   <div class="flex items-center gap-1">
+                    <button 
+                      v-if="isEditor && srv.status !== 'published'" 
+                      @click="approveAndPublishItem('service', srv)" 
+                      class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      title="Approve & publish service"
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      v-if="isEditor && srv.status === 'published'" 
+                      @click="unpublishItem('service', srv)" 
+                      class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      title="Move to draft"
+                    >
+                      Unpublish
+                    </button>
                     <button v-if="canEditItem(srv)" @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Service">
                       <Edit class="w-4 h-4" />
                     </button>
@@ -2674,6 +2737,22 @@ onUnmounted(() => {
                     {{ proj.status }}
                   </span>
                   <div class="flex items-center gap-1">
+                    <button 
+                      v-if="isEditor && proj.publication_status !== 'published'" 
+                      @click="approveAndPublishItem('project', proj)" 
+                      class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      title="Approve & publish project"
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      v-if="isEditor && proj.publication_status === 'published'" 
+                      @click="unpublishItem('project', proj)" 
+                      class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      title="Move to draft"
+                    >
+                      Unpublish
+                    </button>
                     <button v-if="canEditItem(proj)" @click="editItem('project', proj)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Project">
                       <Edit class="w-4 h-4" />
                     </button>
@@ -2751,6 +2830,22 @@ onUnmounted(() => {
                   <div class="text-xs text-slate-500 mt-1 font-mono">File: {{ res.file_size_formatted }} | Downloads: {{ res.downloads_count }}</div>
                 </div>
                 <div class="flex items-center gap-2">
+                  <button 
+                    v-if="isEditor && res.status !== 'published'" 
+                    @click="approveAndPublishItem('resource', res)" 
+                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                    title="Approve & publish directive"
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    v-if="isEditor && res.status === 'published'" 
+                    @click="unpublishItem('resource', res)" 
+                    class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                    title="Move to draft"
+                  >
+                    Unpublish
+                  </button>
                   <button v-if="canEditItem(res)" @click="editItem('resource', res)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Directive">
                     <Edit class="w-4 h-4" />
                   </button>
@@ -2809,6 +2904,8 @@ onUnmounted(() => {
           @openCreate="openNewModal('destination')"
           @openEdit="(item) => editItem('destination', item)"
           @deleteItem="(id) => deleteItem('/admin/destinations', id, 'Destination')"
+          @approveItem="(item) => approveAndPublishItem('destination', item)"
+          @unpublishItem="(item) => unpublishItem('destination', item)"
         />
 
         <!-- 11. CITIZEN FEEDBACK INBOX -->
