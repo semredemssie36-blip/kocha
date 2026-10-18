@@ -20,7 +20,15 @@ import {
   PhoneCall,
   Landmark,
   Layers,
-  HardHat
+  HardHat,
+  Compass,
+  Sparkles,
+  ExternalLink,
+  ShieldAlert,
+  Users,
+  Factory,
+  Container,
+  Zap
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
@@ -28,7 +36,6 @@ const langStore = useLanguageStore()
 // Real Photographic Hero Slides
 const currentSlide = ref(0)
 let slideTimer = null
-// Real Photographic Hero Slides (Exclusively fetched from municipal database)
 const slides = ref([])
 
 // Live Data States
@@ -64,28 +71,28 @@ const getSlideTag = () => {
   const lang = langStore.currentLang
   if (lang === 'am' && isValidText(activeSlide.value?.tag_am)) return activeSlide.value.tag_am
   if (lang === 'om' && isValidText(activeSlide.value?.tag_om)) return activeSlide.value.tag_om
-  return activeSlide.value?.tag_en || activeSlide.value?.tag_am || 'Kombolcha City'
+  return activeSlide.value?.tag_en || activeSlide.value?.tag_am || 'Kombolcha City Administration'
 }
 
 const getSlideTitle = () => {
   const lang = langStore.currentLang
   if (lang === 'am' && isValidText(activeSlide.value?.title_am)) return activeSlide.value.title_am
   if (lang === 'om' && isValidText(activeSlide.value?.title_om)) return activeSlide.value.title_om
-  return activeSlide.value?.title_en || activeSlide.value?.title_am || 'Kombolcha City Administration'
+  return activeSlide.value?.title_en || activeSlide.value?.title_am || 'The Industrial & Logistics Gateway of Ethiopia'
 }
 
 const getSlideDesc = () => {
   const lang = langStore.currentLang
   if (lang === 'am' && isValidText(activeSlide.value?.desc_am)) return activeSlide.value.desc_am
   if (lang === 'om' && isValidText(activeSlide.value?.desc_om)) return activeSlide.value.desc_om
-  return activeSlide.value?.desc_en || activeSlide.value?.desc_am || ''
+  return activeSlide.value?.desc_en || activeSlide.value?.desc_am || 'Connecting Northern Ethiopia through manufacturing, dry-port customs, railway logistics, and modern public governance.'
 }
 
 const getSlideCta = () => {
   const lang = langStore.currentLang
   if (lang === 'am' && isValidText(activeSlide.value?.cta_am)) return activeSlide.value.cta_am
   if (lang === 'om' && isValidText(activeSlide.value?.cta_om)) return activeSlide.value.cta_om
-  return activeSlide.value?.cta_en || activeSlide.value?.cta_am || 'Explore'
+  return activeSlide.value?.cta_en || activeSlide.value?.cta_am || 'Explore Services'
 }
 
 const nextSlide = () => {
@@ -127,7 +134,7 @@ const fetchHomeData = async () => {
         cta_am: s.button_text_am || 'ተጨማሪ ይመልከቱ',
         cta_en: s.button_text_en || 'Explore More',
         cta_om: s.button_text_om || 'Dabalataaf',
-        cta_link: s.button_url || '/explore'
+        cta_link: s.button_url || '/services'
       }))
     } else {
       slides.value = []
@@ -243,7 +250,7 @@ const getPollDescription = () => {
   if (lang === 'am' && pollData.value.poll.description_am) return pollData.value.poll.description_am
   if (lang === 'om' && pollData.value.poll.description_om) return pollData.value.poll.description_om
   if (pollData.value.poll.description_en) return pollData.value.poll.description_en
-  return lang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር የ 2018/19 አመታዊ በጀት ድልድልን ለማቀድ የህዝቡን ድምጽ ያደምጣል።' : (lang === 'om' ? 'Sagalee keessan kennuudhaan misooma magaalaa keenyaa murteessaa.' : 'Cast your vote anonymously. Total verified votes shape municipal capital planning.')
+  return lang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር የህዝቡን ድምጽ በማድመጥ የልማት ቅድሚያዎችን ያዘጋጃል።' : (lang === 'om' ? 'Sagalee keessan kennuudhaan misooma magaalaa keenyaa murteessaa.' : 'Cast your vote anonymously. Total verified votes shape municipal capital planning.')
 }
 
 const getOptionText = (opt) => {
@@ -264,58 +271,39 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="bg-white text-slate-800">
-    <!-- Full-Bleed Municipal Hero Banner Section (Edge-to-Edge Cover Photography Slider) -->
-    <section class="relative w-full bg-slate-950 overflow-hidden min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] xl:min-h-[760px] flex items-center">
+  <div class="bg-slate-50 text-slate-900 font-sans">
+    
+    <!-- SECTION 1: Sovereign Full-Bleed Municipal Hero Section -->
+    <section class="relative w-full bg-[#050D1A] overflow-hidden min-h-[620px] sm:min-h-[680px] lg:min-h-[750px] xl:min-h-[820px] flex items-center">
       
-      <!-- 1. Executive Dark Loading Skeleton (Active while fetching real database slides) -->
+      <!-- Ambient Regal Glow Underlay -->
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-950/70 to-slate-950 pointer-events-none z-1"></div>
+      
+      <!-- Shimmer Loading Skeleton while fetching database slides -->
       <transition name="fade">
         <div 
           v-if="homeLoading || slides.length === 0" 
-          class="absolute inset-0 w-full h-full bg-slate-950 flex items-center z-20 pointer-events-none"
+          class="absolute inset-0 w-full h-full bg-[#050D1A] flex items-center z-20 pointer-events-none"
         >
-          <!-- Shimmering background pattern -->
           <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 animate-pulse"></div>
-          <div class="absolute inset-0 bg-[radial-gradient(circle_at_25%_35%,rgba(30,58,138,0.25),transparent_70%)]"></div>
-
-          <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12 sm:py-20 lg:py-24">
+          <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-16">
             <div class="max-w-3xl space-y-6">
-              <!-- Pill Tag Skeleton -->
-              <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 animate-pulse">
-                <div class="w-3.5 h-3.5 rounded-full bg-blue-500/40"></div>
-                <div class="w-48 h-3.5 bg-slate-700/80 rounded"></div>
-              </div>
-
-              <!-- Big Headline Skeleton (2 lines) -->
+              <div class="h-8 w-64 bg-slate-800 rounded-full animate-pulse"></div>
               <div class="space-y-3">
-                <div class="h-10 sm:h-14 lg:h-16 bg-slate-800/90 rounded-2xl w-full max-w-2xl animate-pulse"></div>
-                <div class="h-10 sm:h-14 lg:h-16 bg-slate-800/90 rounded-2xl w-4/5 max-w-xl animate-pulse"></div>
+                <div class="h-14 bg-slate-800 rounded-2xl w-full max-w-2xl animate-pulse"></div>
+                <div class="h-14 bg-slate-800 rounded-2xl w-3/4 max-w-xl animate-pulse"></div>
               </div>
-
-              <!-- Description Skeleton -->
-              <div class="space-y-2 pt-2">
-                <div class="h-4 sm:h-5 bg-slate-800/60 rounded-lg w-full max-w-xl animate-pulse"></div>
-                <div class="h-4 sm:h-5 bg-slate-800/50 rounded-lg w-3/4 max-w-md animate-pulse"></div>
-              </div>
-
-              <!-- CTA Buttons Skeleton -->
-              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
-                <div class="h-12 w-48 bg-blue-900/40 rounded-xl animate-pulse border border-blue-800/40"></div>
-                <div class="h-12 w-32 bg-slate-800/50 rounded-xl animate-pulse border border-slate-700/30"></div>
-              </div>
-
-              <!-- Slide Dots Skeleton -->
-              <div class="flex items-center gap-2 pt-6">
-                <div class="w-8 h-2 rounded-full bg-blue-600/60 animate-pulse"></div>
-                <div class="w-2.5 h-2 rounded-full bg-slate-800 animate-pulse"></div>
-                <div class="w-2.5 h-2 rounded-full bg-slate-800 animate-pulse"></div>
+              <div class="h-5 bg-slate-800/60 rounded-lg w-full max-w-xl animate-pulse"></div>
+              <div class="flex gap-4 pt-4">
+                <div class="h-12 w-48 bg-amber-400/20 rounded-xl animate-pulse"></div>
+                <div class="h-12 w-36 bg-slate-800/50 rounded-xl animate-pulse"></div>
               </div>
             </div>
           </div>
         </div>
       </transition>
 
-      <!-- 2. Real Database Photography Slides -->
+      <!-- Real Database Photography Slides -->
       <div 
         v-for="(slide, index) in slides" 
         :key="index"
@@ -325,67 +313,90 @@ onUnmounted(() => {
         <img 
           :src="slide.image" 
           :alt="slide.title_en"
-          class="w-full h-full object-cover object-center"
+          class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000"
         />
-        <!-- Dignified Gradient Scrim to guarantee high text contrast without being pure dark -->
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-transparent"></div>
+        <!-- Multi-layer Scrim for pristine typography contrast -->
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#050D1A] via-transparent to-black/40"></div>
       </div>
 
-      <!-- 3. Real Database Slide Overlay Content -->
-      <div v-if="slides.length > 0" class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12 sm:py-20 lg:py-24 transition-opacity duration-500" :class="homeLoading ? 'opacity-0' : 'opacity-100'">
+      <!-- Real Database Slide Overlay Content -->
+      <div 
+        v-if="slides.length > 0" 
+        class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-16 sm:py-24 lg:py-28 transition-opacity duration-500" 
+        :class="homeLoading ? 'opacity-0' : 'opacity-100'"
+      >
         <div class="max-w-3xl text-white">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/40 text-blue-200 text-xs font-bold tracking-wider uppercase mb-4 border border-blue-400/30">
-            <Landmark class="w-3.5 h-3.5 text-blue-300" />
+          
+          <!-- Sovereign Tag Badge -->
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-black tracking-widest uppercase mb-5 shadow-lg">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <Landmark class="w-3.5 h-3.5 text-amber-400" />
             <span>{{ getSlideTag() }}</span>
           </div>
 
-          <h1 class="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight leading-tight mb-4 drop-shadow-sm break-words">
-            {{ getSlideTitle() }}
+          <!-- Majestic Headline -->
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.1] mb-6 drop-shadow-md break-words">
+            <span class="bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent">
+              {{ getSlideTitle() }}
+            </span>
           </h1>
 
-          <p class="text-sm sm:text-base lg:text-lg text-slate-200 leading-relaxed mb-6 sm:mb-8 max-w-2xl">
+          <!-- Authoritative Subtitle -->
+          <p class="text-sm sm:text-base lg:text-lg text-slate-300 leading-relaxed mb-8 max-w-2xl font-medium drop-shadow-sm">
             {{ getSlideDesc() }}
           </p>
 
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <!-- Executive Call-to-Actions -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <router-link 
-              :to="activeSlide?.cta_link || '/explore'" 
-              class="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-extrabold text-sm transition-colors cursor-pointer shadow-md text-center"
+              :to="activeSlide?.cta_link || '/services'" 
+              class="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm tracking-wide transition-all shadow-xl hover:shadow-amber-500/25 hover:scale-105 cursor-pointer text-center"
             >
+              <Sparkles class="w-4 h-4 text-slate-950" />
               <span>{{ getSlideCta() }}</span>
-              <ArrowRight class="w-4 h-4" />
+              <ArrowRight class="w-4 h-4 text-slate-950" />
             </router-link>
 
             <router-link 
-              to="/about" 
-              class="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-sm border border-white/30 backdrop-blur-sm transition-colors text-center"
+              to="/explore" 
+              class="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/25 backdrop-blur-md transition-all hover:scale-105 text-center"
             >
-              {{ langStore.t('nav.about') }}
+              <Factory class="w-4 h-4 text-amber-400" />
+              <span>{{ langStore.currentLang === 'am' ? 'የኢንዱስትሪና የንግድ ኢንቨስትመንት' : 'Industrial & Investment Hub' }}</span>
+            </router-link>
+
+            <router-link 
+              to="/government/mayor" 
+              class="inline-flex items-center justify-center gap-2 px-5 py-4 rounded-xl bg-slate-900/70 hover:bg-slate-900 text-slate-300 hover:text-white font-bold text-sm border border-slate-700/80 backdrop-blur-md transition-all text-center"
+            >
+              <Award class="w-4 h-4 text-amber-400" />
+              <span>{{ langStore.currentLang === 'am' ? 'የከንቲባ ጽ/ቤት' : "Mayor's Chamber" }}</span>
             </router-link>
           </div>
 
-          <!-- Slide Controls -->
-          <div v-if="slides.length > 1" class="flex items-center gap-3 pt-8">
+          <!-- Slide Controls with Pill Progress -->
+          <div v-if="slides.length > 1" class="flex items-center gap-4 pt-10">
             <button 
               @click="prevSlide" 
-              class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-colors cursor-pointer"
+              class="p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700 transition-colors cursor-pointer"
               aria-label="Previous Slide"
             >
               <ChevronLeft class="w-4 h-4" />
             </button>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2.5">
               <button 
                 v-for="(s, idx) in slides" 
                 :key="idx" 
                 @click="currentSlide = idx"
                 class="h-2 rounded-full transition-all cursor-pointer"
-                :class="currentSlide === idx ? 'w-8 bg-blue-500' : 'w-2.5 bg-white/40 hover:bg-white/70'"
+                :class="currentSlide === idx ? 'w-10 bg-amber-400 shadow-md shadow-amber-400/50' : 'w-3 bg-white/30 hover:bg-white/60'"
                 :aria-label="`Slide ${idx + 1}`"
               ></button>
             </div>
             <button 
               @click="nextSlide" 
-              class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-colors cursor-pointer"
+              class="p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700 transition-colors cursor-pointer"
               aria-label="Next Slide"
             >
               <ChevronRight class="w-4 h-4" />
@@ -395,146 +406,233 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- Quick Civic Gateways Grid (Executive Municipal Cards) -->
-    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-8 bg-white">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- SECTION 2: Elevated Citizen Action Dock (Floating Glassmorphism over Hero Seam) -->
+    <section class="relative z-20 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 -mt-10 sm:-mt-14 lg:-mt-16">
+      <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-200/90">
         
-        <!-- Sub-Cities -->
-        <router-link 
-          to="/government/sub-cities" 
-          class="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-blue-500 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
-        >
-          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <MapPin class="w-6 h-6" />
-              </div>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
-                4 Sub-Cities
-              </span>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors">
-              {{ langStore.currentLang === 'am' ? 'ክፍለ ከተሞች' : (langStore.currentLang === 'om' ? 'Kutaalee Magaalaa' : 'Sub-Cities') }}
-            </h3>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Abishager, Borkena, Hasenager, Biraro
-            </p>
+        <!-- Action Dock Header Bar -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h2 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Layers class="w-4 h-4 text-blue-700" />
+              <span>{{ langStore.currentLang === 'am' ? 'የዜጎች ፈጣን አገልግሎቶችና የመረጃ በር (Citizen Action Dock)' : 'Metropolitan Citizen Action Dock' }}</span>
+            </h2>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700 group-hover:translate-x-1 transition-transform">
-            <span>{{ langStore.currentLang === 'am' ? 'ማውጫውን ይመልከቱ' : 'Explore Sub-Cities' }}</span>
-            <ChevronRight class="w-4 h-4" />
-          </div>
-        </router-link>
+          <span class="text-[11px] font-bold text-slate-400 font-mono">Real-Time Municipal Portals</span>
+        </div>
 
-        <!-- Sector Offices -->
-        <router-link 
-          to="/government/offices" 
-          class="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-slate-500 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
-        >
-          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-600 to-slate-800"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center border border-slate-200 group-hover:bg-slate-800 group-hover:text-white transition-colors">
-                <Building2 class="w-6 h-6" />
+        <!-- 5-Column High-Prestige Gateways Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          
+          <!-- Gateway 1: Kebele ID & Civil Status -->
+          <router-link 
+            to="/services" 
+            class="group p-4 rounded-2xl bg-gradient-to-br from-blue-50/50 to-white border border-slate-200/80 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform">
+                <ShieldCheck class="w-5 h-5" />
               </div>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
-                Directory
-              </span>
+              <h3 class="text-sm font-black text-slate-900 group-hover:text-blue-700 transition-colors">
+                {{ langStore.currentLang === 'am' ? 'የነዋሪነትና መታወቂያ' : 'Kebele ID & Civil Status' }}
+              </h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                {{ langStore.currentLang === 'am' ? 'የነዋሪነት መታወቂያ፣ የልደትና የጋብቻ ሰነዶች' : 'Resident IDs, birth certificates & civil records' }}
+              </p>
             </div>
-            <h3 class="text-base font-extrabold text-slate-900 group-hover:text-slate-800 transition-colors">
-              {{ langStore.currentLang === 'am' ? 'የመምሪያዎች ማውጫ' : (langStore.currentLang === 'om' ? 'Galmee Waajjiraalee' : 'Sector Offices') }}
-            </h3>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Direct departmental phone lines & room directories
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700 group-hover:translate-x-1 transition-transform">
-            <span>{{ langStore.currentLang === 'am' ? 'ቢሮዎችን ያግኙ' : 'Browse Offices' }}</span>
-            <ChevronRight class="w-4 h-4" />
-          </div>
-        </router-link>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700">
+              <span>{{ langStore.currentLang === 'am' ? 'አገልግሎት ያግኙ' : 'Apply Now' }}</span>
+              <ChevronRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </router-link>
 
-        <!-- Citizen Services -->
-        <router-link 
-          to="/services" 
-          class="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-emerald-500 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
-        >
-          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 to-teal-600"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                <Layers class="w-6 h-6" />
+          <!-- Gateway 2: Public Tenders & Procurement -->
+          <router-link 
+            to="/media/tenders" 
+            class="group p-4 rounded-2xl bg-gradient-to-br from-amber-50/50 to-white border border-slate-200/80 hover:border-amber-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform">
+                <FileCheck class="w-5 h-5" />
               </div>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Permits & IDs
-              </span>
+              <div class="flex items-center gap-1.5 mb-1">
+                <h3 class="text-sm font-black text-slate-900 group-hover:text-amber-700 transition-colors">
+                  {{ langStore.currentLang === 'am' ? 'የከተማ ጨረታዎች' : 'Public Tenders' }}
+                </h3>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-100 text-amber-800 uppercase">Live</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                {{ langStore.currentLang === 'am' ? 'የመንግስት ግዥዎች፣ የጨረታ ሰነዶችና ማስታወቂያዎች' : 'Active municipal RFPs, bid bonds & documents' }}
+              </p>
             </div>
-            <h3 class="text-base font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
-              {{ langStore.currentLang === 'am' ? 'የዜጎች አገልግሎቶች' : (langStore.currentLang === 'om' ? 'Tajaajilaalee Lammiilee' : 'Citizen Services') }}
-            </h3>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Kebele IDs, business trade licenses & civil status
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700 group-hover:translate-x-1 transition-transform">
-            <span>{{ langStore.currentLang === 'am' ? 'አገልግሎቶችን ያግኙ' : 'Access Services' }}</span>
-            <ChevronRight class="w-4 h-4" />
-          </div>
-        </router-link>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-700">
+              <span>{{ langStore.currentLang === 'am' ? 'ጨረታዎችን ይመልከቱ' : 'View Notices' }}</span>
+              <ChevronRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </router-link>
 
-        <!-- Public Tenders -->
-        <router-link 
-          to="/media/tenders" 
-          class="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-amber-500 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
-        >
-          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                <FileCheck class="w-6 h-6" />
+          <!-- Gateway 3: Sector Bureaus (22 Offices) -->
+          <router-link 
+            to="/government/offices" 
+            class="group p-4 rounded-2xl bg-gradient-to-br from-emerald-50/50 to-white border border-slate-200/80 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform">
+                <Building2 class="w-5 h-5" />
               </div>
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                Procurement
-              </span>
+              <h3 class="text-sm font-black text-slate-900 group-hover:text-emerald-700 transition-colors">
+                {{ langStore.currentLang === 'am' ? '22 የመምሪያ ቢሮዎች' : '22 Sector Bureaus' }}
+              </h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                {{ langStore.currentLang === 'am' ? 'የቢሮዎች ስልክ፣ የክፍል ቁጥርና ኃላፊዎች ማውጫ' : 'Direct departmental hotlines & room directories' }}
+              </p>
             </div>
-            <h3 class="text-base font-extrabold text-slate-900 group-hover:text-amber-700 transition-colors">
-              {{ langStore.currentLang === 'am' ? 'የመንግስት ጨረታዎች' : (langStore.currentLang === 'om' ? 'Caalbaasiiwwan Mootummaa' : 'Public Tenders') }}
-            </h3>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Active civic procurement bidding notices & downloads
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-700 group-hover:translate-x-1 transition-transform">
-            <span>{{ langStore.currentLang === 'am' ? 'ጨረታዎችን ይመልከቱ' : 'View Tender Notices' }}</span>
-            <ChevronRight class="w-4 h-4" />
-          </div>
-        </router-link>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
+              <span>{{ langStore.currentLang === 'am' ? 'ማውጫውን ክፈት' : 'View Directory' }}</span>
+              <ChevronRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </router-link>
+
+          <!-- Gateway 4: 4 Metropolitan Sub-Cities -->
+          <router-link 
+            to="/government/sub-cities" 
+            class="group p-4 rounded-2xl bg-gradient-to-br from-purple-50/50 to-white border border-slate-200/80 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform">
+                <MapPin class="w-5 h-5" />
+              </div>
+              <h3 class="text-sm font-black text-slate-900 group-hover:text-purple-700 transition-colors">
+                {{ langStore.currentLang === 'am' ? '4 ክፍለ ከተሞች' : '4 Sub-Cities' }}
+              </h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                Abishager, Borkena, Hasenager, Biraro
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-700">
+              <span>{{ langStore.currentLang === 'am' ? 'ዝርዝር ይመልከቱ' : 'Sub-City Hubs' }}</span>
+              <ChevronRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </router-link>
+
+          <!-- Gateway 5: Vacancies & Careers -->
+          <router-link 
+            to="/media/vacancies" 
+            class="group p-4 rounded-2xl bg-gradient-to-br from-rose-50/50 to-white border border-slate-200/80 hover:border-rose-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform">
+                <Award class="w-5 h-5" />
+              </div>
+              <h3 class="text-sm font-black text-slate-900 group-hover:text-rose-700 transition-colors">
+                {{ langStore.currentLang === 'am' ? 'የስራ ቅጥር ማስታወቂያ' : 'Job Vacancies' }}
+              </h3>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                {{ langStore.currentLang === 'am' ? 'የመንግስት የስራ ዕድሎችና የቅጥር ማስታወቂያዎች' : 'Civil service career openings & exam schedules' }}
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-700">
+              <span>{{ langStore.currentLang === 'am' ? 'ክፍት ስራዎች' : 'Explore Jobs' }}</span>
+              <ChevronRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </router-link>
+        </div>
       </div>
     </section>
 
-    <!-- Mayor's Civic Spotlight Section (Executive State Proclamation Style) -->
-    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10 bg-white">
-      <div class="bg-gradient-to-br from-white via-slate-50/60 to-blue-50/20 rounded-3xl p-8 sm:p-12 border border-slate-200/90 shadow-sm relative overflow-hidden">
+    <!-- SECTION 3: National Industrial Powerhouse & Metropolitan Fact Counters -->
+    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12">
+      <div class="bg-gradient-to-r from-slate-900 via-[#07172B] to-slate-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl border border-slate-800 relative overflow-hidden">
         
-        <!-- Top Executive Emblem Header Bar -->
-        <div class="flex items-center justify-between pb-6 border-b border-slate-200/80 mb-8 flex-wrap gap-2">
-          <div class="flex items-center gap-2 text-[11px] font-extrabold text-slate-600 uppercase tracking-widest">
-            <span class="w-2 h-2 rounded-full bg-blue-700"></span>
-            <span>Kombolcha City Administration</span>
-            <span class="text-slate-300">•</span>
-            <span class="text-blue-800">Office of the Executive Mayor</span>
+        <!-- Subtle Background Motif -->
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-600/10 to-transparent pointer-events-none"></div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 divide-y lg:divide-y-0 lg:divide-x divide-slate-800">
+          
+          <!-- Stat 1: Population Served -->
+          <div class="pt-4 lg:pt-0 lg:px-6 first:px-0">
+            <div class="flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-wider mb-2">
+              <Users class="w-4 h-4" />
+              <span>{{ langStore.currentLang === 'am' ? 'የህዝብ ብዛት' : 'Metropolitan Scale' }}</span>
+            </div>
+            <div class="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white mb-1">
+              220,000<span class="text-amber-400">+</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              {{ langStore.currentLang === 'am' ? 'በ 4 ክፍለ ከተሞችና በ 12 ቀበሌዎች የሚኖሩ ዜጎች' : 'Permanent residents across 4 Sub-Cities & 12 Kebeles' }}
+            </p>
           </div>
-          <span class="text-[11px] font-bold text-slate-400 font-mono">Official Mayoral Dispatch</span>
+
+          <!-- Stat 2: Manufacturing & Industry -->
+          <div class="pt-4 lg:pt-0 lg:px-6">
+            <div class="flex items-center gap-2 text-sky-400 text-xs font-black uppercase tracking-wider mb-2">
+              <Factory class="w-4 h-4" />
+              <span>{{ langStore.currentLang === 'am' ? 'ኢንዱስትሪና ፋብሪካዎች' : 'Industrial Output' }}</span>
+            </div>
+            <div class="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white mb-1">
+              45<span class="text-sky-400">+</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              {{ langStore.currentLang === 'am' ? 'በኮምቦልቻ ኢንዱስትሪ ፓርክና በከተማው የሚንቀሳቀሱ ፋብሪካዎች' : 'Active manufacturing plants inside Kombolcha Industrial Park' }}
+            </p>
+          </div>
+
+          <!-- Stat 3: Dry Port Logistics -->
+          <div class="pt-4 lg:pt-0 lg:px-6">
+            <div class="flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-wider mb-2">
+              <Container class="w-4 h-4" />
+              <span>{{ langStore.currentLang === 'am' ? 'ደረቅ ወደብና ጉምሩክ' : 'Dry Port Logistics' }}</span>
+            </div>
+            <div class="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white mb-1">
+              10,000<span class="text-emerald-400">+</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              {{ langStore.currentLang === 'am' ? 'TEU አመታዊ የእቃ መያዣና የኮንቴይነር የማስተናገድ አቅም' : 'TEU annual containerized freight customs clearance' }}
+            </p>
+          </div>
+
+          <!-- Stat 4: Rapid Municipal Hotlines -->
+          <div class="pt-4 lg:pt-0 lg:px-6">
+            <div class="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-wider mb-2">
+              <PhoneCall class="w-4 h-4" />
+              <span>{{ langStore.currentLang === 'am' ? 'የ 24/7 ፈጣን ጥሪዎች' : '24/7 Citizen Protection' }}</span>
+            </div>
+            <div class="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white mb-1">
+              24<span class="text-rose-400">/</span>7
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              {{ langStore.currentLang === 'am' ? 'ቀን ከሌሊት ዝግጁ የሆነ የፖሊስ፣ የእሳት አደጋና የህክምና እርዳታ' : 'Uninterrupted municipal emergency and civil defense response' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Executive State Proclamation (Mayor's Official Keynote Chamber) -->
+    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-6">
+      <div class="bg-gradient-to-br from-white via-slate-50 to-amber-50/20 rounded-3xl p-8 sm:p-12 border border-slate-200/90 shadow-lg relative overflow-hidden">
+        
+        <!-- Gold Trim Top Border -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-700 via-amber-400 to-emerald-600"></div>
+
+        <!-- Executive Proclamation Header Bar -->
+        <div class="flex items-center justify-between pb-6 border-b border-slate-200/80 mb-8 flex-wrap gap-2">
+          <div class="flex items-center gap-2.5 text-xs font-black text-slate-700 uppercase tracking-widest">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-700"></span>
+            <span>Kombolcha Metropolitan Administration</span>
+            <span class="text-slate-300">•</span>
+            <span class="text-blue-900">Office of the Executive Mayor</span>
+          </div>
+          <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-mono">Official Mayoral Proclamation</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          <!-- Portrait with Executive Frame -->
+          <!-- Authentic Mayoral Portrait in State Frame -->
           <div class="lg:col-span-4 flex flex-col items-center text-center">
-            <div class="w-48 h-48 rounded-3xl overflow-hidden p-1.5 bg-gradient-to-tr from-blue-700 via-indigo-500 to-amber-500 shadow-lg mb-4 relative flex items-center justify-center">
+            <div class="w-52 h-52 sm:w-60 sm:h-60 rounded-3xl overflow-hidden p-2 bg-gradient-to-tr from-blue-900 via-amber-400 to-emerald-700 shadow-2xl mb-4 relative flex items-center justify-center">
               <div class="w-full h-full rounded-[20px] overflow-hidden bg-slate-100 relative">
-                <!-- Shimmer Skeleton while loading -->
                 <div v-if="homeLoading && !mayorData.name_en" class="w-full h-full bg-slate-200 animate-pulse"></div>
                 <img 
                   v-else-if="mayorData.portrait_path"
@@ -543,56 +641,73 @@ onUnmounted(() => {
                   class="w-full h-full object-cover object-top"
                 />
                 <div v-else class="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-400">
-                  <Building2 class="w-12 h-12 opacity-30 text-blue-700" />
+                  <Building2 class="w-16 h-16 opacity-30 text-blue-700" />
                 </div>
               </div>
             </div>
 
-            <!-- Mayor Name / Title Skeleton or Content -->
-            <div v-if="homeLoading && !mayorData.name_en" class="space-y-2 w-36">
-              <div class="h-4 bg-slate-200 rounded animate-pulse mx-auto w-3/4"></div>
-              <div class="h-3 bg-slate-200 rounded animate-pulse mx-auto w-1/2"></div>
+            <!-- Mayor Name & Dignified Title -->
+            <div v-if="homeLoading && !mayorData.name_en" class="space-y-2 w-44">
+              <div class="h-5 bg-slate-200 rounded animate-pulse mx-auto w-3/4"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse mx-auto w-1/2"></div>
             </div>
             <template v-else>
-              <h3 class="text-xl font-black text-slate-900 tracking-tight">
+              <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 {{ getMayorName() }}
               </h3>
-              <p class="text-xs font-extrabold text-blue-700 uppercase tracking-widest mt-1">
-                {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Mayor of Kombolcha City') }}
+              <p class="text-xs font-black text-amber-700 uppercase tracking-widest mt-1">
+                {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Executive Mayor of Kombolcha') }}
               </p>
-              <p v-if="mayorData.term_start" class="text-[11px] text-slate-400 font-mono mt-1 font-semibold">
-                Term: {{ mayorData.term_start }} - {{ mayorData.term_end || 'Present' }}
+              <p v-if="mayorData.term_start" class="text-xs text-slate-400 font-mono mt-1 font-semibold">
+                Administration Term: {{ mayorData.term_start }} - {{ mayorData.term_end || 'Present' }}
               </p>
             </template>
           </div>
 
-          <!-- Keynote Message -->
-          <div class="lg:col-span-8 space-y-5">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-800 text-xs font-extrabold border border-blue-200 shadow-2xs">
+          <!-- Mayoral Keynote Dispatch -->
+          <div class="lg:col-span-8 space-y-6">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-900 text-xs font-black border border-blue-200 shadow-xs">
               <Award class="w-4 h-4 text-blue-700" />
-              <span>{{ langStore.currentLang === 'am' ? 'የከንቲባው የክብር መልእክት' : "Mayor's Keynote Message" }}</span>
+              <span>{{ langStore.currentLang === 'am' ? 'የከንቲባው የክብር መልእክት' : "Mayor's Keynote Message to the Citizens" }}</span>
             </div>
 
             <!-- Loading Keynote Skeleton -->
-            <div v-if="homeLoading && !mayorData.name_en" class="space-y-3 py-2 border-l-4 border-slate-200 pl-5">
-              <div class="h-4 bg-slate-200 rounded animate-pulse w-full"></div>
-              <div class="h-4 bg-slate-200 rounded animate-pulse w-5/6"></div>
-              <div class="h-4 bg-slate-200 rounded animate-pulse w-3/4"></div>
+            <div v-if="homeLoading && !mayorData.name_en" class="space-y-3 py-2 border-l-4 border-slate-200 pl-6">
+              <div class="h-5 bg-slate-200 rounded animate-pulse w-full"></div>
+              <div class="h-5 bg-slate-200 rounded animate-pulse w-5/6"></div>
+              <div class="h-5 bg-slate-200 rounded animate-pulse w-3/4"></div>
             </div>
 
             <!-- Real Database Keynote Quote -->
-            <blockquote v-else class="text-lg sm:text-xl font-medium text-slate-800 italic leading-relaxed border-l-4 border-blue-700 pl-6 py-2 relative">
-              <span class="text-5xl font-serif text-blue-200 absolute -top-5 -left-1 select-none pointer-events-none">“</span>
+            <blockquote v-else class="text-lg sm:text-xl font-medium text-slate-800 italic leading-relaxed border-l-4 border-amber-500 pl-6 py-2 relative">
+              <span class="text-6xl font-serif text-amber-200 absolute -top-7 -left-1 select-none pointer-events-none">“</span>
               <p class="relative z-10">{{ getMayorKeynote() }}</p>
             </blockquote>
 
+            <!-- Mayoral Cabinet & Executive Assembly Buttons -->
             <div class="pt-2 flex items-center gap-4 flex-wrap">
               <router-link 
                 to="/government/mayor" 
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider transition-all shadow-md hover:scale-105"
               >
-                <span>{{ langStore.currentLang === 'am' ? 'የከንቲባውን ሙሉ ገጽና ካቢኔ ይመልከቱ' : 'Read Full Mayoral Profile & Cabinet' }}</span>
-                <ChevronRight class="w-4 h-4" />
+                <span>{{ langStore.currentLang === 'am' ? 'የከንቲባውን ሙሉ ገጽ ይመልከቱ' : "Read Mayor's Biography & Vision" }}</span>
+                <ChevronRight class="w-4 h-4 text-amber-400" />
+              </router-link>
+
+              <router-link 
+                to="/government/mayor?tab=cabinet" 
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black uppercase tracking-wider transition-colors"
+              >
+                <ShieldCheck class="w-4 h-4 text-slate-600" />
+                <span>{{ langStore.t('nav.cabinet') }}</span>
+              </router-link>
+
+              <router-link 
+                to="/government/mayor?tab=council" 
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black uppercase tracking-wider transition-colors"
+              >
+                <Landmark class="w-4 h-4 text-slate-600" />
+                <span>{{ langStore.t('nav.council') }}</span>
               </router-link>
             </div>
           </div>
@@ -600,19 +715,141 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- Latest News & Announcements (Clean White Background) -->
-    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10 bg-white">
+    <!-- SECTION 5: Strategic Megaprojects & Economic Pillars Spotlight -->
+    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-          <div class="inline-flex items-center gap-1.5 text-blue-700 font-bold text-xs uppercase tracking-wider mb-1">
+          <div class="inline-flex items-center gap-2 text-blue-700 font-black text-xs uppercase tracking-widest mb-1">
+            <HardHat class="w-4 h-4" />
+            <span>Economic Engine & Urban Transformation</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            {{ langStore.currentLang === 'am' ? 'ስትራቴጂካዊ የኢንዱስትሪና የመሰረተ ልማት ፕሮጀክቶች' : 'Strategic Industrial & Infrastructure Corridors' }}
+          </h2>
+        </div>
+        <router-link to="/projects" class="inline-flex items-center gap-1.5 text-xs font-black text-blue-700 hover:text-blue-900 uppercase tracking-wider">
+          {{ langStore.t('common.view_all') }}
+          <ChevronRight class="w-4 h-4" />
+        </router-link>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Pillar 1: Kombolcha Industrial Park (KIP) -->
+        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
+          <div class="h-48 relative overflow-hidden bg-slate-900">
+            <img 
+              src="/assets/hero_industry.jpg" 
+              alt="Kombolcha Industrial Park" 
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+            <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+              Manufacturing Hub
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-base font-black text-slate-900 group-hover:text-blue-700 transition-colors leading-snug mb-2">
+              {{ langStore.currentLang === 'am' ? 'ኮምቦልቻ ኢንዱስትሪ ፓርክ' : 'Kombolcha Industrial Park (KIP)' }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+              {{ langStore.currentLang === 'am' ? 'ለአለም አቀፍ የጨርቃ ጨርቅ፣ የቆዳና የማኑፋክቸሪንግ ምርቶች የተዘጋጀ ዘመናዊ የኢንዱስትሪ ማዕከል' : 'State-of-the-art export manufacturing zone with specialized zero-liquid-discharge infrastructure.' }}
+            </p>
+            <router-link to="/explore" class="text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-1">
+              <span>{{ langStore.currentLang === 'am' ? 'የኢንቨስትመንት መረጃ' : 'Explore Investment' }}</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Pillar 2: Dry Port & Multimodal Logistics -->
+        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
+          <div class="h-48 relative overflow-hidden bg-slate-900">
+            <img 
+              src="/assets/hero_aerial.jpg" 
+              alt="Dry Port & Logistics" 
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+            <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+              Logistics Terminal
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug mb-2">
+              {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ደረቅ ወደብና ጉምሩክ' : 'Dry Port Customs & Freight Hub' }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+              {{ langStore.currentLang === 'am' ? 'ከጅቡቲ ወደብ ጋር በቀጥታ የተገናኘ የሰሜን ኢትዮጵያ ቀዳሚ የገቢና ወጪ ንግድ መናኸሪያ' : 'Multimodal customs cargo terminal linking the Ethio-Djibouti rail and highway corridors.' }}
+            </p>
+            <router-link to="/explore" class="text-xs font-bold text-emerald-700 group-hover:underline flex items-center gap-1">
+              <span>{{ langStore.currentLang === 'am' ? 'የሎጂስቲክስ አቅም' : 'Logistics Profile' }}</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Pillar 3: Borkena River Eco-Boulevard & Green City -->
+        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
+          <div class="h-48 relative overflow-hidden bg-slate-900 flex items-center justify-center">
+            <div class="absolute inset-0 bg-gradient-to-br from-teal-900 to-slate-900"></div>
+            <Sparkles class="w-16 h-16 text-teal-400 opacity-50 relative z-10" />
+            <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-teal-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+              Urban Green Corridor
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-base font-black text-slate-900 group-hover:text-teal-700 transition-colors leading-snug mb-2">
+              {{ langStore.currentLang === 'am' ? 'የቦርከና ወንዝ ዳርቻ ልማት' : 'Borkena Riverfront Green Park' }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+              {{ langStore.currentLang === 'am' ? 'የአረንጓዴ ልማት፣ የህዝብ መዝናኛ ስፍራዎችና የወንዝ ዳርቻ ጥበቃ ታላቅ ፕሮጀክት' : 'Metropolitan eco-revitalization with urban cycling walkways, flood control, and public parks.' }}
+            </p>
+            <router-link to="/projects" class="text-xs font-bold text-teal-700 group-hover:underline flex items-center gap-1">
+              <span>{{ langStore.currentLang === 'am' ? 'የፕሮጀክት ሂደት' : 'View Masterplan' }}</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Pillar 4: Digital Smart City Governance -->
+        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
+          <div class="h-48 relative overflow-hidden bg-slate-900 flex items-center justify-center">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-900 to-slate-900"></div>
+            <ShieldCheck class="w-16 h-16 text-indigo-400 opacity-50 relative z-10" />
+            <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+              Smart Governance
+            </span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-base font-black text-slate-900 group-hover:text-indigo-700 transition-colors leading-snug mb-2">
+              {{ langStore.currentLang === 'am' ? 'ዘመናዊ ዲጂታል የከተማ አስተዳደር' : 'E-Governance & Digital City Hall' }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+              {{ langStore.currentLang === 'am' ? 'ቀልጣፋና ከብልሹ አሰራር የጸዳ የኤሌክትሮኒክስ የህዝብ አገልግሎት አሰጣጥ ሥርዓት' : 'Automated municipal service delivery, computerized land registry, and citizen audit trail.' }}
+            </p>
+            <router-link to="/services" class="text-xs font-bold text-indigo-700 group-hover:underline flex items-center gap-1">
+              <span>{{ langStore.currentLang === 'am' ? 'ዲጂታል አገልግሎቶች' : 'Access E-Services' }}</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: Municipal Press Dispatches & Gazette (Latest News) -->
+    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <div class="inline-flex items-center gap-2 text-blue-700 font-black text-xs uppercase tracking-widest mb-1">
             <TrendingUp class="w-4 h-4" />
-            Media & Communication
+            <span>Official Dispatches & Municipal Gazette</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
             {{ langStore.t('nav.news') }}
           </h2>
         </div>
-        <router-link to="/media/news" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 uppercase tracking-wider">
+        <router-link to="/media/news" class="inline-flex items-center gap-1.5 text-xs font-black text-blue-700 hover:text-blue-900 uppercase tracking-wider">
           {{ langStore.t('common.view_all') }}
           <ChevronRight class="w-4 h-4" />
         </router-link>
@@ -620,70 +857,155 @@ onUnmounted(() => {
 
       <!-- Loading News Skeletons -->
       <div v-if="homeLoading && newsList.length === 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div v-for="i in 3" :key="i" class="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col justify-between">
-          <div>
-            <div class="h-44 bg-slate-200 animate-pulse"></div>
-            <div class="p-6 space-y-3">
-              <div class="h-3 w-24 bg-slate-200 animate-pulse rounded"></div>
-              <div class="h-5 w-full bg-slate-200 animate-pulse rounded"></div>
-              <div class="h-3.5 w-4/5 bg-slate-200 animate-pulse rounded"></div>
-            </div>
+        <div v-for="i in 3" :key="i" class="bg-white rounded-3xl border border-slate-200 overflow-hidden flex flex-col justify-between">
+          <div class="h-48 bg-slate-200 animate-pulse"></div>
+          <div class="p-6 space-y-3">
+            <div class="h-4 w-28 bg-slate-200 animate-pulse rounded"></div>
+            <div class="h-6 w-full bg-slate-200 animate-pulse rounded"></div>
+            <div class="h-4 w-4/5 bg-slate-200 animate-pulse rounded"></div>
           </div>
         </div>
       </div>
 
-      <!-- News Cards Grid -->
+      <!-- Real Database News Cards Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <article 
           v-for="news in newsList" 
           :key="news.id" 
           @click="$router.push(`/media/news/${news.slug || news.id}`)"
-          class="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group cursor-pointer"
+          class="bg-white rounded-3xl border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between group cursor-pointer"
         >
           <div>
-            <div class="h-44 bg-slate-100 relative overflow-hidden">
+            <div class="h-52 bg-slate-100 relative overflow-hidden">
               <img 
                 :src="news.thumbnail_path || '/assets/hero_industry.jpg'" 
                 alt="News article"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-md bg-blue-700 text-white text-[11px] font-bold uppercase tracking-wider shadow-sm">
-                {{ news.category || 'General' }}
+              <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-blue-900 text-white text-[11px] font-black uppercase tracking-wider shadow-md">
+                {{ news.category || 'Gazette' }}
               </span>
             </div>
 
             <div class="p-6">
-              <div class="flex items-center gap-1.5 text-xs text-slate-400 mb-2 font-mono">
-                <Clock class="w-3.5 h-3.5" />
+              <div class="flex items-center gap-2 text-xs text-slate-400 mb-2.5 font-mono">
+                <Clock class="w-3.5 h-3.5 text-slate-400" />
                 <span>{{ new Date(news.published_at || news.created_at).toLocaleDateString() }}</span>
               </div>
-              <h3 class="text-base font-bold text-slate-900 group-hover:text-blue-700 transition-colors leading-snug mb-2">
+              <h3 class="text-base font-black text-slate-900 group-hover:text-blue-700 transition-colors leading-snug mb-2">
                 {{ getNewsTitle(news) }}
               </h3>
-              <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+              <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                 {{ langStore.currentLang === 'am' ? news.summary_am : news.summary_en }}
               </p>
             </div>
           </div>
 
           <div class="p-6 pt-0 border-t border-slate-100 mt-2 flex items-center justify-between">
-            <router-link :to="`/media/news/${news.slug || news.id}`" class="text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-1">
-              {{ langStore.t('common.read_more') }}
-              <ArrowRight class="w-3.5 h-3.5" />
-            </router-link>
+            <span class="text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-1.5">
+              <span>{{ langStore.t('common.read_more') }}</span>
+              <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </span>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- Active Civic Poll Section (Clean White Card on White Background) -->
-    <section v-if="pollData && pollData.poll" class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10 bg-white">
-      <div class="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-sm">
+    <!-- SECTION 7: Active Public Tenders & Procurement Chamber -->
+    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
+      <div class="bg-gradient-to-br from-white to-amber-50/20 rounded-3xl p-8 sm:p-10 border border-slate-200/90 shadow-md">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <div class="inline-flex items-center gap-2 text-amber-700 font-black text-xs uppercase tracking-widest mb-1">
+              <FileCheck class="w-4 h-4" />
+              <span>Official Municipal Procurement Chamber</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              {{ langStore.t('nav.tenders') }}
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Legally binding municipal procurement notices, bidding documents & RFP downloads</p>
+          </div>
+          <router-link to="/media/tenders" class="inline-flex items-center gap-1.5 text-xs font-black text-amber-700 hover:text-amber-900 uppercase tracking-wider">
+            {{ langStore.t('common.view_all') }}
+            <ChevronRight class="w-4 h-4" />
+          </router-link>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div 
+            v-for="tender in tendersList" 
+            :key="tender.id" 
+            class="bg-white rounded-2xl border border-slate-200 p-6 hover:border-amber-400 hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
+          >
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <span class="px-2.5 py-1 rounded bg-slate-100 text-slate-800 text-xs font-mono font-bold">
+                  Ref: {{ tender.reference_number }}
+                </span>
+                <span 
+                  :class="[
+                    'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border uppercase tracking-wider',
+                    !isTenderClosed(tender)
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-rose-50 text-rose-800 border-rose-200'
+                  ]"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
+                  {{ !isTenderClosed(tender) 
+                    ? (langStore.currentLang === 'am' ? 'ክፍት ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Bantamaa' : 'Open Bid'))
+                    : (langStore.currentLang === 'am' ? 'የተዘጋ ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Cufame' : 'Closed')) 
+                  }}
+                </span>
+              </div>
+
+              <h4 class="text-base font-black text-slate-900 leading-snug mb-4">
+                {{ getTenderTitle(tender) }}
+              </h4>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div class="text-xs">
+                <span class="text-slate-400 block mb-0.5">{{ langStore.t('tenders.closing_in') }}:</span>
+                <span 
+                  class="font-mono text-xs sm:text-sm font-black"
+                  :class="isTenderClosed(tender) ? 'text-rose-600 font-extrabold' : 'text-amber-700'"
+                >
+                  {{ formatTenderCountdown(tender.closing_datetime).text }}
+                </span>
+              </div>
+
+              <a 
+                v-if="tender.document_url || tender.document_path"
+                :href="tender.document_url || tender.document_path" 
+                target="_blank"
+                download
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-xs"
+              >
+                <Download class="w-3.5 h-3.5" />
+                {{ langStore.t('common.download_pdf') }}
+              </a>
+              <router-link 
+                v-else
+                to="/media/tenders" 
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black transition-colors"
+              >
+                <Download class="w-3.5 h-3.5" />
+                {{ langStore.t('common.download_pdf') }}
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: Active Civic Opinion Poll (Citizen Direct Democracy) -->
+    <section v-if="pollData && pollData.poll" class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
+      <div class="bg-gradient-to-br from-white to-blue-50/30 rounded-3xl p-8 sm:p-10 border border-slate-200/90 shadow-md">
         <div class="max-w-3xl">
           <div class="flex flex-wrap items-center gap-2 mb-3">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200">
-              <Vote class="w-3.5 h-3.5" />
-              {{ langStore.currentLang === 'am' ? 'የህዝብ አስተያየት መስጫ (Civic Poll)' : (langStore.currentLang === 'om' ? 'Gaaffii Yaada Lammiilee' : 'Citizen Priority Poll') }}
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-900 text-xs font-black uppercase tracking-wider border border-blue-200">
+              <Vote class="w-3.5 h-3.5 text-blue-700" />
+              {{ langStore.currentLang === 'am' ? 'የዜጎች ቀጥታ ድምፅ መስጫ' : (langStore.currentLang === 'om' ? 'Gaaffii Yaada Lammiilee' : 'Citizen Priority Ballot') }}
             </div>
             <span v-if="pollData.is_expired || pollData.is_closed" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200">
               <Clock class="w-3 h-3" />
@@ -708,19 +1030,19 @@ onUnmounted(() => {
             <div 
               v-for="opt in pollData.options" 
               :key="opt.id"
-              class="relative rounded-xl overflow-hidden border p-4 transition-colors"
+              class="relative rounded-2xl overflow-hidden border p-4 transition-all duration-200"
               :class="[
                 hasVoted 
                   ? 'bg-slate-50 border-slate-200' 
-                  : 'bg-white hover:bg-slate-50 border-slate-200 cursor-pointer',
-                selectedOption === opt.id && !hasVoted ? 'border-blue-600 bg-blue-50/50' : ''
+                  : 'bg-white hover:bg-blue-50/40 border-slate-200 cursor-pointer shadow-xs',
+                selectedOption === opt.id && !hasVoted ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20' : ''
               ]"
               @click="!hasVoted && (selectedOption = opt.id)"
             >
               <!-- Progress fill if already voted or expired -->
               <div 
                 v-if="hasVoted" 
-                class="absolute left-0 top-0 bottom-0 bg-blue-100 transition-all duration-500"
+                class="absolute left-0 top-0 bottom-0 bg-blue-100/80 transition-all duration-700"
                 :style="{ width: `${getOptionPercentage(opt.votes_count)}%` }"
               ></div>
 
@@ -735,12 +1057,12 @@ onUnmounted(() => {
                     class="w-4 h-4 text-blue-600 focus:ring-0 cursor-pointer"
                   />
                   <CheckCircle2 v-else-if="selectedOption === opt.id" class="w-4 h-4 text-blue-700 shrink-0" />
-                  <span class="text-xs sm:text-sm font-semibold text-slate-800">
+                  <span class="text-xs sm:text-sm font-bold text-slate-900">
                     {{ getOptionText(opt) }}
                   </span>
                 </div>
 
-                <div v-if="hasVoted" class="text-xs font-mono font-bold text-blue-800 shrink-0">
+                <div v-if="hasVoted" class="text-xs font-mono font-black text-blue-900 shrink-0">
                   {{ getOptionPercentage(opt.votes_count) }}% ({{ opt.votes_count }} {{ langStore.currentLang === 'am' ? 'ድምፅ' : (langStore.currentLang === 'om' ? 'sagalee' : 'votes') }})
                 </div>
               </div>
@@ -748,7 +1070,7 @@ onUnmounted(() => {
           </div>
 
           <!-- Actions -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
             <div v-if="pollData.is_expired || pollData.is_closed" class="text-xs text-amber-800 font-bold flex items-center gap-1.5">
               <Clock class="w-4 h-4" />
               <span>{{ langStore.currentLang === 'am' ? 'ይህ የህዝብ አስተያየት መስጫ ቀን አልፎበታል (ተጠናቋል)። የመጨረሻው የተረጋገጠ ውጤት ከላይ ቀርቧል።' : 'This civic poll has concluded. Final verified citizen voting results are shown.' }}</span>
@@ -757,99 +1079,18 @@ onUnmounted(() => {
               v-else-if="!hasVoted" 
               @click="submitVote"
               :disabled="!selectedOption || voting"
-              class="px-6 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 self-start sm:self-auto"
+              class="px-8 py-3 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 self-start sm:self-auto shadow-md hover:scale-105"
             >
-              {{ voting ? (langStore.currentLang === 'am' ? 'ድምፅዎ እየተመዘገበ ነው...' : 'Recording...') : (langStore.currentLang === 'am' ? 'ድምጽ ይስጡ' : 'Cast Vote') }}
+              {{ voting ? (langStore.currentLang === 'am' ? 'ድምፅዎ እየተመዘገበ ነው...' : 'Recording Ballot...') : (langStore.currentLang === 'am' ? 'ድምጽ ይስጡ' : 'Cast Official Ballot') }}
             </button>
-            <div v-else class="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
-              <CheckCircle2 class="w-4 h-4" />
+            <div v-else class="text-xs text-emerald-800 font-bold flex items-center gap-1.5">
+              <CheckCircle2 class="w-4 h-4 text-emerald-600" />
               <span>{{ langStore.currentLang === 'am' ? 'ድምጽዎ ተመዝግቧል። እናመሰግናለን!' : 'Your vote has been verified and counted.' }}</span>
             </div>
 
-            <span class="text-xs text-slate-500 font-mono">
+            <span class="text-xs text-slate-500 font-mono font-bold">
               {{ totalVotes }} {{ langStore.currentLang === 'am' ? 'አጠቃላይ ድምጾች' : (langStore.currentLang === 'om' ? 'Sagaleewwan Waliigalaa' : 'Total Verified Ballots') }}
             </span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Active Public Tenders Section (Clean White Cards on White Background) -->
-    <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10 bg-white border-t border-slate-100">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            {{ langStore.t('nav.tenders') }}
-          </h2>
-          <p class="text-xs text-slate-500 mt-1">Official Municipal Procurement Notices & Bidding Documents</p>
-        </div>
-        <router-link to="/media/tenders" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 uppercase tracking-wider">
-          {{ langStore.t('common.view_all') }}
-          <ChevronRight class="w-4 h-4" />
-        </router-link>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div 
-          v-for="tender in tendersList" 
-          :key="tender.id" 
-          class="bg-white rounded-2xl border border-slate-200 p-6 hover:border-blue-400 transition-colors flex flex-col justify-between"
-        >
-          <div>
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-mono font-bold">
-                {{ tender.reference_number }}
-              </span>
-              <span 
-                :class="[
-                  'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider',
-                  !isTenderClosed(tender)
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-rose-50 text-rose-700 border-rose-200'
-                ]"
-              >
-                <span class="w-1.5 h-1.5 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500' : 'bg-rose-500'"></span>
-                {{ !isTenderClosed(tender) 
-                  ? (langStore.currentLang === 'am' ? 'ክፍት ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Bantamaa' : 'Open Bid'))
-                  : (langStore.currentLang === 'am' ? 'የተዘጋ ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Cufame' : 'Closed')) 
-                }}
-              </span>
-            </div>
-
-            <h4 class="text-base font-extrabold text-slate-900 leading-snug mb-4">
-              {{ getTenderTitle(tender) }}
-            </h4>
-          </div>
-
-          <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <div class="text-xs">
-              <span class="text-slate-400 block mb-0.5">{{ langStore.t('tenders.closing_in') }}:</span>
-              <span 
-                class="font-mono text-xs sm:text-sm font-bold"
-                :class="isTenderClosed(tender) ? 'text-rose-600 font-extrabold' : 'text-amber-700'"
-              >
-                {{ formatTenderCountdown(tender.closing_datetime).text }}
-              </span>
-            </div>
-
-            <a 
-              v-if="tender.document_url || tender.document_path"
-              :href="tender.document_url || tender.document_path" 
-              target="_blank"
-              download
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white text-xs font-bold transition-colors cursor-pointer"
-            >
-              <Download class="w-3.5 h-3.5" />
-              {{ langStore.t('common.download_pdf') }}
-            </a>
-            <router-link 
-              v-else
-              to="/media/tenders" 
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white text-xs font-bold transition-colors"
-            >
-              <Download class="w-3.5 h-3.5" />
-              {{ langStore.t('common.download_pdf') }}
-            </router-link>
           </div>
         </div>
       </div>

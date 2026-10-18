@@ -2,7 +2,22 @@
 import { ref, computed, onMounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import { api } from '@/services/api'
-import { Building2, Phone, Mail, MapPin, ExternalLink } from 'lucide-vue-next'
+import { 
+  Building2, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  ExternalLink,
+  ShieldCheck,
+  Award,
+  Clock,
+  PhoneCall,
+  FileCheck,
+  Landmark,
+  Compass,
+  Layers,
+  ChevronRight
+} from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
 const settings = ref(null)
@@ -17,7 +32,7 @@ onMounted(async () => {
 })
 
 const mapAddress = computed(() => {
-  if (!settings.value) return 'Kombolcha City Hall, Amhara Region, Ethiopia'
+  if (!settings.value) return 'Kombolcha City Hall, Amhara National Regional State, Ethiopia'
   const lang = langStore.currentLang
   if (lang === 'am') return settings.value.map_address_am || settings.value.map_address_en
   if (lang === 'om') return settings.value.map_address_om || settings.value.map_address_en
@@ -32,130 +47,233 @@ const directionsUrl = computed(() => {
 </script>
 
 <template>
-  <footer class="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
-    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-      <!-- Col 1: About City -->
-      <div class="space-y-4">
-        <div class="flex items-center gap-3">
-          <img src="/assets/logo.png" alt="Kombolcha City Seal" class="w-10 h-10 object-contain rounded-full bg-white p-0.5 shadow-md" />
-          <div>
-            <h3 class="text-base font-bold text-white tracking-tight">{{ langStore.t('common.city_name') }}</h3>
-            <p class="text-xs text-slate-400 font-medium">Kombolcha Metropolitan Administration</p>
-          </div>
+  <footer class="bg-gradient-to-b from-slate-950 via-[#071324] to-[#040B15] text-slate-300 border-t border-amber-500/30 relative font-sans">
+    
+    <!-- Top Civic Gradient Ribbon -->
+    <div class="h-1 w-full bg-gradient-to-r from-emerald-600 via-amber-400 to-red-600"></div>
+
+    <!-- Quick Emergency Dispatch Strip -->
+    <div class="border-b border-slate-800/80 bg-slate-900/60 py-3 px-4 sm:px-8 xl:px-12">
+      <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="font-extrabold text-amber-400 uppercase tracking-widest text-[11px]">
+            {{ langStore.currentLang === 'am' ? 'የ 24 ሰዓት የከተማ አገልግሎትና የአደጋ ጊዜ ጥሪዎች' : '24/7 Metropolitan Dispatch & Citizen Support' }}
+          </span>
         </div>
-        <p class="text-sm text-slate-400 leading-relaxed">
-          {{ langStore.t('common.city_tagline') }} — Connecting northern Ethiopia through industry, railway, aviation, and vibrant trade corridors.
-        </p>
-        <div class="pt-2 text-xs text-slate-500">
-          <p class="font-medium text-slate-400">{{ langStore.t('common.working_hours') }}:</p>
-          <p>{{ langStore.t('common.working_days') }}</p>
-        </div>
-      </div>
-
-      <!-- Col 2: Quick Links -->
-      <div class="space-y-4">
-        <h4 class="text-sm font-semibold text-white tracking-wider uppercase border-b border-slate-800 pb-2">
-          {{ langStore.t('common.quick_links') }}
-        </h4>
-        <ul class="space-y-2.5 text-sm">
-          <li>
-            <router-link to="/about" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
-              <span>›</span> {{ langStore.t('nav.about') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/services" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
-              <span>›</span> {{ langStore.t('nav.services') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/media/tenders" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
-              <span>›</span> {{ langStore.t('nav.tenders') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/projects" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
-              <span>›</span> {{ langStore.t('nav.projects') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/resources" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
-              <span>›</span> {{ langStore.t('nav.resources') }}
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/internal-board" class="hover:text-blue-400 transition-colors flex items-center gap-1.5">
-              <span>›</span> {{ langStore.t('nav.internal_board') }}
-            </router-link>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Col 3: Sub-Cities & Directory -->
-      <div class="space-y-4">
-        <h4 class="text-sm font-semibold text-white tracking-wider uppercase border-b border-slate-800 pb-2">
-          {{ langStore.t('common.sub_cities') }}
-        </h4>
-        <ul class="space-y-2.5 text-sm">
-          <li>
-            <router-link to="/government/sub-cities" class="hover:text-blue-400 transition-colors">
-              Abishager Sub-City (አቢሻገር)
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/government/sub-cities" class="hover:text-blue-400 transition-colors">
-              Borkena Sub-City (ቦርከና)
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/government/sub-cities" class="hover:text-blue-400 transition-colors">
-              Hasenager Sub-City (ሀሰናገር)
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/government/sub-cities" class="hover:text-blue-400 transition-colors">
-              Biraro Sub-City (ቢራሮ)
-            </router-link>
-          </li>
-          <li class="pt-2 border-t border-slate-800">
-            <router-link to="/government/offices" class="text-blue-400 hover:underline flex items-center gap-1 text-xs font-semibold">
-              {{ langStore.t('nav.offices_directory') }} <ExternalLink class="w-3 h-3" />
-            </router-link>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Col 4: Contact & Location -->
-      <div class="space-y-4">
-        <h4 class="text-sm font-semibold text-white tracking-wider uppercase border-b border-slate-800 pb-2">
-          {{ langStore.t('common.contact_us') }}
-        </h4>
-        <div class="space-y-3 text-sm text-slate-400">
-          <a :href="directionsUrl" target="_blank" rel="noopener noreferrer" class="flex items-start gap-2.5 hover:text-blue-400 transition-colors group" title="Open in Google Maps">
-            <MapPin class="w-4 h-4 text-blue-400 mt-1 shrink-0 group-hover:scale-110 transition-transform" />
-            <span class="flex-1 underline decoration-slate-700 underline-offset-4 group-hover:decoration-blue-400">{{ mapAddress }}</span>
+        <div class="flex flex-wrap items-center gap-4 text-xs font-mono font-bold text-slate-300">
+          <a href="tel:991" class="hover:text-red-400 flex items-center gap-1.5 transition-colors">
+            <PhoneCall class="w-3.5 h-3.5 text-red-500" />
+            <span>Police: 991</span>
           </a>
-          <div class="flex items-center gap-2.5">
-            <Phone class="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>+251 33 551 0022</span>
-          </div>
-          <div class="flex items-center gap-2.5">
-            <Mail class="w-4 h-4 text-purple-400 shrink-0" />
-            <span>info@kombolchacity.gov.et</span>
-          </div>
+          <span class="text-slate-700">•</span>
+          <a href="tel:993" class="hover:text-amber-400 flex items-center gap-1.5 transition-colors">
+            <PhoneCall class="w-3.5 h-3.5 text-amber-500" />
+            <span>Fire & Rescue: 993</span>
+          </a>
+          <span class="text-slate-700">•</span>
+          <a href="tel:907" class="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
+            <PhoneCall class="w-3.5 h-3.5 text-emerald-500" />
+            <span>Ambulance: 907</span>
+          </a>
+          <span class="text-slate-700">•</span>
+          <span class="text-slate-400">City Hall: +251 33 551 0022</span>
         </div>
-
-      
       </div>
     </div>
 
-    <!-- Copyright Sub-footer -->
-    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 mt-12 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-      <p>© 2026 {{ langStore.t('common.city_name') }}. {{ langStore.t('common.all_rights_reserved') }}. powered by <span class="text-white font-bold">AWDMA Technology 'Technology for a Better Tomorrow'</span></p>
-      <div class="flex items-center gap-6">
-        <a href="#" class="hover:text-slate-400">Privacy Policy</a>
-        <a href="#" class="hover:text-slate-400">Terms of Service</a>
-        <a href="#" class="hover:text-slate-400">Accessibility</a>
+    <!-- Main Civic Directory Grid -->
+    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+      
+      <!-- Col 1: Metropolitan Identity & Seal (4 cols) -->
+      <div class="lg:col-span-4 space-y-5">
+        <div class="flex items-center gap-3.5">
+          <div class="relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-tr from-amber-400 to-amber-200 rounded-full blur-[1px]"></div>
+            <img 
+              src="/assets/logo.png" 
+              alt="Kombolcha City Seal" 
+              class="relative w-12 h-12 object-contain rounded-full bg-white p-1 shadow-md" 
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-white tracking-tight leading-snug">
+              {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር' : 'Kombolcha City Administration' }}
+            </h3>
+            <p class="text-xs text-amber-400 font-extrabold tracking-wider uppercase">
+              {{ langStore.currentLang === 'am' ? 'የአማራ ብሔራዊ ክልላዊ መንግስት' : 'Amhara National Regional State' }}
+            </p>
+          </div>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+          {{ langStore.currentLang === 'am' 
+            ? 'ኮምቦልቻ በሰሜን ኢትዮጵያ የኢንዱስትሪ ፓርክ፣ የደረቅ ወደብ ጉምሩክ ተርሚናል፣ የአየር ትራንስፖርትና የባቡር መሥመር መናኸሪያ በመሆን የምጣኔ ሀብት ዕድገትን የምታፋጥን ስትራቴጂካዊ የከተማ ማዕከል ናት።' 
+            : 'Kombolcha is the premier industrial and logistics gateway of Northern Ethiopia — anchoring the Kombolcha Industrial Park (KIP), Dry Port Customs Terminal, airport corridor, and Ethio-Djibouti rail connection.' 
+          }}
+        </p>
+
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-400 space-y-1.5">
+          <div class="flex items-center gap-2 font-bold text-slate-200">
+            <Clock class="w-4 h-4 text-amber-400" />
+            <span>{{ langStore.t('common.working_hours') }}:</span>
+          </div>
+          <p class="pl-6 text-[11px]">{{ langStore.t('common.working_days') }} (8:30 AM - 5:30 PM EAT)</p>
+        </div>
+      </div>
+
+      <!-- Col 2: Government & Sub-Cities (3 cols) -->
+      <div class="lg:col-span-3 space-y-4">
+        <h4 class="text-xs font-black text-amber-400 tracking-widest uppercase border-b border-slate-800 pb-2.5 flex items-center gap-2">
+          <Landmark class="w-4 h-4 text-amber-400" />
+          <span>{{ langStore.t('nav.government') }} & {{ langStore.t('common.sub_cities') }}</span>
+        </h4>
+        <ul class="space-y-2 text-xs">
+          <li>
+            <router-link to="/government/mayor" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.mayor') }} (Executive Office)</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/government/mayor?tab=cabinet" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.cabinet') }} (Mayoral Cabinet)</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/government/sub-cities" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>Abishager Sub-City (አቢሻገር)</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/government/sub-cities" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>Borkena Sub-City (ቦርከና)</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/government/sub-cities" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>Hasenager Sub-City (ሀሰናገር)</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/government/sub-cities" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>Biraro Sub-City (ቢራሮ)</span>
+            </router-link>
+          </li>
+          <li class="pt-1.5">
+            <router-link to="/government/offices" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 text-xs">
+              <span>{{ langStore.t('nav.offices_directory') }} (22 Bureaus)</span>
+              <ExternalLink class="w-3 h-3" />
+            </router-link>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Public Services & Tenders (2 cols) -->
+      <div class="lg:col-span-2 space-y-4">
+        <h4 class="text-xs font-black text-amber-400 tracking-widest uppercase border-b border-slate-800 pb-2.5 flex items-center gap-2">
+          <Layers class="w-4 h-4 text-amber-400" />
+          <span>{{ langStore.t('common.quick_links') }}</span>
+        </h4>
+        <ul class="space-y-2 text-xs">
+          <li>
+            <router-link to="/services" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.services') }}</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/media/tenders" class="hover:text-amber-400 transition-colors flex items-center gap-1.5 text-amber-300 font-bold">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.tenders') }}</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/projects" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.projects') }}</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/explore" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.explore') }}</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/resources" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.resources') }}</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/internal-board" class="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+              <ChevronRight class="w-3.5 h-3.5 text-slate-600" />
+              <span>{{ langStore.t('nav.internal_board') }}</span>
+            </router-link>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Official Address & Geolocation (3 cols) -->
+      <div class="lg:col-span-3 space-y-4">
+        <h4 class="text-xs font-black text-amber-400 tracking-widest uppercase border-b border-slate-800 pb-2.5 flex items-center gap-2">
+          <MapPin class="w-4 h-4 text-amber-400" />
+          <span>{{ langStore.t('common.contact_us') }}</span>
+        </h4>
+        <div class="space-y-3 text-xs text-slate-400">
+          <a 
+            :href="directionsUrl" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="flex items-start gap-2.5 hover:text-amber-400 transition-colors group p-2.5 rounded-xl bg-slate-900/80 border border-slate-800"
+            title="Open City Hall in Google Maps"
+          >
+            <MapPin class="w-4 h-4 text-amber-400 mt-0.5 shrink-0 group-hover:scale-110 transition-transform" />
+            <div class="flex-1">
+              <div class="font-bold text-white text-[11px]">Kombolcha City Hall Headquarters</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">{{ mapAddress }}</div>
+              <div class="text-[10px] text-amber-400 font-bold mt-1 flex items-center gap-1">
+                <span>View Coordinates & Route</span>
+                <ExternalLink class="w-2.5 h-2.5" />
+              </div>
+            </div>
+          </a>
+
+          <div class="flex items-center gap-2.5 px-2">
+            <Phone class="w-4 h-4 text-emerald-400 shrink-0" />
+            <span class="font-mono text-slate-300 font-bold">+251 33 551 0022</span>
+          </div>
+
+          <div class="flex items-center gap-2.5 px-2">
+            <Mail class="w-4 h-4 text-sky-400 shrink-0" />
+            <span class="text-slate-300 font-mono">info@kombolchacity.gov.et</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Copyright & Developer Credits Bar -->
+    <div class="border-t border-slate-800/80 bg-slate-950/80 py-6 px-4 sm:px-8 xl:px-12 text-xs text-slate-400">
+      <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <p>© 2026 {{ langStore.t('common.city_name') }}. {{ langStore.t('common.all_rights_reserved') }}.</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">
+            Engineered & Maintained by <span class="text-white font-black tracking-wide">AWDMA Technology</span> — <span class="text-amber-400 font-semibold italic">"Technology for a Better Tomorrow"</span>
+          </p>
+        </div>
+        <div class="flex items-center gap-6 text-[11px] font-semibold text-slate-400">
+          <router-link to="/about" class="hover:text-white transition-colors">Privacy Charter</router-link>
+          <span>•</span>
+          <router-link to="/resources" class="hover:text-white transition-colors">Public Gazette</router-link>
+          <span>•</span>
+          <router-link to="/contact" class="hover:text-white transition-colors">Citizen Service Charter</router-link>
+        </div>
       </div>
     </div>
   </footer>
