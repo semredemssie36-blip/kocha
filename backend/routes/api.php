@@ -86,20 +86,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/upload', [AdminContentController::class, 'uploadMedia']);
 
     // ----------------------------------------------------
-    // AUTHOR, EDITOR & SUPER_ADMIN (News Content Submission & Drafting)
+    // AUTHOR, EDITOR & SUPER_ADMIN (Content Creation, Drafting & Own Draft Deletion)
     // ----------------------------------------------------
     Route::middleware('role:author,editor,super_admin')->group(function () {
-        // Articles Management (List, Create, Edit & Delete own drafts)
+        // News Articles Management
         Route::get('/admin/news', [AdminContentController::class, 'getNews']);
         Route::post('/admin/news', [AdminContentController::class, 'storeNews']);
         Route::put('/admin/news/{id}', [AdminContentController::class, 'updateNews']);
         Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);
-    });
 
-    // ----------------------------------------------------
-    // EDITOR & SUPER_ADMIN (Editorial, Resources, Gallery, Public Services, Destinations, Inquiries & Deletion)
-    // ----------------------------------------------------
-    Route::middleware('role:editor,super_admin')->group(function () {
         // Gallery Management (Upload, Edit, Delete)
         Route::get('/admin/gallery', [AdminContentController::class, 'getGallery']);
         Route::post('/admin/gallery', [AdminContentController::class, 'storeGalleryItem']);
@@ -111,29 +106,41 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/resources/{id}', [AdminContentController::class, 'updateResource']);
         Route::delete('/admin/resources/{id}', [AdminContentController::class, 'deleteResource']);
 
-        // Citizen Inquiries & Feedback
-        Route::get('/admin/messages', [AdminContentController::class, 'getContactMessages']);
-        Route::patch('/admin/messages/{id}', [AdminContentController::class, 'updateMessageStatus']);
-
-        // Tenders Management
+        // Tenders Management (Draft, Edit, Delete)
         Route::post('/admin/tenders', [AdminContentController::class, 'storeTender']);
         Route::put('/admin/tenders/{id}', [AdminContentController::class, 'updateTender']);
         Route::delete('/admin/tenders/{id}', [AdminContentController::class, 'deleteTender']);
 
-        // Vacancies Management
+        // Vacancies Management (Draft, Edit, Delete)
         Route::post('/admin/vacancies', [AdminContentController::class, 'storeVacancy']);
         Route::put('/admin/vacancies/{id}', [AdminContentController::class, 'updateVacancy']);
         Route::delete('/admin/vacancies/{id}', [AdminContentController::class, 'deleteVacancy']);
 
-        // Services Management
+        // Services Management (Draft, Edit, Delete)
         Route::post('/admin/services', [AdminContentController::class, 'storeService']);
         Route::put('/admin/services/{id}', [AdminContentController::class, 'updateService']);
         Route::delete('/admin/services/{id}', [AdminContentController::class, 'deleteService']);
 
-        // Projects Management
+        // Projects Management (Draft, Edit, Progress, Delete)
         Route::post('/admin/projects', [AdminContentController::class, 'storeProject']);
         Route::put('/admin/projects/{id}', [AdminContentController::class, 'updateProject']);
         Route::patch('/admin/projects/{id}/progress', [AdminContentController::class, 'updateProjectProgress']);
+        Route::delete('/admin/projects/{id}', [AdminContentController::class, 'deleteProject']);
+
+        // Destinations & Tourism Spotlight Management
+        Route::get('/admin/destinations', [AdminContentController::class, 'getDestinations']);
+        Route::post('/admin/destinations', [AdminContentController::class, 'storeDestination']);
+        Route::put('/admin/destinations/{id}', [AdminContentController::class, 'updateDestination']);
+        Route::delete('/admin/destinations/{id}', [AdminContentController::class, 'deleteDestination']);
+    });
+
+    // ----------------------------------------------------
+    // EDITOR & SUPER_ADMIN (Menus/Homepage, Inquiries, Civic Polls, Leadership & Direct Publishing)
+    // ----------------------------------------------------
+    Route::middleware('role:editor,super_admin')->group(function () {
+        // Citizen Inquiries & Feedback
+        Route::get('/admin/messages', [AdminContentController::class, 'getContactMessages']);
+        Route::patch('/admin/messages/{id}', [AdminContentController::class, 'updateMessageStatus']);
 
         // Mayor & Leadership Management
         Route::put('/admin/mayor', [AdminContentController::class, 'updateMayorProfile']);
@@ -144,17 +151,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/offices', [AdminContentController::class, 'storeOffice']);
         Route::put('/admin/offices/{id}', [AdminContentController::class, 'updateOffice']);
 
-        // Hero Slides Management
+        // Hero Slides & Homepage Menus Management (Row 9: Editor per assigned responsibility)
         Route::get('/admin/hero-slides', [AdminContentController::class, 'getHeroSlides']);
         Route::post('/admin/hero-slides', [AdminContentController::class, 'storeHeroSlide']);
         Route::put('/admin/hero-slides/{id}', [AdminContentController::class, 'updateHeroSlide']);
         Route::delete('/admin/hero-slides/{id}', [AdminContentController::class, 'deleteHeroSlide']);
-
-        // Destinations & Tourism Spotlight Management
-        Route::get('/admin/destinations', [AdminContentController::class, 'getDestinations']);
-        Route::post('/admin/destinations', [AdminContentController::class, 'storeDestination']);
-        Route::put('/admin/destinations/{id}', [AdminContentController::class, 'updateDestination']);
-        Route::delete('/admin/destinations/{id}', [AdminContentController::class, 'deleteDestination']);
 
         // 24/7 Emergency Hotlines & Contacts Management
         Route::get('/admin/emergency-contacts', [AdminContentController::class, 'getEmergencyContacts']);

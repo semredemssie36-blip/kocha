@@ -363,42 +363,81 @@ const roleBadgeClass = computed(() => {
 })
 
 const can = computed(() => ({
+  // Content Modules (News, Gallery, Resources, Tenders, Vacancies, Services, Projects, Destinations)
+  // Super Admin: Yes, Editor: Yes, Author: Yes (Create content)
+  createContent: true,
   createNews: true,
-  editNews: true,
-  deleteNews: isEditor.value,
+  createGallery: true,
+  createResources: true,
+  createTenders: true,
+  createVacancies: true,
+  createServices: true,
+  createProjects: true,
+  createDestinations: true,
 
-  uploadMedia: isEditor.value,
-  editMedia: isEditor.value,
+  // Publishing & Review: Super Admin & Editor only (Row 6 & Row 7)
+  publishContent: isEditor.value,
+  unpublishContent: isEditor.value,
+  reviewContent: isEditor.value,
+
+  // Navigation visibility for content modules
+  uploadMedia: true,
+  editMedia: true,
   deleteMedia: isEditor.value,
 
-  createResources: isEditor.value,
-  editResources: isEditor.value,
+  editResources: true,
   deleteResources: isEditor.value,
 
-  manageHeroSlides: isEditor.value,
-  manageDestinations: isEditor.value,
-  manageTenders: isEditor.value,
-  manageVacancies: isEditor.value,
-  manageServices: isEditor.value,
-  manageProjects: isEditor.value,
-  viewInquiries: isEditor.value,
+  manageDestinations: true,
+  manageTenders: true,
+  manageVacancies: true,
+  manageServices: true,
+  manageProjects: true,
 
+  // Menus and homepage (Row 9): Super Admin & Editor only (assigned CMS responsibility)
+  manageHeroSlides: isEditor.value,
+
+  // Governance & Civic Feedback: Super Admin & Editor only
   manageMayor: isEditor.value,
   manageLeadership: isEditor.value,
   manageOffices: isEditor.value,
   deleteGovernance: isSuperAdmin.value,
-
-  manageStaff: isSuperAdmin.value,
-  manageSettings: isSuperAdmin.value,
+  viewInquiries: isEditor.value,
   manageHotlines: isEditor.value,
   managePolls: isEditor.value,
+
+  // Users, Roles & Settings: Super Admin only (Rows 1 & 2)
+  manageStaff: isSuperAdmin.value,
+  manageSettings: isSuperAdmin.value,
   canDelete: isEditor.value
 }))
 
+// Ownership & Draft Permissions Helpers for Content Items
+function canEditItem(item) {
+  if (isSuperAdmin.value || isEditor.value) return true
+  if (isAuthor.value) {
+    const isOwner = !item.author_id || item.author_id === currentUser.value?.id
+    const isDraft = !item.status || item.status === 'draft' || item.status === 'pending' || item.publication_status === 'draft' || item.publication_status === 'pending'
+    return isOwner && isDraft
+  }
+  return false
+}
+
+function canDeleteItem(item) {
+  if (isSuperAdmin.value || isEditor.value) return true
+  if (isAuthor.value) {
+    const isOwner = !item.author_id || item.author_id === currentUser.value?.id
+    const isDraft = item.status === 'draft' || item.publication_status === 'draft'
+    return isOwner && isDraft
+  }
+  return false
+}
+
 // Section navigation guard: redirect if role has no permission
 watch(activeSection, (sec) => {
-  if (isAuthor.value && !['dashboard', 'news'].includes(sec)) {
-    activeSection.value = 'news'
+  const authorAllowed = ['dashboard', 'news', 'gallery', 'resources', 'tenders', 'vacancies', 'services', 'projects', 'destinations']
+  if (isAuthor.value && !authorAllowed.includes(sec)) {
+    activeSection.value = 'dashboard'
     showToast('Permission restricted: Navigated to your authorized workspace.')
   } else if (!isSuperAdmin.value && ['staff', 'settings'].includes(sec)) {
     activeSection.value = 'dashboard'
@@ -1200,25 +1239,40 @@ async function submitActiveModal() {
         showToast(res.data?.message || (isAuthor.value ? 'Article submitted for editorial approval!' : 'News article published!'))
       }
     } else if (modalType.value === 'tender') {
+      if (isAuthor.value && !isEditor.value) {
+        tenderForm.status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/tenders/${id}`, tenderForm)
       else await api.post('/admin/tenders', tenderForm)
-      showToast(isEdit ? 'Tender updated successfully!' : 'Procurement tender published!')
+      showToast(isEdit ? 'Tender updated successfully!' : (isAuthor.value ? 'Tender submitted for editorial review!' : 'Procurement tender published!'))
     } else if (modalType.value === 'vacancy') {
+      if (isAuthor.value && !isEditor.value) {
+        vacancyForm.status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/vacancies/${id}`, vacancyForm)
       else await api.post('/admin/vacancies', vacancyForm)
-      showToast(isEdit ? 'Vacancy updated successfully!' : 'Civil service vacancy posted!')
+      showToast(isEdit ? 'Vacancy updated successfully!' : (isAuthor.value ? 'Vacancy submitted for editorial review!' : 'Civil service vacancy posted!'))
     } else if (modalType.value === 'service') {
+      if (isAuthor.value && !isEditor.value) {
+        serviceForm.status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/services/${id}`, serviceForm)
       else await api.post('/admin/services', serviceForm)
-      showToast(isEdit ? 'Service updated successfully!' : 'Municipal service registered!')
+      showToast(isEdit ? 'Service updated successfully!' : (isAuthor.value ? 'Service submitted for editorial review!' : 'Municipal service registered!'))
     } else if (modalType.value === 'project') {
+      if (isAuthor.value && !isEditor.value) {
+        projectForm.publication_status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/projects/${id}`, projectForm)
       else await api.post('/admin/projects', projectForm)
-      showToast(isEdit ? 'Project updated successfully!' : 'Mega infrastructure project cataloged!')
+      showToast(isEdit ? 'Project updated successfully!' : (isAuthor.value ? 'Project submitted for editorial review!' : 'Mega infrastructure project cataloged!'))
     } else if (modalType.value === 'resource') {
+      if (isAuthor.value && !isEditor.value) {
+        resourceForm.status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/resources/${id}`, resourceForm)
       else await api.post('/admin/resources', resourceForm)
-      showToast(isEdit ? 'Directive updated successfully!' : 'Official directive document uploaded!')
+      showToast(isEdit ? 'Directive updated successfully!' : (isAuthor.value ? 'Directive submitted for editorial review!' : 'Official directive document uploaded!'))
     } else if (modalType.value === 'staff') {
       await api.post('/admin/staff', staffForm)
       showToast('Municipal staff account created!')
@@ -1235,13 +1289,19 @@ async function submitActiveModal() {
       else await api.post('/admin/hero-slides', heroSlideForm)
       showToast(isEdit ? 'Hero slide updated successfully!' : 'Hero slide added successfully!')
     } else if (modalType.value === 'gallery') {
+      if (isAuthor.value && !isEditor.value) {
+        galleryForm.status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/gallery/${id}`, galleryForm)
       else await api.post('/admin/gallery', galleryForm)
-      showToast(isEdit ? 'Gallery media updated successfully!' : 'Gallery media added successfully!')
+      showToast(isEdit ? 'Gallery media updated successfully!' : (isAuthor.value ? 'Media submitted for editorial review!' : 'Gallery media added successfully!'))
     } else if (modalType.value === 'destination') {
+      if (isAuthor.value && !isEditor.value) {
+        destinationForm.status = 'pending'
+      }
       if (isEdit) await api.put(`/admin/destinations/${id}`, destinationForm)
       else await api.post('/admin/destinations', destinationForm)
-      showToast(isEdit ? 'Destination spotlight updated!' : 'New destination spotlight created!')
+      showToast(isEdit ? 'Destination spotlight updated!' : (isAuthor.value ? 'Destination submitted for editorial review!' : 'New destination spotlight created!'))
     } else if (modalType.value === 'emergency_contact') {
       if (isEdit) await api.put(`/admin/emergency-contacts/${id}`, emergencyContactForm)
       else await api.post('/admin/emergency-contacts', emergencyContactForm)
@@ -1263,14 +1323,8 @@ async function submitActiveModal() {
 
 // Delete Helpers with automatic live refresh
 async function deleteItem(endpoint, id, name) {
-  if (endpoint === '/admin/news') {
-    // Handled by backend check (author can delete own draft, editor can delete per policy)
-  } else if (!can.value.canDelete) {
-    alert('Permission Denied: Authors are not authorized to delete records. Only Editors and Administrators have delete privileges.')
-    return
-  }
-  if (['/admin/offices', '/admin/leadership', '/admin/projects'].some(ep => endpoint.startsWith(ep)) && !isSuperAdmin.value) {
-    alert('Permission Denied: Only Super Administrators can delete municipal offices, leadership profiles, or infrastructure projects.')
+  if (['/admin/offices', '/admin/leadership'].some(ep => endpoint.startsWith(ep)) && !isSuperAdmin.value) {
+    alert('Permission Denied: Only Super Administrators can delete municipal offices or leadership profiles.')
     return
   }
   if (!confirm(`Are you sure you want to delete "${name}"? This action removes it permanently from the database and public portal.`)) return
@@ -2153,10 +2207,10 @@ onUnmounted(() => {
                 <div class="p-3 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
                   <span class="text-slate-400 font-mono">Order: {{ item.order }}</span>
                   <div class="flex items-center gap-1">
-                    <button @click="editItem('gallery', item)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer" title="Edit Item">
+                    <button v-if="canEditItem(item)" @click="editItem('gallery', item)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer" title="Edit Item">
                       <Edit class="w-4 h-4" />
                     </button>
-                    <button v-if="can.deleteMedia" @click="deleteItem('/admin/gallery', item.id, item.caption_en || item.caption_am)" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg cursor-pointer" title="Delete Item">
+                    <button v-if="canDeleteItem(item)" @click="deleteItem('/admin/gallery', item.id, item.caption_en || item.caption_am)" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg cursor-pointer" title="Delete Item">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -2221,6 +2275,8 @@ onUnmounted(() => {
           v-else-if="activeSection === 'tenders'"
           :tendersList="tendersList"
           :isEditor="isEditor"
+          :isAuthor="isAuthor"
+          :currentUserId="currentUser?.id"
           @openCreate="openNewModal('tender')"
           @openEdit="(item) => editItem('tender', item)"
           @deleteItem="(id) => deleteItem('/admin/tenders', id, 'Tender Notice')"
@@ -2276,10 +2332,10 @@ onUnmounted(() => {
                   <div class="text-xs text-slate-500 mt-1">Scale: {{ job.salary_grade }} | Deadline: {{ job.deadline }}</div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button @click="editItem('vacancy', job)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Vacancy">
+                  <button v-if="canEditItem(job)" @click="editItem('vacancy', job)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Vacancy">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button v-if="can.canDelete" @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Vacancy">
+                  <button v-if="canDeleteItem(job)" @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Vacancy">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -2576,10 +2632,10 @@ onUnmounted(() => {
                     {{ srv.type === 'step' ? 'Step-by-Step Walkthrough' : 'Direct Guide' }}
                   </span>
                   <div class="flex items-center gap-1">
-                    <button @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Service">
+                    <button v-if="canEditItem(srv)" @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Service">
                       <Edit class="w-4 h-4" />
                     </button>
-                    <button v-if="can.canDelete" @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Service">
+                    <button v-if="canDeleteItem(srv)" @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Service">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -2618,10 +2674,10 @@ onUnmounted(() => {
                     {{ proj.status }}
                   </span>
                   <div class="flex items-center gap-1">
-                    <button @click="editItem('project', proj)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Project">
+                    <button v-if="canEditItem(proj)" @click="editItem('project', proj)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Project">
                       <Edit class="w-4 h-4" />
                     </button>
-                    <button v-if="isSuperAdmin" @click="deleteItem('/admin/projects', proj.id, proj.title_en || proj.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Project">
+                    <button v-if="canDeleteItem(proj)" @click="deleteItem('/admin/projects', proj.id, proj.title_en || proj.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Project">
                       <Trash2 class="w-4 h-4" />
                     </button>
                   </div>
@@ -2695,10 +2751,10 @@ onUnmounted(() => {
                   <div class="text-xs text-slate-500 mt-1 font-mono">File: {{ res.file_size_formatted }} | Downloads: {{ res.downloads_count }}</div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button @click="editItem('resource', res)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Directive">
+                  <button v-if="canEditItem(res)" @click="editItem('resource', res)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Directive">
                     <Edit class="w-4 h-4" />
                   </button>
-                  <button v-if="can.deleteResources" @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Directive">
+                  <button v-if="canDeleteItem(res)" @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Directive">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -2748,6 +2804,8 @@ onUnmounted(() => {
           v-else-if="activeSection === 'destinations'"
           :destinationsList="destinationsList"
           :isEditor="isEditor"
+          :isAuthor="isAuthor"
+          :currentUserId="currentUser?.id"
           @openCreate="openNewModal('destination')"
           @openEdit="(item) => editItem('destination', item)"
           @deleteItem="(id) => deleteItem('/admin/destinations', id, 'Destination')"

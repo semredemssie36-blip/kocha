@@ -18,10 +18,28 @@ const props = defineProps({
   isEditor: {
     type: Boolean,
     default: false
+  },
+  isAuthor: {
+    type: Boolean,
+    default: false
+  },
+  currentUserId: {
+    type: [Number, String],
+    default: null
   }
 })
 
 const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
+
+function canEdit(item) {
+  if (props.isEditor) return true
+  return props.isAuthor && (item.author_id === props.currentUserId || !item.author_id) && item.status !== 'published'
+}
+
+function canDelete(item) {
+  if (props.isEditor) return true
+  return props.isAuthor && (item.author_id === props.currentUserId || !item.author_id) && item.status === 'draft'
+}
 </script>
 
 <template>
@@ -43,12 +61,11 @@ const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
       </div>
 
       <button 
-        v-if="isEditor"
         @click="emit('openCreate')" 
         class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer shrink-0"
       >
         <Plus class="w-4 h-4" />
-        <span>Add Destination</span>
+        <span>{{ isAuthor ? 'Submit Destination' : 'Add Destination' }}</span>
       </button>
     </div>
 
@@ -102,8 +119,9 @@ const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
             <ExternalLink class="w-3.5 h-3.5" />
           </router-link>
 
-          <div v-if="isEditor" class="flex items-center gap-1.5">
+          <div v-if="canEdit(item) || canDelete(item)" class="flex items-center gap-1.5">
             <button 
+              v-if="canEdit(item)"
               @click="emit('openEdit', item)"
               class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               title="Edit destination"
@@ -111,6 +129,7 @@ const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
               <Edit class="w-3.5 h-3.5" />
             </button>
             <button 
+              v-if="canDelete(item)"
               @click="emit('deleteItem', item.id)"
               class="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition cursor-pointer"
               title="Delete destination"

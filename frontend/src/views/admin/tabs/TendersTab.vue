@@ -20,8 +20,26 @@ const props = defineProps({
   isEditor: {
     type: Boolean,
     default: false
+  },
+  isAuthor: {
+    type: Boolean,
+    default: false
+  },
+  currentUserId: {
+    type: [Number, String],
+    default: null
   }
 })
+
+function canEdit(item) {
+  if (props.isEditor) return true
+  return props.isAuthor && (item.author_id === props.currentUserId || !item.author_id) && item.status !== 'open' && item.status !== 'closed'
+}
+
+function canDelete(item) {
+  if (props.isEditor) return true
+  return props.isAuthor && (item.author_id === props.currentUserId || !item.author_id) && item.status === 'draft'
+}
 
 const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
 
@@ -79,7 +97,7 @@ function isClosed(item) {
         </div>
 
         <button 
-          v-if="isEditor"
+          v-if="isEditor || isAuthor"
           @click="emit('openCreate')" 
           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer shrink-0"
         >
@@ -110,11 +128,13 @@ function isClosed(item) {
             <span 
               :class="[
                 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                item.status === 'draft' ? 'bg-slate-100 text-slate-700 border border-slate-300' :
+                item.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-300' :
                 !isClosed(item) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
               ]"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="!isClosed(item) ? 'bg-emerald-500' : 'bg-red-500'"></span>
-              {{ !isClosed(item) ? 'Open Bid' : 'Closed' }}
+              <span class="w-1.5 h-1.5 rounded-full" :class="item.status === 'draft' ? 'bg-slate-400' : item.status === 'pending' ? 'bg-amber-500' : !isClosed(item) ? 'bg-emerald-500' : 'bg-red-500'"></span>
+              {{ item.status === 'draft' ? 'Draft' : item.status === 'pending' ? 'Under Review' : !isClosed(item) ? 'Open Bid' : 'Closed' }}
             </span>
           </div>
 
@@ -156,8 +176,9 @@ function isClosed(item) {
           </a>
           <span v-else class="text-[11px] text-slate-400 italic">No document attached</span>
 
-          <div v-if="isEditor" class="flex items-center gap-1.5">
+          <div v-if="canEdit(item) || canDelete(item)" class="flex items-center gap-1.5">
             <button 
+              v-if="canEdit(item)"
               @click="emit('openEdit', item)"
               class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               title="Edit tender"
@@ -165,6 +186,7 @@ function isClosed(item) {
               <Edit class="w-3.5 h-3.5" />
             </button>
             <button 
+              v-if="canDelete(item)"
               @click="emit('deleteItem', item.id)"
               class="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition cursor-pointer"
               title="Delete tender"

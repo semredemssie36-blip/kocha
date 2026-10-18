@@ -281,11 +281,18 @@ class AdminContentController extends Controller
             'category' => 'required|string',
             'bid_bond_amount' => 'nullable|numeric',
             'closing_datetime' => 'required|date',
-            'status' => 'required|in:open,closed,cancelled',
+            'status' => 'required|in:draft,pending,open,closed,cancelled',
             'document_pdf_path' => 'nullable|string',
         ]);
 
+        $user = $request->user();
+        $status = $validated['status'];
+        if ($user->role === 'author') {
+            $status = ($status === 'draft') ? 'draft' : 'pending';
+        }
+
         $id = DB::table('tenders')->insertGetId([
+            'author_id' => $user->id,
             'reference_number' => $validated['reference_number'],
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
@@ -293,13 +300,17 @@ class AdminContentController extends Controller
             'category' => $validated['category'],
             'bid_bond_amount' => $validated['bid_bond_amount'] ?? 0,
             'closing_datetime' => $validated['closing_datetime'],
-            'status' => $validated['status'],
+            'status' => $status,
             'document_pdf_path' => $validated['document_pdf_path'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Tender published successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? 'Tender submitted for editorial review.'
+            : 'Tender published successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateTender(Request $request, $id)
@@ -312,9 +323,29 @@ class AdminContentController extends Controller
             'category' => 'required|string',
             'bid_bond_amount' => 'nullable|numeric',
             'closing_datetime' => 'required|date',
-            'status' => 'required|in:open,closed,cancelled',
+            'status' => 'required|in:draft,pending,open,closed,cancelled',
             'document_pdf_path' => 'nullable|string',
         ]);
+
+        $user = $request->user();
+        $existing = DB::table('tenders')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Tender not found'], 404);
+        }
+
+        $targetStatus = $validated['status'];
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if (in_array($existing->status, ['open', 'closed'])) {
+                return response()->json(['message' => 'Forbidden: Published tenders can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if (in_array($targetStatus, ['open', 'closed'])) {
+                $targetStatus = 'pending';
+            }
+        }
 
         DB::table('tenders')->where('id', $id)->update([
             'reference_number' => $validated['reference_number'],
@@ -324,16 +355,31 @@ class AdminContentController extends Controller
             'category' => $validated['category'],
             'bid_bond_amount' => $validated['bid_bond_amount'] ?? 0,
             'closing_datetime' => $validated['closing_datetime'],
-            'status' => $validated['status'],
+            'status' => $targetStatus,
             'document_pdf_path' => $validated['document_pdf_path'] ?? null,
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Tender updated successfully']);
+        return response()->json(['message' => 'Tender updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteTender($id)
+    public function deleteTender(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('tenders')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Tender not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if (in_array($existing->status, ['open', 'closed'])) {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published tenders. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('tenders')->where('id', $id)->delete();
         return response()->json(['message' => 'Tender deleted successfully']);
     }
@@ -350,14 +396,21 @@ class AdminContentController extends Controller
             'salary_grade' => 'nullable|string',
             'requirements_am' => 'required|string',
             'deadline' => 'required|date',
+            'status' => 'nullable|in:draft,pending,open,closed',
         ]);
 
-        $status = $request->input('status');
+        $user = $request->user();
+        $status = $validated['status'] ?? null;
         if (!$status) {
             $status = (strtotime($validated['deadline']) < strtotime(date('Y-m-d'))) ? 'closed' : 'open';
         }
 
+        if ($user->role === 'author') {
+            $status = ($status === 'draft') ? 'draft' : 'pending';
+        }
+
         $id = DB::table('vacancies')->insertGetId([
+            'author_id' => $user->id,
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
@@ -371,7 +424,11 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Vacancy posted successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? 'Vacancy submitted for editorial review.'
+            : 'Vacancy posted successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateVacancy(Request $request, $id)
@@ -385,12 +442,30 @@ class AdminContentController extends Controller
             'salary_grade' => 'nullable|string',
             'requirements_am' => 'required|string',
             'deadline' => 'required|date',
-            'status' => 'nullable|in:open,closed',
+            'status' => 'nullable|in:draft,pending,open,closed',
         ]);
 
-        $status = $validated['status'] ?? null;
-        if (!$status) {
-            $status = (strtotime($validated['deadline']) < strtotime(date('Y-m-d'))) ? 'closed' : 'open';
+        $user = $request->user();
+        $existing = DB::table('vacancies')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Vacancy not found'], 404);
+        }
+
+        $targetStatus = $validated['status'] ?? null;
+        if (!$targetStatus) {
+            $targetStatus = (strtotime($validated['deadline']) < strtotime(date('Y-m-d'))) ? 'closed' : 'open';
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if (in_array($existing->status, ['open', 'closed'])) {
+                return response()->json(['message' => 'Forbidden: Published vacancies can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if (in_array($targetStatus, ['open', 'closed'])) {
+                $targetStatus = 'pending';
+            }
         }
 
         DB::table('vacancies')->where('id', $id)->update([
@@ -402,15 +477,30 @@ class AdminContentController extends Controller
             'salary_grade' => $validated['salary_grade'] ?? 'Government Scale',
             'requirements_am' => $validated['requirements_am'],
             'deadline' => $validated['deadline'],
-            'status' => $status,
+            'status' => $targetStatus,
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Vacancy updated successfully']);
+        return response()->json(['message' => 'Vacancy updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteVacancy($id)
+    public function deleteVacancy(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('vacancies')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Vacancy not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if (in_array($existing->status, ['open', 'closed'])) {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published vacancies. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('vacancies')->where('id', $id)->delete();
         return response()->json(['message' => 'Vacancy deleted successfully']);
     }
@@ -429,11 +519,19 @@ class AdminContentController extends Controller
             'fee_amount' => 'nullable|numeric',
             'estimated_time_am' => 'nullable|string',
             'estimated_time_en' => 'nullable|string',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $status = $validated['status'] ?? 'published';
+        if ($user->role === 'author') {
+            $status = ($status === 'draft') ? 'draft' : 'pending';
+        }
 
         $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
 
         $id = DB::table('services')->insertGetId([
+            'author_id' => $user->id,
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
@@ -445,12 +543,17 @@ class AdminContentController extends Controller
             'fee_amount' => $validated['fee_amount'] ?? 0,
             'estimated_time_am' => $validated['estimated_time_am'] ?? '1-3 Business Days',
             'estimated_time_en' => $validated['estimated_time_en'] ?? $validated['estimated_time_am'] ?? '1-3 Business Days',
-            'is_active' => true,
+            'status' => $status,
+            'is_active' => $status === 'published',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Service created successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? 'Service submitted for editorial review.'
+            : 'Service created successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateService(Request $request, $id)
@@ -466,7 +569,28 @@ class AdminContentController extends Controller
             'fee_amount' => 'nullable|numeric',
             'estimated_time_am' => 'nullable|string',
             'estimated_time_en' => 'nullable|string',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $existing = DB::table('services')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Service not found'], 404);
+        }
+
+        $targetStatus = $validated['status'] ?? ($existing->status ?? 'published');
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published services can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if ($targetStatus === 'published') {
+                $targetStatus = 'pending';
+            }
+        }
 
         DB::table('services')->where('id', $id)->update([
             'title_am' => $validated['title_am'],
@@ -479,14 +603,31 @@ class AdminContentController extends Controller
             'fee_amount' => $validated['fee_amount'] ?? 0,
             'estimated_time_am' => $validated['estimated_time_am'] ?? '1-3 Business Days',
             'estimated_time_en' => $validated['estimated_time_en'] ?? $validated['estimated_time_am'] ?? '1-3 Business Days',
+            'status' => $targetStatus,
+            'is_active' => $targetStatus === 'published',
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Service updated successfully']);
+        return response()->json(['message' => 'Service updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteService($id)
+    public function deleteService(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('services')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Service not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published services. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('services')->where('id', $id)->delete();
         return response()->json(['message' => 'Service deleted successfully']);
     }
@@ -502,11 +643,19 @@ class AdminContentController extends Controller
             'contractor_name' => 'nullable|string',
             'progress_percent' => 'required|integer|min:0|max:100',
             'status' => 'required|in:planning,in_progress,completed,halted',
+            'publication_status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $pubStatus = $validated['publication_status'] ?? 'published';
+        if ($user->role === 'author') {
+            $pubStatus = ($pubStatus === 'draft') ? 'draft' : 'pending';
+        }
 
         $slug = Str::slug($validated['title_en'] ?? $validated['title_am']) . '-' . rand(100, 999);
 
         $id = DB::table('projects')->insertGetId([
+            'author_id' => $user->id,
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
@@ -515,11 +664,16 @@ class AdminContentController extends Controller
             'contractor_name' => $validated['contractor_name'] ?? null,
             'progress_percent' => $validated['progress_percent'],
             'status' => $validated['status'],
+            'publication_status' => $pubStatus,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Project saved successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $pubStatus === 'pending')
+            ? 'Project submitted for editorial review.'
+            : 'Project saved successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'publication_status' => $pubStatus], 201);
     }
 
     public function updateProject(Request $request, $id)
@@ -532,7 +686,28 @@ class AdminContentController extends Controller
             'contractor_name' => 'nullable|string',
             'progress_percent' => 'required|integer|min:0|max:100',
             'status' => 'required|in:planning,in_progress,completed,halted',
+            'publication_status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $existing = DB::table('projects')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Project not found'], 404);
+        }
+
+        $pubStatus = $validated['publication_status'] ?? ($existing->publication_status ?? 'published');
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if ($existing->publication_status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published projects can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if ($pubStatus === 'published') {
+                $pubStatus = 'pending';
+            }
+        }
 
         DB::table('projects')->where('id', $id)->update([
             'title_am' => $validated['title_am'],
@@ -542,15 +717,30 @@ class AdminContentController extends Controller
             'contractor_name' => $validated['contractor_name'] ?? null,
             'progress_percent' => $validated['progress_percent'],
             'status' => $validated['status'],
+            'publication_status' => $pubStatus,
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Project updated successfully']);
+        return response()->json(['message' => 'Project updated successfully', 'publication_status' => $pubStatus]);
     }
 
     public function updateProjectProgress(Request $request, $id)
     {
         $request->validate(['progress_percent' => 'required|integer|min:0|max:100']);
+        $user = $request->user();
+        $existing = DB::table('projects')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Project not found'], 404);
+        }
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if ($existing->publication_status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published projects can only be modified by an Editor or Super Admin.'], 403);
+            }
+        }
+
         DB::table('projects')->where('id', $id)->update([
             'progress_percent' => $request->progress_percent,
             'status' => $request->progress_percent == 100 ? 'completed' : 'in_progress',
@@ -559,8 +749,23 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Progress updated']);
     }
 
-    public function deleteProject($id)
+    public function deleteProject(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('projects')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Project not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if ($existing->publication_status === 'published') {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published projects. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('projects')->where('id', $id)->delete();
         return response()->json(['message' => 'Project deleted successfully']);
     }
@@ -576,9 +781,17 @@ class AdminContentController extends Controller
             'year' => 'required|integer',
             'file_path' => 'nullable|string',
             'file_size_formatted' => 'nullable|string',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
 
+        $user = $request->user();
+        $status = $validated['status'] ?? 'published';
+        if ($user->role === 'author') {
+            $status = ($status === 'draft') ? 'draft' : 'pending';
+        }
+
         $id = DB::table('resources')->insertGetId([
+            'author_id' => $user->id,
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
             'title_om' => $validated['title_om'] ?? null,
@@ -586,11 +799,16 @@ class AdminContentController extends Controller
             'year' => $validated['year'],
             'file_path' => $validated['file_path'] ?: ('/documents/kombolcha_directive_' . rand(10, 99) . '.pdf'),
             'file_size_formatted' => $validated['file_size_formatted'] ?? '2.1 MB',
+            'status' => $status,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Resource directive cataloged successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? 'Directive submitted for editorial review.'
+            : 'Resource directive cataloged successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateResource(Request $request, $id)
@@ -603,7 +821,28 @@ class AdminContentController extends Controller
             'year' => 'required|integer',
             'file_path' => 'nullable|string',
             'file_size_formatted' => 'nullable|string',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $existing = DB::table('resources')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
+        $targetStatus = $validated['status'] ?? ($existing->status ?? 'published');
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published resources can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if ($targetStatus === 'published') {
+                $targetStatus = 'pending';
+            }
+        }
 
         $updateData = [
             'title_am' => $validated['title_am'],
@@ -612,6 +851,7 @@ class AdminContentController extends Controller
             'category' => $validated['category'],
             'year' => $validated['year'],
             'file_size_formatted' => $validated['file_size_formatted'] ?? '2.1 MB',
+            'status' => $targetStatus,
             'updated_at' => now(),
         ];
         if (!empty($validated['file_path'])) {
@@ -620,11 +860,26 @@ class AdminContentController extends Controller
 
         DB::table('resources')->where('id', $id)->update($updateData);
 
-        return response()->json(['message' => 'Resource directive updated successfully']);
+        return response()->json(['message' => 'Resource directive updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteResource($id)
+    public function deleteResource(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('resources')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published resources. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('resources')->where('id', $id)->delete();
         return response()->json(['message' => 'Resource deleted successfully']);
     }
@@ -847,12 +1102,21 @@ class AdminContentController extends Controller
     }
 
     // Gallery Items Management (Images & Videos)
-    public function getGallery()
+    public function getGallery(Request $request)
     {
-        $items = DB::table('gallery_items')
+        $user = $request->user();
+        $query = DB::table('gallery_items')
             ->orderBy('order', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhere('status', 'published');
+            });
+        }
+
+        $items = $query->get();
         return response()->json($items);
     }
 
@@ -864,9 +1128,17 @@ class AdminContentController extends Controller
             'caption_am' => 'required|string|max:255',
             'caption_en' => 'nullable|string|max:255',
             'caption_om' => 'nullable|string|max:255',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
 
+        $user = $request->user();
+        $status = $request->input('status', 'published');
+        if ($user->role === 'author') {
+            $status = ($status === 'draft') ? 'draft' : 'pending';
+        }
+
         $id = DB::table('gallery_items')->insertGetId([
+            'author_id' => $user->id,
             'media_type' => $request->media_type,
             'media_path_or_url' => $request->media_path_or_url,
             'thumbnail_url' => $request->thumbnail_url ?: ($request->media_type === 'image' ? $request->media_path_or_url : '/assets/hero_industry.jpg'),
@@ -875,11 +1147,16 @@ class AdminContentController extends Controller
             'caption_en' => $request->caption_en,
             'caption_om' => $request->caption_om,
             'order' => $request->order ?: 0,
+            'status' => $status,
             'created_at' => now(),
             'updated_at' => now()
         ]);
 
-        return response()->json(['message' => 'Gallery media item created successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? 'Media submitted for editorial review.'
+            : 'Gallery media item created successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateGalleryItem(Request $request, $id)
@@ -888,7 +1165,28 @@ class AdminContentController extends Controller
             'media_path_or_url' => 'required|string',
             'media_type' => 'required|in:image,video',
             'caption_am' => 'required|string|max:255',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $existing = DB::table('gallery_items')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Media item not found'], 404);
+        }
+
+        $targetStatus = $request->input('status', $existing->status ?? 'published');
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published media can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if ($targetStatus === 'published') {
+                $targetStatus = 'pending';
+            }
+        }
 
         DB::table('gallery_items')->where('id', $id)->update([
             'media_type' => $request->media_type,
@@ -899,14 +1197,30 @@ class AdminContentController extends Controller
             'caption_en' => $request->caption_en,
             'caption_om' => $request->caption_om,
             'order' => $request->order ?: 0,
+            'status' => $targetStatus,
             'updated_at' => now()
         ]);
 
-        return response()->json(['message' => 'Gallery media item updated successfully']);
+        return response()->json(['message' => 'Gallery media item updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteGalleryItem($id)
+    public function deleteGalleryItem(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('gallery_items')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Media item not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published media. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('gallery_items')->where('id', $id)->delete();
         return response()->json(['message' => 'Gallery media item deleted']);
     }
@@ -986,9 +1300,19 @@ class AdminContentController extends Controller
     }
 
     // Destinations & Tourism Spotlight Management
-    public function getDestinations()
+    public function getDestinations(Request $request)
     {
-        $items = DB::table('destinations')->orderBy('order', 'asc')->orderBy('id', 'desc')->get();
+        $user = $request->user();
+        $query = DB::table('destinations')->orderBy('order', 'asc')->orderBy('id', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhere('status', 'published');
+            });
+        }
+
+        $items = $query->get();
         return response()->json($items);
     }
 
@@ -1015,9 +1339,17 @@ class AdminContentController extends Controller
             'features' => 'nullable|string',
             'image_path' => 'nullable|string',
             'order' => 'nullable|integer',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
 
+        $user = $request->user();
+        $status = $validated['status'] ?? 'published';
+        if ($user->role === 'author') {
+            $status = ($status === 'draft') ? 'draft' : 'pending';
+        }
+
         $id = DB::table('destinations')->insertGetId([
+            'author_id' => $user->id,
             'category' => $validated['category'],
             'title_am' => $validated['title_am'],
             'title_en' => $validated['title_en'] ?? null,
@@ -1038,12 +1370,17 @@ class AdminContentController extends Controller
             'features' => $validated['features'] ?? null,
             'image_path' => $validated['image_path'] ?? null,
             'order' => $validated['order'] ?? 0,
-            'is_active' => true,
+            'status' => $status,
+            'is_active' => $status === 'published',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Destination created successfully', 'id' => $id], 201);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? 'Destination submitted for editorial review.'
+            : 'Destination created successfully';
+
+        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
     }
 
     public function updateDestination(Request $request, $id)
@@ -1069,7 +1406,28 @@ class AdminContentController extends Controller
             'features' => 'nullable|string',
             'image_path' => 'nullable|string',
             'order' => 'nullable|integer',
+            'status' => 'nullable|in:draft,pending,published',
         ]);
+
+        $user = $request->user();
+        $existing = DB::table('destinations')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Destination not found'], 404);
+        }
+
+        $targetStatus = $validated['status'] ?? ($existing->status ?? 'published');
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only edit their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Published destinations can only be modified or unpublished by an Editor or Super Admin.'], 403);
+            }
+            if ($targetStatus === 'published') {
+                $targetStatus = 'pending';
+            }
+        }
 
         DB::table('destinations')->where('id', $id)->update([
             'category' => $validated['category'],
@@ -1092,14 +1450,31 @@ class AdminContentController extends Controller
             'features' => $validated['features'] ?? null,
             'image_path' => $validated['image_path'] ?? null,
             'order' => $validated['order'] ?? 0,
+            'status' => $targetStatus,
+            'is_active' => $targetStatus === 'published',
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Destination updated successfully']);
+        return response()->json(['message' => 'Destination updated successfully', 'status' => $targetStatus]);
     }
 
-    public function deleteDestination($id)
+    public function deleteDestination(Request $request, $id)
     {
+        $user = $request->user();
+        $existing = DB::table('destinations')->where('id', $id)->first();
+        if (!$existing) {
+            return response()->json(['message' => 'Destination not found'], 404);
+        }
+
+        if ($user->role === 'author') {
+            if ($existing->author_id && (int)$existing->author_id !== (int)$user->id) {
+                return response()->json(['message' => 'Forbidden: Authors can only delete their own content.'], 403);
+            }
+            if ($existing->status === 'published') {
+                return response()->json(['message' => 'Forbidden: Authors cannot delete published destinations. Only own drafts may be deleted.'], 403);
+            }
+        }
+
         DB::table('destinations')->where('id', $id)->delete();
         return response()->json(['message' => 'Destination deleted']);
     }
