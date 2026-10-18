@@ -63,9 +63,10 @@ const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem'])
           <!-- Thumbnail Image -->
           <div class="h-44 bg-slate-100 relative overflow-hidden">
             <img 
-              :src="item.image_url || '/assets/hero_industry.jpg'" 
-              :alt="item.title_en"
+              :src="item.image_path || item.image_url || '/assets/hero_industry.jpg'" 
+              :alt="item.title_en || item.title_am"
               class="w-full h-full object-cover"
+              @error="$event.target.src = '/assets/hero_industry.jpg'"
             />
             <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider">
               {{ item.category }}
