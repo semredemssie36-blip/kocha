@@ -118,6 +118,14 @@ const routes = [
     name: 'AdminDashboard',
     component: () => import('@/views/admin/DashboardView.vue'),
     meta: { requiresAuth: true, title: 'Admin Dashboard' }
+  },
+
+  // 404 Catch-All Fallback Route
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/public/NotFoundView.vue'),
+    meta: { title: '404 - Page Not Found' }
   }
 ]
 

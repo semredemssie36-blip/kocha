@@ -608,18 +608,22 @@ const paginatedResources = computed(() => {
 watch(resourcesSearch, () => { resourcesPage.value = 1 })
 
 // Media Gallery Search & Pagination
+const galleryViewMode = ref('grid') // 'grid' | 'table'
 const gallerySearch = ref('')
+const galleryCategoryFilter = ref('all')
 const galleryPage = ref(1)
 const galleryPerPage = ref(8)
 const filteredGallery = computed(() => {
-  if (!gallerySearch.value.trim()) return galleryList.value
-  const q = gallerySearch.value.toLowerCase().trim()
-  return galleryList.value.filter(g =>
-    (g.caption_en && g.caption_en.toLowerCase().includes(q)) ||
-    (g.caption_am && g.caption_am.includes(q)) ||
-    (g.category && g.category.toLowerCase().includes(q)) ||
-    (g.media_type && g.media_type.toLowerCase().includes(q))
-  )
+  return galleryList.value.filter(g => {
+    const q = gallerySearch.value.toLowerCase().trim()
+    const matchesSearch = !q ||
+      (g.caption_en && g.caption_en.toLowerCase().includes(q)) ||
+      (g.caption_am && g.caption_am.includes(q)) ||
+      (g.category && g.category.toLowerCase().includes(q)) ||
+      (g.media_type && g.media_type.toLowerCase().includes(q))
+    const matchesCat = galleryCategoryFilter.value === 'all' || g.category === galleryCategoryFilter.value
+    return matchesSearch && matchesCat
+  })
 })
 const totalGalleryPages = computed(() => Math.ceil(filteredGallery.value.length / galleryPerPage.value) || 1)
 const paginatedGallery = computed(() => {
@@ -627,6 +631,41 @@ const paginatedGallery = computed(() => {
   return filteredGallery.value.slice(start, start + galleryPerPage.value)
 })
 watch(gallerySearch, () => { galleryPage.value = 1 })
+watch(galleryCategoryFilter, () => { galleryPage.value = 1 })
+
+// Hero Slides Search & ViewMode
+const heroSlidesViewMode = ref('cards') // 'cards' | 'table'
+const heroSlidesSearch = ref('')
+const filteredHeroSlides = computed(() => {
+  if (!heroSlidesSearch.value.trim()) return heroSlidesList.value
+  const q = heroSlidesSearch.value.toLowerCase().trim()
+  return heroSlidesList.value.filter(s =>
+    (s.title_en && s.title_en.toLowerCase().includes(q)) ||
+    (s.title_am && s.title_am.includes(q)) ||
+    (s.tag_en && s.tag_en.toLowerCase().includes(q)) ||
+    (s.tag_am && s.tag_am.includes(q)) ||
+    (s.subtitle_en && s.subtitle_en.toLowerCase().includes(q))
+  )
+})
+
+// Leadership Search & ViewMode
+const leadershipViewMode = ref('cards') // 'cards' | 'table'
+const leadershipSearch = ref('')
+const leadershipTypeFilter = ref('all') // 'all' | 'cabinet' | 'council'
+const filteredLeadership = computed(() => {
+  return leadershipList.value.filter(m => {
+    const q = leadershipSearch.value.toLowerCase().trim()
+    const matchesSearch = !q ||
+      (m.name_en && m.name_en.toLowerCase().includes(q)) ||
+      (m.name_am && m.name_am.includes(q)) ||
+      (m.position_en && m.position_en.toLowerCase().includes(q)) ||
+      (m.position_am && m.position_am.includes(q)) ||
+      (m.email && m.email.toLowerCase().includes(q)) ||
+      (m.phone && m.phone.includes(q))
+    const matchesType = leadershipTypeFilter.value === 'all' || m.type === leadershipTypeFilter.value
+    return matchesSearch && matchesType
+  })
+})
 
 const messagesList = ref([])
 const staffList = ref([])
@@ -2221,48 +2260,166 @@ onUnmounted(() => {
 
         <!-- HERO SLIDER MANAGEMENT -->
         <div v-else-if="activeSection === 'hero_slides'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Hero Slider Manager</h2>
-              <p class="text-xs text-slate-500">Configure public homepage carousel slides, high-res photography, and bilingual call-to-actions.</p>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Media & Visuals</span>
+                <span>/</span>
+                <span class="text-blue-600 font-bold">Homepage Carousel</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Hero Slider Manager</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ heroSlidesList.length }} slides
+                </span>
+              </h2>
             </div>
-            <button @click="editingId = null; modalType = 'hero_slide'" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 transition-all">
-              <Plus class="w-4 h-4" />
-              <span>Add New Hero Slide</span>
-            </button>
+
+            <div class="flex items-center gap-3">
+              <!-- View Toggle -->
+              <div class="flex items-center bg-slate-200/80 p-1 rounded-xl shadow-inner">
+                <button 
+                  type="button"
+                  @click="heroSlidesViewMode = 'cards'"
+                  class="p-1.5 rounded-lg transition-all cursor-pointer"
+                  :class="heroSlidesViewMode === 'cards' ? 'bg-white text-blue-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'"
+                  title="Card Grid View"
+                >
+                  <LayoutGrid class="w-4 h-4" />
+                </button>
+                <button 
+                  type="button"
+                  @click="heroSlidesViewMode = 'table'"
+                  class="p-1.5 rounded-lg transition-all cursor-pointer"
+                  :class="heroSlidesViewMode === 'table' ? 'bg-white text-blue-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'"
+                  title="Sovereign Table View"
+                >
+                  <List class="w-4 h-4" />
+                </button>
+              </div>
+
+              <button @click="editingId = null; modalType = 'hero_slide'" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
+                <Plus class="w-4 h-4" />
+                <span>Add New Hero Slide</span>
+              </button>
+            </div>
           </div>
 
-          <div v-if="heroSlidesList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
-            No hero slides created yet.
+          <!-- Search Bar -->
+          <div class="flex items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div class="relative w-full sm:w-80">
+              <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                v-model="heroSlidesSearch"
+                type="text"
+                placeholder="Filter slides by title, tag, subtitle..."
+                class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition"
+              />
+            </div>
+            <span class="text-xs text-slate-400 font-mono hidden sm:inline">Order defines autoplay carousel sequence</span>
           </div>
+
+          <div v-if="filteredHeroSlides.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
+            No hero slides found matching your search.
+          </div>
+
+          <!-- 1. SOVEREIGN TABLE VIEW -->
+          <div v-else-if="heroSlidesViewMode === 'table'" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-black">
+                    <th class="py-3.5 px-4">Slide Preview & Tag</th>
+                    <th class="py-3.5 px-4">Title (English & Amharic)</th>
+                    <th class="py-3.5 px-4">Call-To-Action (CTA)</th>
+                    <th class="py-3.5 px-4">Order</th>
+                    <th class="py-3.5 px-4">Status</th>
+                    <th class="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-sans">
+                  <tr v-for="slide in filteredHeroSlides" :key="slide.id" class="hover:bg-blue-50/40 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-20 h-12 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 shadow-2xs">
+                          <img :src="slide.image_path" :alt="slide.title_en || slide.title_am" class="w-full h-full object-cover" />
+                        </div>
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200">
+                          {{ slide.tag_en || slide.tag_am || 'General Tag' }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span class="font-bold text-slate-900 text-sm block leading-snug">{{ slide.title_en || slide.title_am }}</span>
+                      <span class="text-xs text-slate-500 font-mono">AM: {{ slide.title_am }}</span>
+                      <p class="text-xs text-slate-400 mt-1 line-clamp-1 max-w-sm">{{ slide.subtitle_en || slide.subtitle_am }}</p>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="text-xs font-mono text-slate-700">
+                        <span class="font-bold text-blue-700">{{ slide.button_text_en || slide.button_text_am || 'Learn More' }}</span>
+                        <span class="block text-[11px] text-slate-400 truncate max-w-xs">{{ slide.button_url || '/' }}</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4 font-mono font-bold text-slate-700">
+                      #{{ slide.order }}
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span 
+                        :class="[
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide',
+                          slide.is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        ]"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full" :class="slide.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                        {{ slide.is_active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <div class="inline-flex items-center gap-1.5 justify-end">
+                        <button @click="editItem('hero_slide', slide)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer transition" title="Edit Slide">
+                          <Edit class="w-4 h-4" />
+                        </button>
+                        <button v-if="can.canDelete" @click="deleteItem('/admin/hero-slides', slide.id, slide.title_en || slide.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg cursor-pointer transition" title="Delete Slide">
+                          <Trash2 class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2. CARD GRID VIEW -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div v-for="slide in heroSlidesList" :key="slide.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+            <div v-for="slide in filteredHeroSlides" :key="slide.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
               <div>
-                <div class="h-48 bg-slate-900 relative overflow-hidden">
-                  <img :src="slide.image_path" :alt="slide.title_en || slide.title_am" class="w-full h-full object-cover" />
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/70 text-white text-[11px] font-bold">
+                <div class="h-48 bg-slate-900 relative overflow-hidden group">
+                  <img :src="slide.image_path" :alt="slide.title_en || slide.title_am" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-xs text-white text-[11px] font-mono font-bold border border-white/20">
                     Order: {{ slide.order }}
                   </span>
-                  <span :class="['absolute top-3 right-3 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase', slide.is_active ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300']">
+                  <span :class="['absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider backdrop-blur-xs border', slide.is_active ? 'bg-emerald-600/90 text-white border-emerald-400/40' : 'bg-slate-700/90 text-slate-300 border-white/20']">
                     {{ slide.is_active ? 'Active' : 'Inactive' }}
                   </span>
                 </div>
                 <div class="p-6">
-                  <div class="text-[11px] font-bold uppercase text-blue-700 mb-1">{{ slide.tag_en || slide.tag_am || 'General Tag' }}</div>
-                  <h4 class="font-extrabold text-base text-slate-900 mb-1 leading-snug">{{ slide.title_en || slide.title_am }}</h4>
+                  <div class="text-[11px] font-black uppercase tracking-wider text-blue-700 mb-1.5">{{ slide.tag_en || slide.tag_am || 'General Tag' }}</div>
+                  <h4 class="font-extrabold text-lg text-slate-900 mb-1 leading-snug">{{ slide.title_en || slide.title_am }}</h4>
                   <p class="text-xs text-slate-500 font-mono mb-2">Amharic: {{ slide.title_am }}</p>
-                  <p class="text-xs text-slate-600 line-clamp-2">{{ slide.subtitle_en || slide.subtitle_am }}</p>
-                  <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-mono">
-                    <span>CTA: {{ slide.button_text_en || slide.button_text_am }}</span>
-                    <span>Link: {{ slide.button_url }}</span>
+                  <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">{{ slide.subtitle_en || slide.subtitle_am }}</p>
+                  <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-mono">
+                    <span>CTA: <strong class="text-slate-800">{{ slide.button_text_en || slide.button_text_am }}</strong></span>
+                    <span class="truncate max-w-[200px] text-blue-600">Link: {{ slide.button_url }}</span>
                   </div>
                 </div>
               </div>
               <div class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button @click="editItem('hero_slide', slide)" class="p-2 text-blue-600 hover:bg-blue-100 rounded-xl cursor-pointer" title="Edit Slide">
+                <button @click="editItem('hero_slide', slide)" class="p-2 text-blue-600 hover:bg-blue-100 rounded-xl cursor-pointer transition" title="Edit Slide">
                   <Edit class="w-4 h-4" />
                 </button>
-                <button v-if="can.canDelete" @click="deleteItem('/admin/hero-slides', slide.id, slide.title_en || slide.title_am)" class="p-2 text-rose-500 hover:bg-rose-100 rounded-xl cursor-pointer" title="Delete Slide">
+                <button v-if="can.canDelete" @click="deleteItem('/admin/hero-slides', slide.id, slide.title_en || slide.title_am)" class="p-2 text-rose-500 hover:bg-rose-100 rounded-xl cursor-pointer transition" title="Delete Slide">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </div>
@@ -2272,40 +2429,169 @@ onUnmounted(() => {
 
         <!-- MEDIA GALLERY MANAGEMENT -->
         <div v-else-if="activeSection === 'gallery'" class="space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                Media Gallery Manager
-                <span class="text-blue-600 font-mono text-xl">({{ filteredGallery.length }})</span>
-              </h2>
-              <p class="text-xs text-slate-500">Manage high-resolution photography and video documentaries with category tagging and multilingual captions.</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="relative w-64">
-                <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input 
-                  v-model="gallerySearch"
-                  type="text"
-                  placeholder="Filter gallery caption, category..."
-                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
-                />
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Media & Visuals</span>
+                <span>/</span>
+                <span class="text-blue-600 font-bold">Documentary Collections</span>
               </div>
-              <button @click="editingId = null; modalType = 'gallery'" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Media Gallery Manager</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ filteredGallery.length }} items
+                </span>
+              </h2>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <!-- View Toggle -->
+              <div class="flex items-center bg-slate-200/80 p-1 rounded-xl shadow-inner">
+                <button 
+                  type="button"
+                  @click="galleryViewMode = 'grid'"
+                  class="p-1.5 rounded-lg transition-all cursor-pointer"
+                  :class="galleryViewMode === 'grid' ? 'bg-white text-blue-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'"
+                  title="Card Grid View"
+                >
+                  <LayoutGrid class="w-4 h-4" />
+                </button>
+                <button 
+                  type="button"
+                  @click="galleryViewMode = 'table'"
+                  class="p-1.5 rounded-lg transition-all cursor-pointer"
+                  :class="galleryViewMode === 'table' ? 'bg-white text-blue-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'"
+                  title="Sovereign Table View"
+                >
+                  <List class="w-4 h-4" />
+                </button>
+              </div>
+
+              <button @click="editingId = null; modalType = 'gallery'" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
                 <Plus class="w-4 h-4" />
                 <span>Add Media</span>
               </button>
             </div>
           </div>
 
+          <!-- Filter & Search Controls Bar -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div class="relative w-full sm:w-80">
+              <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                v-model="gallerySearch"
+                type="text"
+                placeholder="Filter gallery caption, category..."
+                class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition"
+              />
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <select 
+                v-model="galleryCategoryFilter"
+                class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 outline-none focus:border-blue-600 cursor-pointer"
+              >
+                <option value="all">All Categories</option>
+                <option value="urban">Urban & Infrastructure</option>
+                <option value="heritage">Heritage & Culture</option>
+                <option value="events">Civic Events</option>
+                <option value="industry">Industrial & Logistics</option>
+                <option value="nature">Nature & Yegof</option>
+              </select>
+            </div>
+          </div>
+
           <div v-if="filteredGallery.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
             No media items found matching "<span class="font-bold text-slate-600">{{ gallerySearch }}</span>".
           </div>
+
+          <!-- 1. SOVEREIGN TABLE VIEW -->
+          <div v-else-if="galleryViewMode === 'table'" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-black">
+                    <th class="py-3.5 px-4">Preview & Type</th>
+                    <th class="py-3.5 px-4">Caption (English & Amharic)</th>
+                    <th class="py-3.5 px-4">Category</th>
+                    <th class="py-3.5 px-4">Order</th>
+                    <th class="py-3.5 px-4">Status</th>
+                    <th class="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-sans">
+                  <tr v-for="item in paginatedGallery" :key="item.id" class="hover:bg-blue-50/40 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-16 h-12 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 shadow-2xs relative">
+                          <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover" />
+                          <span :class="['absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-bold uppercase', item.media_type === 'video' ? 'bg-red-600 text-white' : 'bg-black/70 text-white']">
+                            {{ item.media_type }}
+                          </span>
+                        </div>
+                        <span class="text-[11px] font-mono text-slate-500 truncate max-w-[140px]">{{ item.media_path_or_url }}</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span class="font-bold text-slate-900 text-sm block leading-snug">{{ item.caption_en || item.caption_am }}</span>
+                      <span class="text-xs text-slate-500 font-mono">AM: {{ item.caption_am }}</span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200">
+                        {{ item.category }}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 font-mono font-bold text-slate-700">
+                      #{{ item.order }}
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span 
+                        :class="[
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide',
+                          item.status === 'published' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        ]"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full" :class="item.status === 'published' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                        {{ item.status || 'draft' }}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <div class="inline-flex items-center gap-1.5 justify-end">
+                        <button 
+                          v-if="isEditor && item.status !== 'published'" 
+                          @click="approveAndPublishItem('gallery', item)" 
+                          class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          v-if="isEditor && item.status === 'published'" 
+                          @click="unpublishItem('gallery', item)" 
+                          class="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
+                        >
+                          Unpublish
+                        </button>
+                        <button v-if="canEditItem(item)" @click="editItem('gallery', item)" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg cursor-pointer transition" title="Edit Item">
+                          <Edit class="w-4 h-4" />
+                        </button>
+                        <button v-if="canDeleteItem(item)" @click="deleteItem('/admin/gallery', item.id, item.caption_en || item.caption_am)" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg cursor-pointer transition" title="Delete Item">
+                          <Trash2 class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2. CARD GRID VIEW -->
           <div v-else class="space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div v-for="item in paginatedGallery" :key="item.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+              <div v-for="item in paginatedGallery" :key="item.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
                 <div>
-                  <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center">
-                    <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover" />
+                  <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center group">
+                    <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <span :class="['absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1', item.media_type === 'video' ? 'bg-red-600 text-white' : 'bg-slate-900/80 text-white']">
                       <Video v-if="item.media_type === 'video'" class="w-3 h-3" />
                       <ImageIcon v-else class="w-3 h-3" />
@@ -2820,22 +3106,175 @@ onUnmounted(() => {
 
         <!-- 6. CABINET & COUNCIL LEADERSHIP -->
         <div v-else-if="activeSection === 'leadership'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Cabinet & City Council Members</h2>
-              <p class="text-xs text-slate-500">Manage municipal cabinet portfolios and council committee heads.</p>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Executive Leadership</span>
+                <span>/</span>
+                <span class="text-blue-600 font-bold">Cabinet & Council</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Cabinet & City Council Members</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ filteredLeadership.length }} members
+                </span>
+              </h2>
             </div>
-            <button @click="openNewModal('leadership')" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 transition-all">
-              <Plus class="w-4 h-4" />
-              <span>Add Member</span>
-            </button>
+
+            <div class="flex items-center gap-3">
+              <!-- View Toggle -->
+              <div class="flex items-center bg-slate-200/80 p-1 rounded-xl shadow-inner">
+                <button 
+                  type="button"
+                  @click="leadershipViewMode = 'cards'"
+                  class="p-1.5 rounded-lg transition-all cursor-pointer"
+                  :class="leadershipViewMode === 'cards' ? 'bg-white text-blue-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'"
+                  title="Card Grid View"
+                >
+                  <LayoutGrid class="w-4 h-4" />
+                </button>
+                <button 
+                  type="button"
+                  @click="leadershipViewMode = 'table'"
+                  class="p-1.5 rounded-lg transition-all cursor-pointer"
+                  :class="leadershipViewMode === 'table' ? 'bg-white text-blue-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'"
+                  title="Sovereign Table View"
+                >
+                  <List class="w-4 h-4" />
+                </button>
+              </div>
+
+              <button @click="openNewModal('leadership')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
+                <Plus class="w-4 h-4" />
+                <span>Add Member</span>
+              </button>
+            </div>
           </div>
 
-          <div v-if="leadershipList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
-            No leadership members cataloged yet.
+          <!-- Filter & Search Controls Bar -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div class="relative w-full sm:w-80">
+              <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input 
+                v-model="leadershipSearch"
+                type="text"
+                placeholder="Filter by name, portfolio, email, phone..."
+                class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition"
+              />
+            </div>
+
+            <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs w-full sm:w-auto">
+              <button 
+                type="button"
+                @click="leadershipTypeFilter = 'all'"
+                class="px-3 py-1 rounded-lg font-bold transition cursor-pointer"
+                :class="leadershipTypeFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+              >
+                All ({{ leadershipList.length }})
+              </button>
+              <button 
+                type="button"
+                @click="leadershipTypeFilter = 'cabinet'"
+                class="px-3 py-1 rounded-lg font-bold transition cursor-pointer"
+                :class="leadershipTypeFilter === 'cabinet' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+              >
+                Cabinet ({{ leadershipList.filter(m => m.type === 'cabinet').length }})
+              </button>
+              <button 
+                type="button"
+                @click="leadershipTypeFilter = 'council'"
+                class="px-3 py-1 rounded-lg font-bold transition cursor-pointer"
+                :class="leadershipTypeFilter === 'council' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+              >
+                City Council ({{ leadershipList.filter(m => m.type === 'council').length }})
+              </button>
+            </div>
           </div>
+
+          <div v-if="filteredLeadership.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
+            No leadership members found matching your search.
+          </div>
+
+          <!-- 1. SOVEREIGN TABLE VIEW -->
+          <div v-else-if="leadershipViewMode === 'table'" class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-black">
+                    <th class="py-3.5 px-4">Member Name & Portrait</th>
+                    <th class="py-3.5 px-4">Portfolio / Position</th>
+                    <th class="py-3.5 px-4">Body / Branch</th>
+                    <th class="py-3.5 px-4">Contact Phone & Email</th>
+                    <th class="py-3.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-sans">
+                  <tr v-for="m in filteredLeadership" :key="m.id" class="hover:bg-blue-50/40 transition-colors">
+                    <td class="py-3.5 px-4">
+                      <div class="flex items-center gap-3">
+                        <img 
+                          v-if="m.photo_path"
+                          :src="m.photo_path" 
+                          :alt="m.name_en || m.name_am" 
+                          class="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0" 
+                        />
+                        <div v-else class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                          <Users class="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <span class="font-bold text-slate-900 text-sm block leading-snug">{{ m.name_en || m.name_am }}</span>
+                          <span class="text-xs text-slate-500 font-mono">AM: {{ m.name_am }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span class="font-bold text-slate-800 text-xs block leading-snug">{{ m.position_en || m.position_am }}</span>
+                      <span v-if="m.position_am && m.position_en" class="text-xs text-slate-500 font-mono">{{ m.position_am }}</span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span 
+                        :class="[
+                          'px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border',
+                          m.type === 'cabinet' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        ]"
+                      >
+                        {{ m.type }}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <div class="space-y-0.5 text-xs font-mono">
+                        <div v-if="m.phone && m.phone !== 'N/A'" class="text-slate-800 flex items-center gap-1.5">
+                          <Phone class="w-3 h-3 text-slate-400" />
+                          <span>{{ m.phone }}</span>
+                        </div>
+                        <div v-if="m.email && m.email !== 'N/A'" class="text-blue-700 flex items-center gap-1.5">
+                          <Mail class="w-3 h-3 text-slate-400" />
+                          <span>{{ m.email }}</span>
+                        </div>
+                        <span v-if="(!m.phone || m.phone === 'N/A') && (!m.email || m.email === 'N/A')" class="text-slate-400">
+                          Official Records
+                        </span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <div class="inline-flex items-center gap-1.5 justify-end">
+                        <button @click="editItem('leadership', m)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer transition" title="Edit Member">
+                          <Edit class="w-4 h-4" />
+                        </button>
+                        <button v-if="isSuperAdmin" @click="deleteItem('/admin/leadership', m.id, m.name_en || m.name_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition" title="Delete Member">
+                          <Trash2 class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2. CARD GRID VIEW -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="m in leadershipList" :key="m.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+            <div v-for="m in filteredLeadership" :key="m.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between">
               <div>
                 <div class="flex items-center gap-4 mb-3">
                   <img 
@@ -2848,20 +3287,24 @@ onUnmounted(() => {
                     <Users class="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" :class="m.type === 'cabinet' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'">
+                    <span class="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider" :class="m.type === 'cabinet' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'">
                       {{ m.type }}
                     </span>
                     <h4 class="font-extrabold text-base text-slate-900 mt-1 leading-snug">{{ m.name_en || m.name_am }}</h4>
                   </div>
                 </div>
-                <p class="text-xs font-semibold text-blue-600">{{ m.position_en || m.position_am }}</p>
-                <div class="text-xs text-slate-500 font-mono mt-2">{{ m.phone || 'N/A' }} | {{ m.email || 'N/A' }}</div>
+                <p class="text-xs font-semibold text-blue-700">{{ m.position_en || m.position_am }}</p>
+                <div class="text-xs text-slate-500 font-mono mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <span>{{ m.phone || 'N/A' }}</span>
+                  <span class="text-slate-300 mx-1.5">•</span>
+                  <span>{{ m.email || 'N/A' }}</span>
+                </div>
               </div>
               <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button @click="editItem('leadership', m)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Member">
+                <button @click="editItem('leadership', m)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer transition" title="Edit Member">
                   <Edit class="w-4 h-4" />
                 </button>
-                <button v-if="isSuperAdmin" @click="deleteItem('/admin/leadership', m.id, m.name_en || m.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Member">
+                <button v-if="isSuperAdmin" @click="deleteItem('/admin/leadership', m.id, m.name_en || m.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer transition" title="Delete Member">
                   <Trash2 class="w-4 h-4" />
                 </button>
               </div>
