@@ -189,6 +189,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/settings', [AdminContentController::class, 'getSiteSettings']);
         Route::post('/admin/settings', [AdminContentController::class, 'updateSiteSettings']);
 
+        // System Audit Trail & Security Logs
+        Route::get('/admin/audit-logs', [AdminContentController::class, 'getAuditLogs']);
+        Route::post('/admin/audit-logs/clear', [AdminContentController::class, 'clearOldAuditLogs']);
+
         // Structural Entity Deletions
         Route::delete('/admin/offices/{id}', [AdminContentController::class, 'deleteOffice']);
         Route::delete('/admin/leadership/{id}', [AdminContentController::class, 'deleteLeadershipMember']);

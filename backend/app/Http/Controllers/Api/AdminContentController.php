@@ -23,6 +23,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\AuditLogService;
 
 class AdminContentController extends Controller
 {
@@ -77,14 +78,34 @@ class AdminContentController extends Controller
             'is_active' => true,
         ]);
 
+        AuditLogService::log(
+            'CREATE',
+            'staff',
+            "Super Admin {$request->user()->name} created staff account for {$user->name} ({$user->email}) with role '{$user->role}'",
+            $request->user(),
+            $user->id,
+            ['name' => $user->name, 'email' => $user->email, 'role' => $user->role],
+            $request
+        );
+
         return response()->json(['message' => 'Staff user created successfully', 'user' => $user], 201);
     }
 
-    public function toggleStaffStatus($id)
+    public function toggleStaffStatus(Request $request, $id)
     {
         $user = User::findOrFail($id);
         $user->is_active = !$user->is_active;
         $user->save();
+
+        AuditLogService::log(
+            'UPDATE',
+            'staff',
+            "Super Admin {$request->user()->name} " . ($user->is_active ? 'activated' : 'deactivated') . " staff account {$user->name} ({$user->email})",
+            $request->user(),
+            $user->id,
+            ['is_active' => $user->is_active],
+            $request
+        );
 
         return response()->json(['message' => 'Status updated', 'is_active' => $user->is_active]);
     }
@@ -101,6 +122,16 @@ class AdminContentController extends Controller
 
         // Invalidate all existing sessions
         $user->tokens()->delete();
+
+        AuditLogService::log(
+            'UPDATE',
+            'staff',
+            "Super Admin {$request->user()->name} reset password for staff user {$user->name} ({$user->email}) and revoked all active sessions",
+            $request->user(),
+            $user->id,
+            ['action' => 'admin_password_reset'],
+            $request
+        );
 
         return response()->json([
             'message' => "Password for {$user->name} ({$user->email}) has been successfully reset. Any previous active sessions have been revoked."
@@ -1795,9 +1826,89 @@ class AdminContentController extends Controller
 
         $label = ($status === 'published' || $status === 'open') ? 'approved and published live' : 'moved to ' . $status;
 
+        AuditLogService::log(
+            ($status === 'published' || $status === 'open') ? 'APPROVE' : 'UPDATE',
+            $module,
+            "{$request->user()->name} ({$request->user()->role}) updated status of {$module} #{$id} to '{$status}'",
+            $request->user(),
+            $id,
+            ['module' => $module, 'new_status' => $status],
+            $request
+        );
+
         return response()->json([
             'message' => ucfirst($module) . ' has been ' . $label . ' successfully.',
             'status' => $status
+        ]);
+    }
+
+    // ==========================================
+    // AUDIT LOGS MANAGEMENT (Super Admin Only)
+    // ==========================================
+    public function getAuditLogs(Request $request)
+    {
+        $query = DB::table('audit_logs')->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+
+        if ($request->filled('action') && $request->action !== 'all') {
+            $query->where('action', $request->action);
+        }
+
+        if ($request->filled('module') && $request->module !== 'all') {
+            $query->where('module', $request->module);
+        }
+
+        if ($request->filled('user_role') && $request->user_role !== 'all') {
+            $query->where('user_role', $request->user_role);
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = '%' . trim($request->search) . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', $search)
+                  ->orWhere('user_name', 'like', $search)
+                  ->orWhere('user_email', 'like', $search)
+                  ->orWhere('ip_address', 'like', $search)
+                  ->orWhere('record_id', 'like', $search);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $perPage = max(10, min(100, (int)$request->input('per_page', 25)));
+        $logs = $query->paginate($perPage);
+
+        return response()->json($logs);
+    }
+
+    public function clearOldAuditLogs(Request $request)
+    {
+        $days = max(7, (int)$request->input('days', 90));
+        $cutoff = now()->subDays($days);
+        $deleted = DB::table('audit_logs')->where('created_at', '<', $cutoff)->delete();
+
+        AuditLogService::log(
+            'DELETE',
+            'audit',
+            "Super Admin {$request->user()->name} purged {$deleted} audit log records older than {$days} days",
+            $request->user(),
+            null,
+            ['days' => $days, 'records_purged' => $deleted],
+            $request
+        );
+
+        return response()->json([
+            'message' => "Successfully purged {$deleted} audit log records older than {$days} days.",
+            'purged_count' => $deleted
         ]);
     }
 }

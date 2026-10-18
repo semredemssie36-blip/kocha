@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Services\AuditLogService;
 
 class AdminAuthController extends Controller
 {
@@ -20,12 +21,32 @@ class AdminAuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
+            AuditLogService::log(
+                'LOGIN_FAILED',
+                'auth',
+                "Failed administrative login attempt for email: {$request->email}",
+                null,
+                null,
+                ['attempted_email' => $request->email],
+                $request
+            );
+
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials do not match our staff records.'],
             ]);
         }
 
         if (!$user->is_active) {
+            AuditLogService::log(
+                'LOGIN_FAILED',
+                'auth',
+                "Login blocked: Account deactivated ({$user->email})",
+                $user,
+                $user->id,
+                ['reason' => 'account_deactivated'],
+                $request
+            );
+
             return response()->json([
                 'message' => 'Your staff account has been deactivated. Please contact IT.'
             ], 403);
@@ -36,6 +57,16 @@ class AdminAuthController extends Controller
 
         // Create new Sanctum bearer token with role capabilities
         $token = $user->createToken('admin_token', [$user->role])->plainTextToken;
+
+        AuditLogService::log(
+            'LOGIN',
+            'auth',
+            "User {$user->name} ({$user->role}) logged into the administrative portal",
+            $user,
+            $user->id,
+            ['role' => $user->role],
+            $request
+        );
 
         return response()->json([
             'message' => 'Authentication successful',
@@ -54,6 +85,18 @@ class AdminAuthController extends Controller
 
     public function logout(Request $request)
     {
+        $user = $request->user();
+        if ($user) {
+            AuditLogService::log(
+                'LOGOUT',
+                'auth',
+                "User {$user->name} ({$user->role}) logged out",
+                $user,
+                $user->id,
+                null,
+                $request
+            );
+        }
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }

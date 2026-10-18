@@ -9,6 +9,7 @@ import HotlinesTab from './tabs/HotlinesTab.vue'
 import DestinationsTab from './tabs/DestinationsTab.vue'
 import MessagesTab from './tabs/MessagesTab.vue'
 import StaffTab from './tabs/StaffTab.vue'
+import AuditLogsTab from './tabs/AuditLogsTab.vue'
 import { 
   Building2, 
   LayoutDashboard, 
@@ -79,6 +80,9 @@ const mobileSidebarOpen = ref(false)
 function selectSection(section) {
   activeSection.value = section
   mobileSidebarOpen.value = false
+  if (section === 'audit' && isSuperAdmin.value) {
+    fetchAuditLogs(1)
+  }
 }
 
 const adminLang = ref(localStorage.getItem('kombolcha_admin_lang') || 'en')
@@ -129,6 +133,7 @@ const adminTranslations = {
     nav_messages: 'Citizen Inquiries',
     nav_polls: 'Civic Opinion Polls',
     nav_staff: 'Staff Accounts',
+    nav_audit: 'Audit & System Logs',
     nav_settings: 'Site Settings & Maintenance',
     hotlines_title: '24/7 Emergency Dispatch Hotlines',
     add_hotline: 'Add Emergency Hotline',
@@ -221,6 +226,7 @@ const adminTranslations = {
     nav_messages: 'የዜጎች ጥያቄዎችና አስተያየቶች',
     nav_polls: 'የህዝብ አስተያየት መስጫ (Polls)',
     nav_staff: 'የሠራተኞች መለያዎች',
+    nav_audit: 'የኦዲትና የሥርዓት ምዝግብ',
     nav_settings: 'የስርዓት ቅንብሮች እና ጥገና',
     hotlines_title: 'የ 24/7 ድንገተኛ ጥሪዎችና መረጃ መስመሮች',
     add_hotline: 'አዲስ የድንገተኛ ስልክ አክል',
@@ -309,6 +315,7 @@ const adminTranslations = {
     nav_messages: 'Gaaffiilee Lammiilee',
     nav_polls: 'Yaada Ummataa (Polls)',
     nav_staff: 'Hojjattoota Sirnaa',
+    nav_audit: 'Galmee Odiitii fi Sirnaa',
     nav_settings: 'Qindaa\'ina fi Suphaa',
     hotlines_title: 'Sarara Balaa fi Tajaajila Tasaa (24/7)',
     add_hotline: 'Lakkoofsa Balaa Haaraa Dabali'
@@ -408,6 +415,7 @@ const can = computed(() => ({
 
   // Users, Roles & Settings: Super Admin only (Rows 1 & 2)
   manageStaff: isSuperAdmin.value,
+  manageAudit: isSuperAdmin.value,
   manageSettings: isSuperAdmin.value,
   canDelete: isEditor.value
 }))
@@ -439,7 +447,7 @@ watch(activeSection, (sec) => {
   if (isAuthor.value && !authorAllowed.includes(sec)) {
     activeSection.value = 'dashboard'
     showToast('Permission restricted: Navigated to your authorized workspace.')
-  } else if (!isSuperAdmin.value && ['staff', 'settings'].includes(sec)) {
+  } else if (!isSuperAdmin.value && ['staff', 'settings', 'audit'].includes(sec)) {
     activeSection.value = 'dashboard'
     showToast('Super Administrator privilege required.')
   }
@@ -612,6 +620,59 @@ watch(gallerySearch, () => { galleryPage.value = 1 })
 
 const messagesList = ref([])
 const staffList = ref([])
+const auditLogsList = ref([])
+const auditLogsTotal = ref(0)
+const auditLogsCurrentPage = ref(1)
+const auditLogsLastPage = ref(1)
+const auditLogsLoading = ref(false)
+const auditLogsFilters = ref({
+  search: '',
+  action: 'all',
+  module: 'all',
+  user_role: 'all',
+  date_from: '',
+  date_to: ''
+})
+
+async function fetchAuditLogs(page = 1) {
+  if (!isSuperAdmin.value) return
+  auditLogsLoading.value = true
+  try {
+    const params = {
+      page,
+      per_page: 25,
+      ...auditLogsFilters.value
+    }
+    const res = await api.get('/admin/audit-logs', { params })
+    auditLogsList.value = res.data.data || []
+    auditLogsTotal.value = res.data.total || 0
+    auditLogsCurrentPage.value = res.data.current_page || 1
+    auditLogsLastPage.value = res.data.last_page || 1
+  } catch (err) {
+    console.error('Failed to fetch audit logs:', err)
+  } finally {
+    auditLogsLoading.value = false
+  }
+}
+
+function updateAuditFilter(newFilters) {
+  auditLogsFilters.value = { ...auditLogsFilters.value, ...newFilters }
+  fetchAuditLogs(1)
+}
+
+async function purgeOldAuditLogs() {
+  if (!isSuperAdmin.value) return
+  const days = prompt('Enter the retention threshold in days. Logs older than this will be permanently purged (default 90):', '90')
+  if (!days || isNaN(days)) return
+  try {
+    const res = await api.post('/admin/audit-logs/clear', { days: parseInt(days) })
+    showToast(res.data?.message || 'Old audit logs purged successfully.')
+    await fetchAuditLogs(1)
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to purge audit logs.')
+  }
+}
+
 const mayorData = ref({})
 const leadershipList = ref([])
 const galleryList = ref([])
@@ -887,6 +948,7 @@ async function fetchAllAdminData() {
         }
       }
       staffList.value = staffRes.data || []
+      fetchAuditLogs(1)
     }
   } catch (err) {
     console.error('Error fetching admin data:', err)
@@ -2083,6 +2145,20 @@ onUnmounted(() => {
           </button>
           <button 
             v-if="isSuperAdmin"
+            @click="selectSection('audit')"
+            :class="[
+              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'audit' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            ]"
+          >
+            <div class="flex items-center gap-3">
+              <Shield class="w-4 h-4 shrink-0" />
+              <span>{{ adminT('nav_audit') || 'Audit & System Logs' }}</span>
+            </div>
+            <span v-if="auditLogsTotal" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-200 font-mono font-bold">{{ auditLogsTotal }}</span>
+          </button>
+          <button 
+            v-if="isSuperAdmin"
             @click="selectSection('settings')"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -2924,6 +3000,22 @@ onUnmounted(() => {
           @openCreate="openNewModal('staff')"
           @toggleStatus="(id) => api.patch('/admin/staff/' + id + '/toggle').then(fetchAllAdminData)"
           @openResetPassword="openResetStaffPasswordModal"
+        />
+
+        <!-- 12. AUDIT & SYSTEM ACTIVITY LOGS (SUPER ADMIN ONLY) -->
+        <AuditLogsTab
+          v-else-if="activeSection === 'audit' && isSuperAdmin"
+          :logsList="auditLogsList"
+          :totalLogs="auditLogsTotal"
+          :currentPage="auditLogsCurrentPage"
+          :lastPage="auditLogsLastPage"
+          :perPage="25"
+          :loading="auditLogsLoading"
+          :filters="auditLogsFilters"
+          @updateFilter="updateAuditFilter"
+          @changePage="fetchAuditLogs"
+          @refresh="fetchAuditLogs(auditLogsCurrentPage)"
+          @purgeOld="purgeOldAuditLogs"
         />
 
         <!-- 13. SETTINGS & MAINTENANCE MODE -->
