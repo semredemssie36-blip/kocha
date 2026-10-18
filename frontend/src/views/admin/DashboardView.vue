@@ -1687,25 +1687,34 @@ onUnmounted(() => {
 
 <template>
   <div class="h-screen flex flex-col overflow-hidden bg-slate-100 font-sans text-slate-800">
-    <!-- Top Bar matching diagram -->
-    <header class="bg-slate-900 border-b border-slate-800 text-white px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shrink-0 z-30 shadow-md">
+    <!-- Sovereign Micro Ribbon -->
+    <div class="h-1 flex w-full shrink-0 z-40">
+      <div class="h-full flex-1 bg-emerald-500"></div>
+      <div class="h-full flex-1 bg-amber-400"></div>
+      <div class="h-full flex-1 bg-red-500"></div>
+    </div>
+
+    <!-- Top Sovereign Command Bar -->
+    <header class="bg-[#071324] border-b border-amber-500/20 text-white px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shrink-0 z-30 shadow-xl">
       <!-- Left: Mobile Menu Toggle, Logo & Portal Title -->
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
         <!-- Mobile Sidebar Hamburger Toggle -->
         <button 
           @click="mobileSidebarOpen = !mobileSidebarOpen" 
-          class="lg:hidden p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer shrink-0 transition-colors"
+          class="lg:hidden p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 hover:text-white cursor-pointer shrink-0 transition-colors"
           aria-label="Toggle Navigation Drawer"
         >
           <Menu class="w-5 h-5" />
         </button>
 
-        <img src="/assets/logo.png" alt="Seal" class="w-8 h-8 sm:w-10 sm:h-10 object-contain rounded-full border border-blue-400/40 bg-white p-0.5 shrink-0" />
+        <div class="relative p-0.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 shadow-md shrink-0">
+          <img src="/assets/logo.png" alt="Kombolcha City Seal" class="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-full bg-white p-0.5" />
+        </div>
         <div class="min-w-0">
           <h1 class="text-xs sm:text-sm font-black tracking-tight text-white flex items-center gap-1.5 sm:gap-2 truncate">
             <span class="truncate">{{ adminT('portal_title') }}</span>
-            <span class="hidden sm:inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-600/30 text-blue-300 border border-blue-500/30 shrink-0">
-              CMS 2026
+            <span class="hidden sm:inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">
+              Command Console
             </span>
           </h1>
           <p class="hidden sm:block text-[10px] text-slate-400 truncate">{{ adminT('portal_sub') }}</p>
@@ -1714,34 +1723,36 @@ onUnmounted(() => {
 
       <!-- Center: Admin Search Bar -->
       <div class="hidden md:flex items-center relative w-72 lg:w-96 mx-4">
-        <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input 
           v-model="adminSearch" 
           type="text" 
           :placeholder="adminT('search_placeholder')" 
-          class="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-9 pr-4 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+          class="w-full bg-white/5 border border-white/10 hover:border-white/20 rounded-xl pl-9 pr-12 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 placeholder-slate-400 transition-all"
         />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-white/10 px-1.5 py-0.5 rounded">⌘K</span>
       </div>
 
       <!-- Right Actions: Language, Notifications, Profile -->
       <div class="flex items-center gap-2 sm:gap-4 shrink-0">
         <!-- Live Public Site Shortcut -->
-        <router-link to="/" target="_blank" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors">
-          <Globe class="w-3.5 h-3.5 text-emerald-400" />
+        <router-link to="/" target="_blank" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold border border-white/10 transition-colors">
+          <Globe class="w-3.5 h-3.5 text-amber-400" />
           <span>{{ adminT('live_site') }}</span>
+          <ExternalLink class="w-3 h-3 text-slate-400" />
         </router-link>
 
         <!-- Admin Language Toggle [AM | EN] -->
-        <div class="flex items-center bg-slate-800 rounded-xl p-0.5 sm:p-1 border border-slate-700 text-xs font-bold">
+        <div class="flex items-center bg-white/10 rounded-xl p-0.5 sm:p-1 border border-white/10 text-xs font-bold">
           <button 
             @click="switchAdminLang('en')" 
-            :class="adminLang === 'en' ? 'bg-blue-600 text-white px-1.5 sm:px-2 py-0.5 rounded-lg' : 'text-slate-400 px-1.5 sm:px-2 py-0.5 cursor-pointer hover:text-white'"
+            :class="adminLang === 'en' ? 'bg-amber-500 text-slate-950 font-black px-1.5 sm:px-2 py-0.5 rounded-lg shadow-xs' : 'text-slate-300 px-1.5 sm:px-2 py-0.5 cursor-pointer hover:text-white'"
           >
             EN
           </button>
           <button 
             @click="switchAdminLang('am')" 
-            :class="adminLang === 'am' ? 'bg-blue-600 text-white px-1.5 sm:px-2 py-0.5 rounded-lg' : 'text-slate-400 px-1.5 sm:px-2 py-0.5 cursor-pointer hover:text-white'"
+            :class="adminLang === 'am' ? 'bg-amber-500 text-slate-950 font-black px-1.5 sm:px-2 py-0.5 rounded-lg shadow-xs' : 'text-slate-300 px-1.5 sm:px-2 py-0.5 cursor-pointer hover:text-white'"
           >
             አማ
           </button>
@@ -1751,7 +1762,7 @@ onUnmounted(() => {
         <div class="relative notification-menu-container">
           <button 
             @click.stop="notificationDropdownOpen = !notificationDropdownOpen"
-            class="relative p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+            class="relative p-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 transition-colors cursor-pointer"
             :title="adminT('notifications')"
           >
             <Bell class="w-4 h-4" />
@@ -1840,21 +1851,21 @@ onUnmounted(() => {
         </div>
 
         <!-- Staff Profile & Logout Dropdown -->
-        <div class="flex items-center gap-3 pl-2 border-l border-slate-800">
+        <div class="flex items-center gap-3 pl-2 border-l border-white/10">
           <button 
             @click="openProfileModal" 
             :title="adminT('my_profile')"
-            class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer group text-left"
+            class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-white/10 transition-colors cursor-pointer group text-left"
           >
             <div 
-              class="w-8 h-8 rounded-xl text-white flex items-center justify-center font-bold text-xs shadow-xs overflow-hidden shrink-0 border border-slate-700"
+              class="w-8 h-8 rounded-xl text-white flex items-center justify-center font-bold text-xs shadow-xs overflow-hidden shrink-0 border border-white/20"
               :class="isSuperAdmin ? 'bg-purple-600' : (isEditor ? 'bg-blue-600' : 'bg-emerald-600')"
             >
               <img v-if="currentUser.avatar_path" :src="currentUser.avatar_path" alt="Avatar" class="w-full h-full object-cover" />
               <span v-else>{{ (currentUser.name || 'Staff').substring(0, 2).toUpperCase() }}</span>
             </div>
             <div class="hidden lg:block">
-              <div class="text-xs font-bold text-white leading-tight flex items-center gap-1.5 group-hover:text-blue-400 transition-colors">
+              <div class="text-xs font-bold text-white leading-tight flex items-center gap-1.5 group-hover:text-amber-300 transition-colors">
                 <span>{{ currentUser.name || 'Staff User' }}</span>
                 <Edit class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
               </div>
@@ -1870,7 +1881,7 @@ onUnmounted(() => {
             </div>
           </button>
 
-          <button @click="openProfileModal" :title="adminT('my_profile')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors">
+          <button @click="openProfileModal" :title="adminT('my_profile')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer transition-colors">
             <User class="w-4 h-4" />
           </button>
           <button @click="logout" :title="adminT('sign_out')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer transition-colors ml-1">
@@ -1881,7 +1892,7 @@ onUnmounted(() => {
     </header>
 
     <!-- Success Toast Notification -->
-    <div v-if="alertToast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500 flex items-center gap-3 text-xs font-bold">
+    <div v-if="alertToast" class="fixed bottom-6 right-6 z-50 bg-[#071324] text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500 flex items-center gap-3 text-xs font-bold">
       <CheckCircle2 class="w-4 h-4 text-emerald-400" />
       <span>{{ alertToast }}</span>
     </div>
@@ -1898,217 +1909,217 @@ onUnmounted(() => {
       <!-- Sidebar Navigation (Drawer on Mobile/Tablet, Fixed on Desktop) -->
       <aside 
         :class="[
-          'w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 overflow-y-auto select-none dark-scrollbar transition-transform duration-300 ease-in-out',
+          'w-64 bg-[#0B1E36] text-slate-300 flex flex-col justify-between shrink-0 border-r border-[#102A4C] overflow-y-auto select-none dark-scrollbar transition-transform duration-300 ease-in-out',
           'fixed inset-y-0 left-0 z-50 lg:static lg:translate-x-0',
           mobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         ]"
       >
         <!-- Mobile Drawer Close Header -->
-        <div class="lg:hidden p-4 pb-2 flex items-center justify-between border-b border-slate-800">
+        <div class="lg:hidden p-4 pb-2 flex items-center justify-between border-b border-[#102A4C]">
           <div class="flex items-center gap-2">
             <img src="/assets/logo.png" alt="Seal" class="w-7 h-7 object-contain rounded-full bg-white p-0.5" />
             <span class="text-xs font-bold text-white">Kombolcha Admin</span>
           </div>
-          <button @click="mobileSidebarOpen = false" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+          <button @click="mobileSidebarOpen = false" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer">
             <X class="w-5 h-5" />
           </button>
         </div>
 
-        <nav class="p-4 space-y-1.5 text-xs font-bold">
+        <nav class="p-3.5 space-y-1 text-xs font-bold">
           <button 
             @click="selectSection('dashboard')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'dashboard' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'dashboard' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold shadow-inner' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <LayoutDashboard class="w-4 h-4" />
+            <LayoutDashboard class="w-4 h-4 text-amber-400" />
             <span>{{ adminT('nav_dashboard') }}</span>
           </button>
 
           <!-- Media Management Category -->
-          <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-widest text-amber-400/80">
             {{ isAuthor ? adminT('cat_content_media') : adminT('cat_media_visuals') }}
           </div>
           <button 
             v-if="can.manageHeroSlides"
             @click="selectSection('hero_slides')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'hero_slides' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'hero_slides' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Sliders class="w-4 h-4" />
+            <Sliders class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_hero_slides') }}</span>
           </button>
           <button 
             v-if="can.uploadMedia"
             @click="selectSection('gallery')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'gallery' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'gallery' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Film class="w-4 h-4" />
+            <Film class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_gallery') }}</span>
           </button>
           <button 
             @click="selectSection('news')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'news' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'news' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <FileText class="w-4 h-4" />
+            <FileText class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_news') }}</span>
           </button>
           <button 
             v-if="can.manageTenders"
             @click="selectSection('tenders')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'tenders' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'tenders' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <FileCheck class="w-4 h-4" />
+            <FileCheck class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_tenders') }}</span>
           </button>
           <button 
             v-if="can.manageVacancies"
             @click="selectSection('vacancies')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'vacancies' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'vacancies' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Briefcase class="w-4 h-4" />
+            <Briefcase class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_vacancies') }}</span>
           </button>
 
           <!-- Governance Management Category -->
-          <div v-if="can.manageMayor || can.manageLeadership || can.manageOffices" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="can.manageMayor || can.manageLeadership || can.manageOffices" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-widest text-amber-400/80">
             {{ adminT('cat_governance') }}
           </div>
           <button 
             v-if="can.manageMayor"
             @click="selectSection('mayor')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'mayor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'mayor' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Award class="w-4 h-4" />
+            <Award class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_mayor') }}</span>
           </button>
           <button 
             v-if="can.manageLeadership"
             @click="selectSection('leadership')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'leadership' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'leadership' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Users class="w-4 h-4" />
+            <Users class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_leadership') }}</span>
           </button>
           <button 
             v-if="can.manageOffices"
             @click="selectSection('offices')"
             :class="[
-              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'offices' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'offices' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
             <div class="flex items-center gap-3">
-              <Building2 class="w-4 h-4 shrink-0" />
+              <Building2 class="w-4 h-4 shrink-0 text-slate-400" />
               <span>{{ adminT('nav_offices') }}</span>
             </div>
-            <span v-if="officesList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ officesList.length }}</span>
+            <span v-if="officesList.length" class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono font-bold">{{ officesList.length }}</span>
           </button>
 
           <!-- Civic Services Category -->
-          <div v-if="can.manageServices || can.manageProjects || can.createResources || can.manageDestinations || can.manageHotlines" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="can.manageServices || can.manageProjects || can.createResources || can.manageDestinations || can.manageHotlines" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-widest text-amber-400/80">
             {{ adminT('cat_services_resources') }}
           </div>
           <button 
             v-if="can.manageServices"
             @click="selectSection('services')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'services' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'services' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Layers class="w-4 h-4" />
+            <Layers class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_services') }}</span>
           </button>
           <button 
             v-if="can.manageProjects"
             @click="selectSection('projects')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'projects' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'projects' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <HardHat class="w-4 h-4" />
+            <HardHat class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_projects') }}</span>
           </button>
           <button 
             v-if="can.createResources"
             @click="selectSection('resources')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'resources' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'resources' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <FolderOpen class="w-4 h-4" />
+            <FolderOpen class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_resources') }}</span>
           </button>
           <button 
             v-if="can.manageDestinations"
             @click="selectSection('destinations')"
             :class="[
-              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'destinations' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'destinations' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
             <div class="flex items-center gap-3">
-              <Compass class="w-4 h-4 shrink-0" />
+              <Compass class="w-4 h-4 shrink-0 text-slate-400" />
               <span>{{ adminT('nav_destinations') }}</span>
             </div>
-            <span v-if="destinationsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ destinationsList.length }}</span>
+            <span v-if="destinationsList.length" class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono font-bold">{{ destinationsList.length }}</span>
           </button>
           <button 
             v-if="can.manageHotlines"
             @click="selectSection('hotlines')"
             :class="[
-              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'hotlines' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'hotlines' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
             <div class="flex items-center gap-3">
-              <PhoneCall class="w-4 h-4 shrink-0 text-red-400" />
+              <PhoneCall class="w-4 h-4 shrink-0 text-amber-400" />
               <span>{{ adminT('nav_hotlines') || '24/7 Hotlines' }}</span>
             </div>
-            <span v-if="emergencyContactsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-red-500/30 text-red-200 font-mono font-bold">{{ emergencyContactsList.length }}</span>
+            <span v-if="emergencyContactsList.length" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-mono font-bold">{{ emergencyContactsList.length }}</span>
           </button>
 
           <!-- Citizen Interaction Category -->
-          <div v-if="can.viewInquiries" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="can.viewInquiries" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-widest text-amber-400/80">
             {{ adminT('cat_civic_feedback') }}
           </div>
           <button 
             v-if="can.viewInquiries"
             @click="selectSection('messages')"
             :class="[
-              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'messages' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'messages' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
             <div class="flex items-center gap-3">
-              <MessageSquare class="w-4 h-4" />
+              <MessageSquare class="w-4 h-4 text-slate-400" />
               <span>{{ adminT('nav_messages') }}</span>
             </div>
-            <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black">
+            <span v-if="stats.unread_messages > 0" class="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black">
               {{ stats.unread_messages }}
             </span>
           </button>
@@ -2117,42 +2128,42 @@ onUnmounted(() => {
             v-if="can.managePolls"
             @click="selectSection('polls')"
             :class="[
-              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'polls' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'polls' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
             <div class="flex items-center gap-3">
-              <Vote class="w-4 h-4" />
+              <Vote class="w-4 h-4 text-slate-400" />
               <span>{{ adminT('nav_polls') || 'Civic Opinion Polls' }}</span>
             </div>
-            <span v-if="pollsList.length" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">{{ pollsList.length }}</span>
+            <span v-if="pollsList.length" class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white font-mono font-bold">{{ pollsList.length }}</span>
           </button>
 
           <!-- System Administration -->
-          <div v-if="isSuperAdmin" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="isSuperAdmin" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-widest text-amber-400/80">
             {{ adminT('cat_administration') }}
           </div>
           <button 
             v-if="isSuperAdmin"
             @click="selectSection('staff')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'staff' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'staff' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <ShieldCheck class="w-4 h-4" />
+            <ShieldCheck class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_staff') }}</span>
           </button>
           <button 
             v-if="isSuperAdmin"
             @click="selectSection('audit')"
             :class="[
-              'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'audit' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'audit' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
             <div class="flex items-center gap-3">
-              <Shield class="w-4 h-4 shrink-0" />
+              <Shield class="w-4 h-4 shrink-0 text-slate-400" />
               <span>{{ adminT('nav_audit') || 'Audit & System Logs' }}</span>
             </div>
             <span v-if="auditLogsTotal" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-200 font-mono font-bold">{{ auditLogsTotal }}</span>
@@ -2161,14 +2172,23 @@ onUnmounted(() => {
             v-if="isSuperAdmin"
             @click="selectSection('settings')"
             :class="[
-              'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
-              activeSection === 'settings' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              'w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer text-left',
+              activeSection === 'settings' ? 'border-l-3 border-amber-400 bg-gradient-to-r from-amber-500/20 via-blue-900/30 to-transparent text-white font-extrabold' : 'text-slate-300 hover:text-white hover:bg-white/5'
             ]"
           >
-            <Sliders class="w-4 h-4" />
+            <Sliders class="w-4 h-4 text-slate-400" />
             <span>{{ adminT('nav_settings') }}</span>
           </button>
         </nav>
+
+        <!-- Bottom Session Security Badge -->
+        <div class="p-3 m-3 rounded-2xl bg-[#071324] border border-amber-500/20 text-center text-[10px] text-slate-400">
+          <div class="flex items-center justify-center gap-1.5 text-amber-300 font-bold mb-1">
+            <ShieldCheck class="w-3.5 h-3.5 text-amber-400" />
+            <span>256-Bit SSL Encrypted</span>
+          </div>
+          <span>Kombolcha Metropolitan CMS v2.4</span>
+        </div>
       </aside>
 
       <!-- Dynamic Workspace Area (Independent Scrollable Container) -->

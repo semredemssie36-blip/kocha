@@ -63,123 +63,144 @@ const emit = defineEmits(['navigate', 'openModal'])
 
 <template>
   <div class="space-y-8 animate-fadeIn">
-    <!-- Breadcrumb & Workspace Header -->
-    <div class="flex items-center justify-between border-b border-slate-200 pb-4">
-      <div>
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-          <span>Kombolcha Metropolitan Administration</span>
-          <span>/</span>
-          <span class="text-blue-600 font-bold">Console Overview</span>
-        </div>
-        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-          <LayoutDashboard class="w-6 h-6 text-blue-600" />
-          <span>{{ adminT('overview_title') }}</span>
-        </h2>
+    <!-- Sovereign Workspace Banner -->
+    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#102A4C] text-white p-6 sm:p-8 shadow-xl border border-amber-500/20">
+      <!-- Sovereign Micro-Ribbon -->
+      <div class="absolute top-0 inset-x-0 h-1 flex">
+        <div class="h-full flex-1 bg-emerald-500"></div>
+        <div class="h-full flex-1 bg-amber-400"></div>
+        <div class="h-full flex-1 bg-red-500"></div>
       </div>
 
-      <!-- Quick Action Button -->
-      <button 
-        @click="emit('openModal', 'news')" 
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer"
-      >
-        <Plus class="w-4 h-4" />
-        <span>{{ isAuthor ? 'Submit Press Release' : 'Publish Announcement' }}</span>
-      </button>
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-300 mb-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Kombolcha Metropolitan Administration • Command Desk</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+            <span>Welcome, {{ currentUser?.name || 'Administrator' }}</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            {{ isAuthor 
+              ? 'Draft trilingual press briefings and submit civic reports for editorial review. Once approved, dispatches are published live.' 
+              : 'Direct oversight and editorial moderation console for municipal services, procurement, and public announcements.' 
+            }}
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <router-link 
+            to="/" 
+            target="_blank" 
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/15 transition-all cursor-pointer"
+          >
+            <Globe class="w-4 h-4 text-amber-400" />
+            <span>View Public Site</span>
+          </router-link>
+
+          <button 
+            @click="emit('openModal', 'news')" 
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+          >
+            <Plus class="w-4 h-4" />
+            <span>{{ isAuthor ? 'Submit Press Release' : 'Publish Announcement' }}</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Contributor Role Banner (if Author) -->
-    <div v-if="isAuthor" class="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border border-blue-900/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
-          <PenTool class="w-4 h-4" />
-          <span>Municipal Journalist & Contributor Workspace</span>
-        </div>
-        <h3 class="text-xl font-black">Welcome, {{ currentUser?.name || 'Author' }}!</h3>
-        <p class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-          You are empowered to draft trilingual press briefings and submit civic reports for editorial review. Once approved by the Communications Bureau Editor, your articles are published live to the official portal.
-        </p>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold text-xs">
-          Author Privilege Active
-        </span>
-      </div>
-    </div>
-
-    <!-- 4 AWS-Style High-Density Metrics Cards (Role-Aware) -->
+    <!-- 4 High-Density Metrics Cards (Role-Aware) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       <!-- Card 1: Views / Audience Impact -->
-      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-blue-600"></div>
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+      <div class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-blue-600"></div>
+        <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
           <span>{{ isAuthor ? 'My Article Readers' : adminT('stat_views') }}</span>
-          <Eye class="w-4 h-4 text-slate-400" />
+          <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Eye class="w-4 h-4" />
+          </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.monthly_views || '24,520' }}</div>
-        <div class="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.monthly_views || '24,520' }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg w-fit">
           <TrendingUp class="w-3.5 h-3.5" />
           <span>{{ isAuthor ? 'Audience Reach & Impact' : adminT('stat_traffic') }}</span>
         </div>
       </div>
 
       <!-- Card 2: Published Articles -->
-      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+      <div class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-emerald-500"></div>
+        <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
           <span>{{ isAuthor ? 'Live Published Articles' : adminT('stat_articles') }}</span>
-          <FileText class="w-4 h-4 text-slate-400" />
+          <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <FileText class="w-4 h-4" />
+          </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.published_news || 0 }}</div>
-        <div class="mt-2 text-xs text-slate-500 font-medium">
-          <span class="text-emerald-700 font-bold">{{ stats.published_news || 0 }} live on public site</span>
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.published_news || 0 }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg w-fit">
+          <CheckCircle2 class="w-3.5 h-3.5 text-emerald-600" />
+          <span>{{ stats.published_news || 0 }} live on public site</span>
         </div>
       </div>
 
       <!-- Card 3: Author -> Pending Editorial Review | Admin -> Active Tenders -->
-      <div v-if="isAuthor" class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+      <div v-if="isAuthor" class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-amber-300 transition-all relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-amber-500"></div>
+        <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
           <span>Pending Review</span>
-          <Clock class="w-4 h-4 text-slate-400" />
+          <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Clock class="w-4 h-4" />
+          </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.pending_drafts || 0 }}</div>
-        <div class="mt-2 text-xs text-amber-700 font-bold">
-          {{ stats.pending_drafts > 0 ? 'Awaiting Editor Approval' : 'No articles in queue' }}
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.pending_drafts || 0 }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs text-amber-800 font-bold bg-amber-50 px-2.5 py-1 rounded-lg w-fit">
+          <Clock class="w-3.5 h-3.5 text-amber-600" />
+          <span>{{ stats.pending_drafts > 0 ? 'Awaiting Editor Approval' : 'No articles in queue' }}</span>
         </div>
       </div>
-      <div v-else class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+      <div v-else class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-amber-300 transition-all relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-amber-500"></div>
+        <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
           <span>{{ adminT('stat_tenders') }}</span>
-          <FileCheck class="w-4 h-4 text-slate-400" />
+          <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <FileCheck class="w-4 h-4" />
+          </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.active_tenders || 0 }}</div>
-        <div class="mt-2 text-xs text-amber-700 font-bold">
-          {{ adminT('stat_tenders_sub') }}
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.active_tenders || 0 }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs text-amber-800 font-bold bg-amber-50 px-2.5 py-1 rounded-lg w-fit">
+          <FileCheck class="w-3.5 h-3.5 text-amber-600" />
+          <span>{{ adminT('stat_tenders_sub') }}</span>
         </div>
       </div>
 
       <!-- Card 4: Author -> Personal Drafts | Admin -> Citizen Inquiries -->
-      <div v-if="isAuthor" class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-purple-600"></div>
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+      <div v-if="isAuthor" class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-purple-300 transition-all relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-purple-600"></div>
+        <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
           <span>Personal Drafts</span>
-          <PenTool class="w-4 h-4 text-slate-400" />
+          <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <PenTool class="w-4 h-4" />
+          </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ Math.max(0, (stats.news_count || 0) - (stats.published_news || 0) - (stats.pending_drafts || 0)) }}</div>
-        <div class="mt-2 text-xs text-purple-700 font-bold">
-          Work in progress
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ Math.max(0, (stats.news_count || 0) - (stats.published_news || 0) - (stats.pending_drafts || 0)) }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs text-purple-800 font-bold bg-purple-50 px-2.5 py-1 rounded-lg w-fit">
+          <PenTool class="w-3.5 h-3.5 text-purple-600" />
+          <span>Work in progress</span>
         </div>
       </div>
-      <div v-else class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-purple-600"></div>
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+      <div v-else class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-purple-300 transition-all relative overflow-hidden group">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-purple-600"></div>
+        <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
           <span>Citizen Inquiries</span>
-          <MessageSquare class="w-4 h-4 text-slate-400" />
+          <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <MessageSquare class="w-4 h-4" />
+          </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.unread_messages || 0 }}</div>
-        <div class="mt-2 text-xs text-purple-700 font-bold">
-          {{ stats.unread_messages > 0 ? 'Requires municipal dispatch' : 'All inquiries addressed' }}
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.unread_messages || 0 }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg w-fit" :class="stats.unread_messages > 0 ? 'text-rose-700 bg-rose-50' : 'text-purple-700 bg-purple-50'">
+          <MessageSquare class="w-3.5 h-3.5" />
+          <span>{{ stats.unread_messages > 0 ? 'Requires municipal dispatch' : 'All inquiries addressed' }}</span>
         </div>
       </div>
     </div>
