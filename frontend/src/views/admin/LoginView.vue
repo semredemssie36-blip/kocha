@@ -9,7 +9,6 @@ import {
   ArrowRight, 
   AlertCircle, 
   Loader2, 
-  ShieldCheck, 
   Eye, 
   EyeOff, 
   KeyRound, 
@@ -66,25 +65,11 @@ async function handleLogin() {
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_120%,rgba(217,119,6,0.12),transparent)]"></div>
     <div class="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]"></div>
 
-    <!-- Sovereign Top Micro Bar -->
-    <div class="absolute top-0 inset-x-0 h-1.5 flex">
-      <div class="h-full flex-1 bg-emerald-600"></div>
-      <div class="h-full flex-1 bg-amber-400"></div>
-      <div class="h-full flex-1 bg-red-600"></div>
-    </div>
-
     <!-- Main Card Container -->
     <div class="w-full max-w-lg relative z-10">
       <div class="bg-white rounded-3xl shadow-2xl shadow-black/50 border border-slate-100 overflow-hidden">
         <!-- Card Header with Seal & Regal Authority -->
         <div class="bg-gradient-to-b from-[#0B1E36] to-[#071324] px-8 pt-10 pb-8 text-center text-white relative">
-          <!-- Sovereign Ribbon -->
-          <div class="absolute top-0 inset-x-0 h-1 flex">
-            <div class="h-full flex-1 bg-emerald-500"></div>
-            <div class="h-full flex-1 bg-amber-400"></div>
-            <div class="h-full flex-1 bg-red-500"></div>
-          </div>
-
           <!-- Official Seal Halo -->
           <div class="relative inline-block mb-4">
             <div class="absolute -inset-2 bg-gradient-to-r from-amber-500/40 via-yellow-400/20 to-amber-600/40 rounded-full blur-md animate-pulse"></div>
@@ -97,19 +82,11 @@ async function handleLogin() {
             </div>
           </div>
 
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-bold uppercase tracking-wider text-amber-300 mb-2.5">
-            <ShieldCheck class="w-3.5 h-3.5 text-amber-400" />
-            <span>Official Administrative Gateway</span>
-          </div>
-
           <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">
             የኮምቦልቻ ከተማ አስተዳደር
           </h1>
           <p class="text-xs sm:text-sm font-bold text-amber-400/90 tracking-wide mt-1">
             Metropolitan Command & Content Portal
-          </p>
-          <p class="text-[11px] text-slate-400 mt-1">
-            Secure sign-in for authorized municipal executives, editors, and officers
           </p>
         </div>
 
@@ -127,9 +104,8 @@ async function handleLogin() {
           <form @submit.prevent="handleLogin" class="space-y-5">
             <!-- Email Field -->
             <div>
-              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
-                <span>Official Municipal Email</span>
-                <span class="text-[10px] text-slate-400 font-normal">gov.et domain</span>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
+                Email
               </label>
               <div class="relative">
                 <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center absolute left-1.5 top-1.5 text-slate-400">
@@ -147,9 +123,8 @@ async function handleLogin() {
 
             <!-- Password Field -->
             <div>
-              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
-                <span>Administrative Password</span>
-                <span class="text-[10px] text-slate-400 font-normal">Case-sensitive</span>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
+                Password
               </label>
               <div class="relative">
                 <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center absolute left-1.5 top-1.5 text-slate-400">
@@ -174,12 +149,6 @@ async function handleLogin() {
               </div>
             </div>
 
-            <!-- Security Badge Info -->
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5 text-[11px] text-slate-600">
-              <ShieldCheck class="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Protected by 256-Bit SSL encryption & municipal audit trail logging.</span>
-            </div>
-
             <!-- Submit Button -->
             <button 
               type="submit" 
@@ -188,7 +157,7 @@ async function handleLogin() {
             >
               <Loader2 v-if="loading" class="w-4 h-4 animate-spin text-amber-400" />
               <KeyRound v-else class="w-4 h-4 text-amber-400" />
-              <span>{{ loading ? 'Verifying Credentials...' : 'Authenticate & Access Console' }}</span>
+              <span>{{ loading ? 'Logging in...' : 'Login' }}</span>
               <ArrowRight v-if="!loading" class="w-4 h-4 text-slate-300" />
             </button>
           </form>
@@ -207,8 +176,7 @@ async function handleLogin() {
 
       <!-- Legal / Sovereign Notice -->
       <p class="text-center text-[11px] text-slate-500 mt-6 font-medium">
-        © 2026 Kombolcha Metropolitan City Administration. All Rights Reserved. <br class="hidden sm:inline" />
-        Unauthorized access attempts are monitored and reported under federal law.
+        © 2026 Kombolcha Metropolitan City Administration. All Rights Reserved.      
       </p>
     </div>
   </div>

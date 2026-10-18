@@ -37,9 +37,6 @@ const quickLinks = [
     <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
     <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-500/15 rounded-full blur-[140px] pointer-events-none"></div>
 
-    <!-- Top Sovereign Ribbon -->
-    <div class="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-amber-400 to-red-600"></div>
-
     <!-- Main Content Area -->
     <main class="flex-1 max-w-4xl w-full mx-auto px-6 py-16 sm:py-24 flex flex-col items-center justify-center text-center relative z-10">
       

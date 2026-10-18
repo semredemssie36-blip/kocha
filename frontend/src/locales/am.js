@@ -38,7 +38,7 @@ export default {
     events: 'ክስተቶች እና መድረኮች',
     tenders: 'ጨረታ',
     vacancies: 'ክፍት የስራ ቦታ',
-    projects: 'ፕሮግራሞች እና ፕሮጀክቶች',
+    projects: 'ፕሮጀክቶች',
     mega_projects: 'ግዙፍ መሰረተ-ልማት',
     urban_development: 'የከተማ ልማት',
     resources: 'ግብዓቶች',

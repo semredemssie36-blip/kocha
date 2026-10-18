@@ -209,7 +209,7 @@ function canDelete(item) {
               <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
                   <img 
-                    :src="item.thumbnail_path || '/assets/hero_industry.jpg'" 
+                    :src="item.thumbnail_path || '/assets/industry.jpg'" 
                     class="w-12 h-10 object-cover rounded-lg border border-slate-200 shrink-0 bg-slate-100" 
                   />
                   <div class="min-w-0 max-w-md">

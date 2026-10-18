@@ -156,9 +156,6 @@ onUnmounted(() => {
 
 <template>
   <header class="sticky top-0 z-50 shadow-xl bg-slate-950 font-sans">
-    <!-- Prestige Civic Top Ribbon (Ethiopian & Amhara Sovereign Colors Accent) -->
-    <div class="h-1 w-full bg-gradient-to-r from-emerald-600 via-amber-400 to-red-600"></div>
-
     <!-- Top Utility Bar: Authority Ticker, 24/7 Hotlines, Staff Portal & Language Selector -->
     <div class="bg-slate-900/95 backdrop-blur-md border-b border-slate-800/80 py-1.5 px-3 sm:px-6 2xl:px-12 text-xs text-slate-300">
       <div class="w-full max-w-[1700px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-2 min-w-0">
@@ -271,40 +268,40 @@ onUnmounted(() => {
 
     <!-- Main Navigation Bar: Deep Imperial Navy (#0B192C / #08182B) with Gold Foil Accent -->
     <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white border-b border-amber-500/20 shadow-lg">
-      <div class="w-full max-w-[1700px] mx-auto px-3 sm:px-6 2xl:px-12 py-2.5 sm:py-3 flex items-center justify-between gap-3 lg:gap-6">
+      <div class="w-full max-w-[1700px] mx-auto px-2 sm:px-4 2xl:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-2.5 2xl:gap-4">
         
         <!-- Official Government Seal & Regal Typography -->
-        <router-link to="/" class="flex items-center gap-3 group shrink-0 min-w-0">
-          <div class="relative">
+        <router-link to="/" class="flex items-center gap-2.5 group shrink-0 min-w-0">
+          <div class="relative shrink-0">
             <div class="absolute -inset-0.5 bg-gradient-to-tr from-amber-500 to-amber-200 rounded-full blur-[1px] opacity-75 group-hover:opacity-100 transition duration-300"></div>
             <img 
               src="/assets/logo.png" 
               alt="Kombolcha City Official Seal" 
-              class="relative w-10 h-10 sm:w-12 sm:h-12 2xl:w-14 2xl:h-14 object-contain rounded-full bg-white p-1 shadow-md group-hover:scale-105 transition-transform duration-300"
+              class="relative w-9 h-9 sm:w-11 sm:h-11 2xl:w-12 2xl:h-12 object-contain rounded-full bg-white p-1 shadow-md group-hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-1.5">
-              <span class="text-[10px] sm:text-[11px] font-extrabold text-amber-400 uppercase tracking-widest hidden xs:inline">
+              <span class="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest hidden 2xl:inline">
                 {{ langStore.currentLang === 'am' ? 'የከተማ አስተዳደር' : 'Metropolitan Administration' }}
               </span>
             </div>
-            <h1 class="text-sm xs:text-base sm:text-lg 2xl:text-xl font-black tracking-tight text-white leading-tight drop-shadow-sm truncate">
+            <h1 class="text-xs sm:text-sm 2xl:text-base font-black tracking-tight text-white leading-tight drop-shadow-sm truncate">
               {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር' : (langStore.currentLang === 'om' ? 'Bulchiinsa Magaalaa Kombolchaa' : 'Kombolcha City Administration') }}
             </h1>
-            <p class="text-[9px] sm:text-[10px] 2xl:text-[11px] text-slate-300 font-semibold tracking-wider uppercase truncate">
+            <p class="text-[9px] 2xl:text-[10px] text-slate-300 font-semibold tracking-wider uppercase truncate hidden 2xl:block">
               {{ langStore.currentLang === 'am' ? 'የኢንዱስትሪና የሎጂስቲክስ መናኸሪያ' : 'The Industrial & Logistics Gateway of Northern Ethiopia' }}
             </p>
           </div>
         </router-link>
 
         <!-- Desktop Navigation Items with Civic Dropdowns -->
-        <nav class="hidden xl:flex items-center gap-1 2xl:gap-2 text-[12px] 2xl:text-[13px] font-bold text-slate-200 min-w-0">
+        <nav class="hidden xl:flex items-center gap-0.5 2xl:gap-1.5 text-[11px] 2xl:text-[13px] font-bold text-slate-200 shrink-0">
           
           <!-- Home -->
           <router-link 
             to="/" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap relative group"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap relative group shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/' }"
           >
             <span>{{ langStore.t('nav.home') }}</span>
@@ -313,13 +310,13 @@ onUnmounted(() => {
 
           <!-- About Us Dropdown -->
           <div 
-            class="relative group" 
+            class="relative group shrink-0" 
             @mouseenter="activeDropdown = 'about'" 
             @mouseleave="activeDropdown = null"
           >
             <router-link 
               to="/about" 
-              class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all flex items-center gap-1 whitespace-nowrap"
+              class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all flex items-center gap-1 whitespace-nowrap shrink-0"
               :class="{ 'text-amber-400 font-black bg-white/10': route.path.startsWith('/about') }"
             >
               <span>{{ langStore.t('nav.about') }}</span>
@@ -366,12 +363,12 @@ onUnmounted(() => {
 
           <!-- Government Dropdown -->
           <div 
-            class="relative group" 
+            class="relative group shrink-0" 
             @mouseenter="activeDropdown = 'government'" 
             @mouseleave="activeDropdown = null"
           >
             <button 
-              class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
               :class="{ 'text-amber-400 font-black bg-white/10': route.path.startsWith('/government') }"
             >
               <span>{{ langStore.t('nav.government') }}</span>
@@ -415,7 +412,7 @@ onUnmounted(() => {
           <!-- Citizen Services -->
           <router-link 
             to="/services" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/services' }"
           >
             {{ langStore.t('nav.services') }}
@@ -423,13 +420,13 @@ onUnmounted(() => {
 
           <!-- News & Media Dropdown -->
           <div 
-            class="relative group" 
+            class="relative group shrink-0" 
             @mouseenter="activeDropdown = 'news'" 
             @mouseleave="activeDropdown = null"
           >
             <router-link 
               to="/media/news" 
-              class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all flex items-center gap-1 whitespace-nowrap"
+              class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all flex items-center gap-1 whitespace-nowrap shrink-0"
               :class="{ 'text-amber-400 font-black bg-white/10': route.path.startsWith('/media') }"
             >
               <span>{{ langStore.t('nav.news') }}</span>
@@ -461,7 +458,7 @@ onUnmounted(() => {
           <!-- Explore City -->
           <router-link 
             to="/explore" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/explore' }"
           >
             {{ langStore.t('nav.explore') }}
@@ -470,7 +467,7 @@ onUnmounted(() => {
           <!-- Projects -->
           <router-link 
             to="/projects" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/projects' }"
           >
             {{ langStore.t('nav.projects') }}
@@ -479,7 +476,7 @@ onUnmounted(() => {
           <!-- Resources -->
           <router-link 
             to="/resources" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/resources' }"
           >
             {{ langStore.t('nav.resources') }}
@@ -488,7 +485,7 @@ onUnmounted(() => {
           <!-- Gallery -->
           <router-link 
             to="/gallery" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/gallery' }"
           >
             {{ langStore.t('nav.gallery') }}
@@ -497,7 +494,7 @@ onUnmounted(() => {
           <!-- Contact -->
           <router-link 
             to="/contact" 
-            class="px-3 py-2 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+            class="px-2 2xl:px-3 py-1.5 rounded-lg hover:text-white hover:bg-white/10 transition-all whitespace-nowrap shrink-0"
             :class="{ 'text-amber-400 font-black bg-white/10': route.path === '/contact' }"
           >
             {{ langStore.t('nav.contact') }}
@@ -505,26 +502,26 @@ onUnmounted(() => {
         </nav>
 
         <!-- Right Action Items: Search Trigger + Executive Portal Login Button + Mobile Toggle -->
-        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           
           <!-- Search Modal Trigger Button -->
           <button 
             @click="searchModalOpen = true" 
-            class="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-2 text-xs font-semibold" 
+            class="p-2 sm:px-2.5 sm:py-2 2xl:px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold shrink-0" 
             :title="langStore.t('nav.search_portal')"
           >
             <Search class="w-4 h-4 text-amber-400" />
-            <span class="hidden xl:inline">{{ langStore.currentLang === 'am' ? 'ማውጫ ፈልግ' : 'Search' }}</span>
+            <span class="hidden 2xl:inline">{{ langStore.currentLang === 'am' ? 'ማውጫ ፈልግ' : (langStore.currentLang === 'om' ? 'Barbaadi' : 'Search') }}</span>
           </button>
 
           <!-- Executive Staff Portal Login / Dashboard Button -->
           <router-link 
             :to="isAuthenticated ? '/admin' : '/admin/login'" 
-            class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-xs font-black text-slate-900 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 border border-amber-300 rounded-xl transition-all shadow-md hover:shadow-amber-400/20 hover:scale-105 shrink-0"
+            class="inline-flex items-center gap-1.5 px-2.5 2xl:px-3.5 py-1.5 2xl:py-2 text-xs font-black text-slate-900 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 border border-amber-300 rounded-xl transition-all shadow-md hover:shadow-amber-400/20 hover:scale-105 shrink-0"
             :title="isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login')"
           >
-            <ShieldCheck class="w-4 h-4 shrink-0 text-slate-900" />
-            <span class="hidden sm:inline uppercase tracking-wider">{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
+            <ShieldCheck class="w-3.5 h-3.5 2xl:w-4 2xl:h-4 shrink-0 text-slate-900" />
+            <span class="hidden sm:inline uppercase tracking-wider text-[11px] 2xl:text-xs">{{ isAuthenticated ? langStore.t('nav.dashboard') : langStore.t('nav.login') }}</span>
           </router-link>
 
           <!-- Mobile Hamburger Toggle -->

@@ -65,18 +65,11 @@ const emit = defineEmits(['navigate', 'openModal'])
   <div class="space-y-8 animate-fadeIn">
     <!-- Sovereign Workspace Banner -->
     <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#102A4C] text-white p-6 sm:p-8 shadow-xl border border-amber-500/20">
-      <!-- Sovereign Micro-Ribbon -->
-      <div class="absolute top-0 inset-x-0 h-1 flex">
-        <div class="h-full flex-1 bg-emerald-500"></div>
-        <div class="h-full flex-1 bg-amber-400"></div>
-        <div class="h-full flex-1 bg-red-500"></div>
-      </div>
-
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
         <div>
           <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-300 mb-2">
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Kombolcha Metropolitan Administration • Command Desk</span>
+            <span>Kombolcha Metropolitan Administration</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <span>Welcome, {{ currentUser?.name || 'Administrator' }}</span>

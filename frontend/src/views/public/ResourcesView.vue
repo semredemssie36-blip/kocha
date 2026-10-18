@@ -100,16 +100,10 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl">
-      <div class="w-full max-w-[1700px] mx-auto">
-        <div class="flex flex-wrap items-center gap-2 mb-3">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black uppercase tracking-widest">
-            <FileCheck class="w-3.5 h-3.5 text-amber-400" />
-            Official Gazette & Legal Documentation Repository
-          </span>
-          <span class="text-xs text-slate-400 font-mono">Public Access to Information</span>
-        </div>
-
+    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+      <img src="/assets/Resources2.jpg" alt="Resources & Directives" class="absolute inset-0 w-full h-full object-cover object-center" />
+      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <div class="relative z-10 w-full max-w-[1700px] mx-auto">
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
           {{ langStore.currentLang === 'am' ? 'የሰነዶች፣ መመሪያዎችና የማመልከቻ ቅጾች ቤተ-መዛግብት' : 'Public Resources & Municipal Directives Library' }}
         </h1>

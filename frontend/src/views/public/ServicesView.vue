@@ -135,16 +135,10 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl">
-      <div class="w-full max-w-[1700px] mx-auto">
-        <div class="flex flex-wrap items-center gap-2 mb-3">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/40 text-xs font-black uppercase tracking-widest">
-            <ShieldCheck class="w-3.5 h-3.5 text-emerald-400" />
-            Citizen Service Charter & E-Governance
-          </span>
-          <span class="text-xs text-slate-400 font-mono">Service Delivery Excellence Guarantee</span>
-        </div>
-
+    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+      <img src="/assets/industry_park_2.jpg" alt="Citizen E-Services" class="absolute inset-0 w-full h-full object-cover object-center" />
+      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <div class="relative z-10 w-full max-w-[1700px] mx-auto">
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
           {{ langStore.currentLang === 'am' ? 'የዜጎች አገልግሎቶች መመሪያና ዲጂታል መድረክ' : 'Citizen E-Services & Procedural Guide' }}
         </h1>

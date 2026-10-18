@@ -83,9 +83,11 @@ const getSlideTitle = () => {
 
 const getSlideDesc = () => {
   const lang = langStore.currentLang
-  if (lang === 'am' && isValidText(activeSlide.value?.desc_am)) return activeSlide.value.desc_am
-  if (lang === 'om' && isValidText(activeSlide.value?.desc_om)) return activeSlide.value.desc_om
-  return activeSlide.value?.desc_en || activeSlide.value?.desc_am || 'Connecting Northern Ethiopia through manufacturing, dry-port customs, railway logistics, and modern public governance.'
+  let text = ''
+  if (lang === 'am' && isValidText(activeSlide.value?.desc_am)) text = activeSlide.value.desc_am
+  else if (lang === 'om' && isValidText(activeSlide.value?.desc_om)) text = activeSlide.value.desc_om
+  else text = activeSlide.value?.desc_en || activeSlide.value?.desc_am || 'Connecting Northern Ethiopia through manufacturing, dry-port customs, railway logistics, and modern public governance.'
+  return text.replace(/([a-zA-Z])\?s\b/g, "$1's")
 }
 
 const getSlideCta = () => {
@@ -276,9 +278,6 @@ onUnmounted(() => {
     <!-- SECTION 1: Sovereign Full-Bleed Municipal Hero Section -->
     <section class="relative w-full bg-[#050D1A] overflow-hidden min-h-[620px] sm:min-h-[680px] lg:min-h-[750px] xl:min-h-[820px] flex items-center">
       
-      <!-- Ambient Regal Glow Underlay -->
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-950/70 to-slate-950 pointer-events-none z-1"></div>
-      
       <!-- Shimmer Loading Skeleton while fetching database slides -->
       <transition name="fade">
         <div 
@@ -315,9 +314,9 @@ onUnmounted(() => {
           :alt="slide.title_en"
           class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-10000"
         />
-        <!-- Multi-layer Scrim for pristine typography contrast -->
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/40"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-[#050D1A] via-transparent to-black/40"></div>
+        <!-- Subtle scrim: keeps background imagery bright & clear while ensuring text legibility -->
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-slate-950/20 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#050D1A]/80 via-transparent to-black/25"></div>
       </div>
 
       <!-- Real Database Slide Overlay Content -->
@@ -327,23 +326,15 @@ onUnmounted(() => {
         :class="homeLoading ? 'opacity-0' : 'opacity-100'"
       >
         <div class="max-w-3xl text-white">
-          
-          <!-- Sovereign Tag Badge -->
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-black tracking-widest uppercase mb-5 shadow-lg">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <Landmark class="w-3.5 h-3.5 text-amber-400" />
-            <span>{{ getSlideTag() }}</span>
-          </div>
-
           <!-- Majestic Headline -->
-          <h1 class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.1] mb-6 drop-shadow-md break-words">
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.1] mb-6 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] break-words">
             <span class="bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent">
               {{ getSlideTitle() }}
             </span>
           </h1>
 
           <!-- Authoritative Subtitle -->
-          <p class="text-sm sm:text-base lg:text-lg text-slate-300 leading-relaxed mb-8 max-w-2xl font-medium drop-shadow-sm">
+          <p class="text-sm sm:text-base lg:text-lg text-white/95 leading-relaxed mb-8 max-w-2xl font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
             {{ getSlideDesc() }}
           </p>
 
@@ -616,7 +607,7 @@ onUnmounted(() => {
         <!-- Gold Trim Top Border -->
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-700 via-amber-400 to-emerald-600"></div>
 
-        <!-- Executive Proclamation Header Bar -->
+        <!-- Mayor Keynote Header Bar -->
         <div class="flex items-center justify-between pb-6 border-b border-slate-200/80 mb-8 flex-wrap gap-2">
           <div class="flex items-center gap-2.5 text-xs font-black text-slate-700 uppercase tracking-widest">
             <span class="w-2.5 h-2.5 rounded-full bg-blue-700"></span>
@@ -624,7 +615,6 @@ onUnmounted(() => {
             <span class="text-slate-300">•</span>
             <span class="text-blue-900">Office of the Executive Mayor</span>
           </div>
-          <span class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-mono">Official Mayoral Proclamation</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
@@ -739,7 +729,7 @@ onUnmounted(() => {
         <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
           <div class="h-48 relative overflow-hidden bg-slate-900">
             <img 
-              src="/assets/hero_industry.jpg" 
+              src="/assets/industry_park.jpg" 
               alt="Kombolcha Industrial Park" 
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
             />
@@ -766,7 +756,7 @@ onUnmounted(() => {
         <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between">
           <div class="h-48 relative overflow-hidden bg-slate-900">
             <img 
-              src="/assets/hero_aerial.jpg" 
+              src="/assets/city_image.jpg" 
               alt="Dry Port & Logistics" 
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
             />
@@ -878,7 +868,7 @@ onUnmounted(() => {
           <div>
             <div class="h-52 bg-slate-100 relative overflow-hidden">
               <img 
-                :src="news.thumbnail_path || '/assets/hero_industry.jpg'" 
+                :src="news.thumbnail_path || '/assets/industry.jpg'" 
                 alt="News article"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

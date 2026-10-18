@@ -212,10 +212,10 @@ function canDelete(item) {
                 <div class="flex items-center gap-3">
                   <div class="w-14 h-12 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 shadow-2xs">
                     <img 
-                      :src="item.image_path || item.image_url || '/assets/hero_industry.jpg'" 
+                      :src="item.image_path || item.image_url || '/assets/city_image.jpg'" 
                       :alt="item.title_en || item.title_am"
                       class="w-full h-full object-cover"
-                      @error="$event.target.src = '/assets/hero_industry.jpg'"
+                      @error="$event.target.src = '/assets/city_image.jpg'"
                     />
                   </div>
                   <div>
@@ -310,10 +310,10 @@ function canDelete(item) {
           <!-- Thumbnail Image -->
           <div class="h-48 bg-slate-900 relative overflow-hidden group">
             <img 
-              :src="item.image_path || item.image_url || '/assets/hero_industry.jpg'" 
+              :src="item.image_path || item.image_url || '/assets/city_image.jpg'" 
               :alt="item.title_en || item.title_am"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              @error="$event.target.src = '/assets/hero_industry.jpg'"
+              @error="$event.target.src = '/assets/city_image.jpg'"
             />
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
             

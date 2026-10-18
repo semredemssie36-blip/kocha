@@ -747,6 +747,265 @@ const siteSettings = ref({
   map_zoom: 15
 })
 
+// Global Search & Command Bar State
+const adminSearchFocused = ref(false)
+const adminSearchInputRef = ref(null)
+
+const adminSearchResults = computed(() => {
+  const q = adminSearch.value.toLowerCase().trim()
+  if (!q) return []
+  
+  const results = []
+
+  // 1. Navigation sections matching
+  const navSections = [
+    { name: 'Dashboard Overview', am: 'ዳሽቦርድ አጠቃላይ እይታ', section: 'dashboard', icon: LayoutDashboard },
+    { name: 'News & Press Bureau', am: 'ዜናዎች እና መግለጫዎች', section: 'news', icon: FileText },
+    { name: 'Public Tenders & Procurement', am: 'የመንግስት ጨረታዎች', section: 'tenders', icon: FileCheck },
+    { name: 'Civil Service Vacancies', am: 'ክፍት የሥራ ቦታዎች', section: 'vacancies', icon: Briefcase },
+    { name: 'Public Citizen Services', am: 'የዜጎች አገልግሎቶች', section: 'services', icon: Layers },
+    { name: 'Mega Infrastructure Projects', am: 'ግዙፍ የመሰረተ ልማት ፕሮጀክቶች', section: 'projects', icon: HardHat },
+    { name: 'Municipal Offices & Directory', am: 'የመምሪያዎች ማውጫ', section: 'offices', icon: Building2 },
+    { name: 'Directives & Document Library', am: 'መመሪያዎችና ሰነዶች', section: 'resources', icon: FolderOpen },
+    { name: 'Citizen Inquiries & Feedback', am: 'የዜጎች ጥያቄዎችና አስተያየቶች', section: 'messages', icon: MessageSquare },
+    { name: '24/7 Emergency Hotlines', am: '24/7 ድንገተኛ ጥሪዎች', section: 'hotlines', icon: Phone },
+    { name: 'Investment & Tourism Destinations', am: 'ቱሪዝም እና መዳረሻዎች', section: 'destinations', icon: Globe },
+    { name: 'Media Gallery Archive', am: 'የሚዲያ ማህደር', section: 'gallery', icon: Camera },
+    { name: 'Hero Slideshow Manager', am: 'የስላይደር ማስተዳደሪያ', section: 'hero_slides', icon: Zap },
+    { name: 'Mayor Profile & Executive Keynote', am: 'የከንቲባ መገለጫና መልዕክት', section: 'mayor', icon: Award },
+    { name: 'Cabinet & Council Members', am: 'ካቢኔ እና ም/ቤት አባላት', section: 'leadership', icon: Users },
+    { name: 'Civic Opinion Polls', am: 'የህዝብ አስተያየት መስጫ', section: 'polls', icon: Activity },
+    { name: 'Municipal Staff Accounts', am: 'የሠራተኞች መለያዎች', section: 'staff', icon: Shield },
+    { name: 'System Audit Logs', am: 'የኦዲትና የሥርዓት ምዝግብ', section: 'audit', icon: ShieldCheck },
+    { name: 'System Settings & Maintenance', am: 'የስርዓት ቅንብሮች እና ጥገና', section: 'settings', icon: Settings }
+  ]
+
+  for (const s of navSections) {
+    if (s.name.toLowerCase().includes(q) || s.am.includes(q)) {
+      results.push({
+        id: 'nav-' + s.section,
+        type: 'navigation',
+        title: s.name,
+        sub: s.am + ' • Quick Navigation',
+        section: s.section,
+        icon: s.icon
+      })
+    }
+  }
+
+  // 2. News Articles
+  for (const item of newsList.value) {
+    const title = (item.title_en || '') + ' ' + (item.title_am || '')
+    const cat = item.category || ''
+    if (title.toLowerCase().includes(q) || cat.toLowerCase().includes(q)) {
+      results.push({
+        id: 'news-' + item.id,
+        type: 'news',
+        title: item.title_en || item.title_am,
+        sub: `${item.category || 'Gazette'} • ${item.status || 'draft'} • ${new Date(item.published_at || item.created_at).toLocaleDateString()}`,
+        section: 'news',
+        item
+      })
+      if (results.length > 20) break
+    }
+  }
+
+  // 3. Tenders
+  for (const item of tendersList.value) {
+    const title = (item.title_en || '') + ' ' + (item.title_am || '')
+    const ref = item.reference_number || ''
+    if (title.toLowerCase().includes(q) || ref.toLowerCase().includes(q)) {
+      results.push({
+        id: 'tender-' + item.id,
+        type: 'tender',
+        title: item.title_en || item.title_am,
+        sub: `Ref: ${ref} • ${item.category || 'Procurement'} • ${item.status || 'open'}`,
+        section: 'tenders',
+        item
+      })
+      if (results.length > 25) break
+    }
+  }
+
+  // 4. Vacancies
+  for (const item of vacanciesList.value) {
+    const title = (item.title_en || '') + ' ' + (item.title_am || '')
+    const code = item.position_code || ''
+    if (title.toLowerCase().includes(q) || code.toLowerCase().includes(q)) {
+      results.push({
+        id: 'vacancy-' + item.id,
+        type: 'vacancy',
+        title: item.title_en || item.title_am,
+        sub: `Code: ${code} • ${item.employment_type || 'Full Time'} • Deadline: ${item.deadline || 'Open'}`,
+        section: 'vacancies',
+        item
+      })
+      if (results.length > 30) break
+    }
+  }
+
+  // 5. Municipal Offices
+  for (const item of officesList.value) {
+    const name = (item.name_en || '') + ' ' + (item.name_am || '')
+    const room = item.room_number || ''
+    const phone = item.phone || ''
+    if (name.toLowerCase().includes(q) || room.toLowerCase().includes(q) || phone.includes(q)) {
+      results.push({
+        id: 'office-' + item.id,
+        type: 'office',
+        title: item.name_en || item.name_am,
+        sub: `Room: ${room || 'Hall'} • Phone: ${phone || 'N/A'} • ${item.head_name_en || ''}`,
+        section: 'offices',
+        item
+      })
+      if (results.length > 35) break
+    }
+  }
+
+  // 6. Citizen Messages / Inquiries
+  for (const item of messagesList.value) {
+    const searchTarget = `${item.sender_name || ''} ${item.subject || ''} ${item.message || ''} ${item.sender_phone || ''}`
+    if (searchTarget.toLowerCase().includes(q)) {
+      results.push({
+        id: 'msg-' + item.id,
+        type: 'message',
+        title: item.sender_name + (item.subject ? ` — ${item.subject}` : ''),
+        sub: `${item.sender_phone || item.sender_email || 'Citizen'} • ${item.status || 'unread'} • "${(item.message || '').substring(0, 50)}..."`,
+        section: 'messages',
+        item
+      })
+      if (results.length > 40) break
+    }
+  }
+
+  // 7. Services
+  for (const item of servicesList.value) {
+    const title = (item.title_en || '') + ' ' + (item.title_am || '')
+    if (title.toLowerCase().includes(q) || (item.category && item.category.toLowerCase().includes(q))) {
+      results.push({
+        id: 'srv-' + item.id,
+        type: 'service',
+        title: item.title_en || item.title_am,
+        sub: `${item.type === 'step' ? 'Step Guide' : 'Direct Service'} • ${item.category || 'Civil'}`,
+        section: 'services',
+        item
+      })
+      if (results.length > 45) break
+    }
+  }
+
+  // 8. Projects
+  for (const item of projectsList.value) {
+    const title = (item.title_en || '') + ' ' + (item.title_am || '')
+    if (title.toLowerCase().includes(q) || (item.sector && item.sector.toLowerCase().includes(q))) {
+      results.push({
+        id: 'proj-' + item.id,
+        type: 'project',
+        title: item.title_en || item.title_am,
+        sub: `Sector: ${item.sector || 'Urban'} • ${item.progress_percent || 0}% Complete`,
+        section: 'projects',
+        item
+      })
+      if (results.length > 50) break
+    }
+  }
+
+  // 9. Resources & Directives
+  for (const item of resourcesList.value) {
+    const title = (item.title_en || '') + ' ' + (item.title_am || '')
+    if (title.toLowerCase().includes(q) || (item.category && item.category.toLowerCase().includes(q))) {
+      results.push({
+        id: 'res-' + item.id,
+        type: 'resource',
+        title: item.title_en || item.title_am,
+        sub: `${item.category || 'Document'} • Year: ${item.year || '2026'}`,
+        section: 'resources',
+        item
+      })
+      if (results.length > 55) break
+    }
+  }
+
+  // 10. Hotlines
+  for (const item of emergencyContactsList.value) {
+    const name = (item.name_en || '') + ' ' + (item.name_am || '')
+    const phone = item.phone_number || ''
+    if (name.toLowerCase().includes(q) || phone.includes(q)) {
+      results.push({
+        id: 'hotline-' + item.id,
+        type: 'hotline',
+        title: item.name_en || item.name_am,
+        sub: `Dial: ${phone} • Category: ${item.category || 'Emergency'}`,
+        section: 'hotlines',
+        item
+      })
+      if (results.length > 60) break
+    }
+  }
+
+  return results
+})
+
+function getSearchResultBadge(type) {
+  switch (type) {
+    case 'navigation':
+      return { label: 'Navigate', bg: 'bg-slate-100 text-slate-700', pill: 'bg-slate-100 text-slate-700', icon: LayoutDashboard }
+    case 'news':
+      return { label: 'News', bg: 'bg-blue-100 text-blue-700', pill: 'bg-blue-50 text-blue-700 border border-blue-200', icon: FileText }
+    case 'tender':
+      return { label: 'Tender', bg: 'bg-amber-100 text-amber-800', pill: 'bg-amber-50 text-amber-800 border border-amber-200', icon: FileCheck }
+    case 'vacancy':
+      return { label: 'Job', bg: 'bg-emerald-100 text-emerald-800', pill: 'bg-emerald-50 text-emerald-800 border border-emerald-200', icon: Briefcase }
+    case 'office':
+      return { label: 'Office', bg: 'bg-indigo-100 text-indigo-700', pill: 'bg-indigo-50 text-indigo-700 border border-indigo-200', icon: Building2 }
+    case 'message':
+      return { label: 'Inquiry', bg: 'bg-rose-100 text-rose-700', pill: 'bg-rose-50 text-rose-700 border border-rose-200', icon: MessageSquare }
+    case 'service':
+      return { label: 'Service', bg: 'bg-teal-100 text-teal-700', pill: 'bg-teal-50 text-teal-700 border border-teal-200', icon: Layers }
+    case 'project':
+      return { label: 'Project', bg: 'bg-orange-100 text-orange-700', pill: 'bg-orange-50 text-orange-700 border border-orange-200', icon: HardHat }
+    case 'resource':
+      return { label: 'Document', bg: 'bg-cyan-100 text-cyan-700', pill: 'bg-cyan-50 text-cyan-700 border border-cyan-200', icon: FolderOpen }
+    case 'hotline':
+      return { label: 'Hotline', bg: 'bg-red-100 text-red-700', pill: 'bg-red-50 text-red-700 border border-red-200', icon: Phone }
+    default:
+      return { label: 'Record', bg: 'bg-slate-100 text-slate-700', pill: 'bg-slate-100 text-slate-700', icon: Search }
+  }
+}
+
+function handleSearchResultClick(result) {
+  activeSection.value = result.section
+  
+  // Set the search filter within the target section so the user lands directly on that record
+  if (result.type === 'news' && result.item) {
+    newsSearch.value = result.item.title_en || result.item.title_am || ''
+  } else if (result.type === 'tender' && result.item) {
+    tendersSearch.value = result.item.reference_number || result.item.title_en || ''
+  } else if (result.type === 'vacancy' && result.item) {
+    vacanciesSearch.value = result.item.position_code || result.item.title_en || ''
+  } else if (result.type === 'office' && result.item) {
+    officeSearch.value = result.item.name_en || result.item.name_am || ''
+  } else if (result.type === 'resource' && result.item) {
+    resourcesSearch.value = result.item.title_en || ''
+  } else if (result.type === 'message' && result.item) {
+    messagesSearch.value = result.item.sender_name || result.item.subject || ''
+  }
+
+  adminSearch.value = ''
+  adminSearchFocused.value = false
+}
+
+function handleGlobalKeydown(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault()
+    adminSearchInputRef.value?.focus()
+    adminSearchFocused.value = true
+  }
+  if (e.key === 'Escape') {
+    adminSearchFocused.value = false
+  }
+}
+
 // Loading & Modal States
 const loading = ref(false)
 const uploadingFile = ref(false)
@@ -933,6 +1192,61 @@ function showToast(msg) {
   setTimeout(() => { alertToast.value = '' }, 4000)
 }
 
+// Universal Confirmation Card Modal State
+const confirmModal = reactive({
+  open: false,
+  title: 'Confirm Action',
+  message: 'Are you sure you want to proceed?',
+  itemName: '',
+  confirmText: 'Confirm',
+  cancelText: 'Cancel',
+  variant: 'danger', // 'danger' | 'warning' | 'alert'
+  loading: false,
+  onConfirm: null
+})
+
+function openConfirmModal({
+  title = 'Confirm Deletion',
+  message = 'Are you sure you want to proceed? This action cannot be undone.',
+  itemName = '',
+  confirmText = 'Delete Permanently',
+  cancelText = 'Cancel',
+  variant = 'danger',
+  action = null
+}) {
+  confirmModal.title = title
+  confirmModal.message = message
+  confirmModal.itemName = itemName
+  confirmModal.confirmText = confirmText
+  confirmModal.cancelText = cancelText
+  confirmModal.variant = variant
+  confirmModal.loading = false
+  confirmModal.onConfirm = action
+  confirmModal.open = true
+}
+
+function closeConfirmModal() {
+  if (confirmModal.loading) return
+  confirmModal.open = false
+  confirmModal.onConfirm = null
+}
+
+async function handleConfirmModalAction() {
+  if (typeof confirmModal.onConfirm === 'function') {
+    confirmModal.loading = true
+    try {
+      await confirmModal.onConfirm()
+      confirmModal.open = false
+    } catch (err) {
+      console.error(err)
+    } finally {
+      confirmModal.loading = false
+    }
+  } else {
+    confirmModal.open = false
+  }
+}
+
 // Data Fetchers
 async function fetchAllAdminData() {
   loading.value = true
@@ -1040,14 +1354,26 @@ async function togglePollActive(poll) {
 }
 
 async function resetPollVotes(poll) {
-  if (!confirm(`Are you sure you want to reset all votes for "${poll.question_en || poll.question_am}"? This will clear all demo and previous votes so citizens can begin voting on real verified ballots.`)) return
-  try {
-    const res = await api.post(`/admin/polls/${poll.id}/reset-votes`)
-    showToast(res.data?.message || 'Poll votes reset successfully! Ready for real data.')
-    await fetchAllAdminData()
-  } catch (err) {
-    alert(err.response?.data?.message || 'Failed to reset poll votes.')
-  }
+  const pollTitle = poll.question_en || poll.question_am || 'Civic Poll'
+  openConfirmModal({
+    title: adminLang.value === 'am' ? 'የድምፅ መስጫ ውጤት አጽዳ' : 'Reset All Poll Ballots',
+    message: adminLang.value === 'am'
+      ? 'ይህ ሁሉንም የቀደሙ እና የሙከራ ድምጾች በማፅዳት ዜጎች በእውነተኛ ድምጾች ድጋሚ እንዲመርጡ ያደርጋል።'
+      : 'This will permanently clear all demo and previous votes so citizens can begin voting on real verified ballots.',
+    itemName: pollTitle,
+    confirmText: adminLang.value === 'am' ? 'ድምጾችን አጽዳ' : 'Reset Ballots',
+    cancelText: adminLang.value === 'am' ? 'ተወው' : 'Cancel',
+    variant: 'warning',
+    action: async () => {
+      try {
+        const res = await api.post(`/admin/polls/${poll.id}/reset-votes`)
+        showToast(res.data?.message || 'Poll votes reset successfully! Ready for real data.')
+        await fetchAllAdminData()
+      } catch (err) {
+        showToast(err.response?.data?.message || 'Failed to reset poll votes.')
+      }
+    }
+  })
 }
 
 const editingId = ref(null)
@@ -1435,17 +1761,28 @@ async function submitActiveModal() {
 // Delete Helpers with automatic live refresh
 async function deleteItem(endpoint, id, name) {
   if (['/admin/offices', '/admin/leadership'].some(ep => endpoint.startsWith(ep)) && !isSuperAdmin.value) {
-    alert('Permission Denied: Only Super Administrators can delete municipal offices or leadership profiles.')
+    showToast('Permission Denied: Only Super Administrators can delete municipal offices or leadership profiles.')
     return
   }
-  if (!confirm(`Are you sure you want to delete "${name}"? This action removes it permanently from the database and public portal.`)) return
-  try {
-    await api.delete(`${endpoint}/${id}`)
-    showToast(`"${name}" deleted successfully.`)
-    await fetchAllAdminData()
-  } catch (err) {
-    alert(err.response?.data?.message || 'Failed to delete item.')
-  }
+  openConfirmModal({
+    title: adminLang.value === 'am' ? 'ማረጋገጫ ይሰርዙ' : 'Confirm Permanent Deletion',
+    message: adminLang.value === 'am'
+      ? 'ይህ እርምጃ ይህንን መረጃ ከዳታቤዝ እና ከህዝብ ፖርታል ሙሉ በሙሉ እስከመጨረሻው ያጠፋዋል።'
+      : 'Are you sure you want to delete this record? This action removes it permanently from the database and public portal.',
+    itemName: name || 'Selected Item',
+    confirmText: adminLang.value === 'am' ? 'በቋሚነት ሰርዝ' : 'Yes, Delete Record',
+    cancelText: adminLang.value === 'am' ? 'ተወው' : 'Cancel',
+    variant: 'danger',
+    action: async () => {
+      try {
+        await api.delete(`${endpoint}/${id}`)
+        showToast(`"${name}" deleted successfully.`)
+        await fetchAllAdminData()
+      } catch (err) {
+        showToast(err.response?.data?.message || 'Failed to delete item.')
+      }
+    }
+  })
 }
 
 // Editorial Governance & Approval Pipeline Actions
@@ -1717,6 +2054,9 @@ function handleGlobalClick(e) {
   if (!e.target.closest('.notification-menu-container')) {
     notificationDropdownOpen.value = false
   }
+  if (!e.target.closest('.search-palette-container')) {
+    adminSearchFocused.value = false
+  }
 }
 
 onMounted(() => {
@@ -1727,22 +2067,17 @@ onMounted(() => {
   }
   fetchAllAdminData()
   window.addEventListener('click', handleGlobalClick)
+  window.addEventListener('keydown', handleGlobalKeydown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('click', handleGlobalClick)
+  window.removeEventListener('keydown', handleGlobalKeydown)
 })
 </script>
 
 <template>
   <div class="h-screen flex flex-col overflow-hidden bg-slate-100 font-sans text-slate-800">
-    <!-- Sovereign Micro Ribbon -->
-    <div class="h-1 flex w-full shrink-0 z-40">
-      <div class="h-full flex-1 bg-emerald-500"></div>
-      <div class="h-full flex-1 bg-amber-400"></div>
-      <div class="h-full flex-1 bg-red-500"></div>
-    </div>
-
     <!-- Top Sovereign Command Bar -->
     <header class="bg-[#071324] border-b border-amber-500/20 text-white px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shrink-0 z-30 shadow-xl">
       <!-- Left: Mobile Menu Toggle, Logo & Portal Title -->
@@ -1762,24 +2097,95 @@ onUnmounted(() => {
         <div class="min-w-0">
           <h1 class="text-xs sm:text-sm font-black tracking-tight text-white flex items-center gap-1.5 sm:gap-2 truncate">
             <span class="truncate">{{ adminT('portal_title') }}</span>
-            <span class="hidden sm:inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">
-              Command Console
-            </span>
           </h1>
           <p class="hidden sm:block text-[10px] text-slate-400 truncate">{{ adminT('portal_sub') }}</p>
         </div>
       </div>
 
-      <!-- Center: Admin Search Bar -->
-      <div class="hidden md:flex items-center relative w-72 lg:w-96 mx-4">
-        <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-        <input 
-          v-model="adminSearch" 
-          type="text" 
-          :placeholder="adminT('search_placeholder')" 
-          class="w-full bg-white/5 border border-white/10 hover:border-white/20 rounded-xl pl-9 pr-12 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 placeholder-slate-400 transition-all"
-        />
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-white/10 px-1.5 py-0.5 rounded">⌘K</span>
+      <!-- Center: Admin Search Bar & Command Palette -->
+      <div class="hidden md:block relative w-72 lg:w-96 mx-4 search-palette-container">
+        <div class="relative">
+          <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input 
+            ref="adminSearchInputRef"
+            v-model="adminSearch" 
+            type="text" 
+            @focus="adminSearchFocused = true"
+            @keydown.esc="adminSearch = ''; adminSearchFocused = false"
+            :placeholder="adminT('search_placeholder')" 
+            class="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:bg-white/10 rounded-xl pl-9 pr-14 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 placeholder-slate-400 transition-all"
+          />
+          <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <button 
+              v-if="adminSearch" 
+              type="button"
+              @click="adminSearch = ''; adminSearchFocused = false" 
+              class="p-1 rounded-md text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+              title="Clear search"
+            >
+              <X class="w-3.5 h-3.5" />
+            </button>
+            <span v-else class="text-[10px] font-mono text-slate-400 bg-white/10 px-1.5 py-0.5 rounded pointer-events-none">⌘K</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Live Search Results Overlay Dropdown -->
+        <div 
+          v-if="adminSearchFocused && adminSearch.trim().length > 0" 
+          class="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-slate-800 animate-fadeIn"
+          style="max-height: 480px; display: flex; flex-direction: column;"
+        >
+          <!-- Results Header Strip -->
+          <div class="p-3 px-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs shrink-0">
+            <span class="font-bold text-slate-600">
+              Found <strong class="text-blue-900 font-mono">{{ adminSearchResults.length }}</strong> match{{ adminSearchResults.length === 1 ? '' : 'es' }}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">Press ESC to close</span>
+          </div>
+
+          <!-- Results Scroll Area -->
+          <div class="overflow-y-auto divide-y divide-slate-100 flex-1">
+            <div 
+              v-if="adminSearchResults.length === 0" 
+              class="p-8 text-center text-slate-400 text-xs"
+            >
+              <Search class="w-8 h-8 mx-auto mb-2 opacity-30 text-slate-400" />
+              <p class="font-bold text-slate-600">No matching records found</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Try searching for keywords like news title, tender reference, vacancy code, or citizen names.</p>
+            </div>
+
+            <div 
+              v-for="item in adminSearchResults" 
+              :key="item.id"
+              @click="handleSearchResultClick(item)"
+              class="p-3 px-4 hover:bg-blue-50/60 transition-colors cursor-pointer flex items-center gap-3 group text-left"
+            >
+              <div 
+                class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold"
+                :class="getSearchResultBadge(item.type).bg"
+              >
+                <component :is="getSearchResultBadge(item.type).icon || Search" class="w-4 h-4" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span 
+                    class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider"
+                    :class="getSearchResultBadge(item.type).pill"
+                  >
+                    {{ getSearchResultBadge(item.type).label }}
+                  </span>
+                  <span class="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors truncate">
+                    {{ item.title }}
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-500 truncate font-mono">
+                  {{ item.sub }}
+                </p>
+              </div>
+              <ChevronRight class="w-4 h-4 text-slate-300 group-hover:text-blue-600 transition-colors shrink-0" />
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Right Actions: Language, Notifications, Profile -->
@@ -2988,8 +3394,6 @@ onUnmounted(() => {
           </div>
 
           <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs space-y-6 relative overflow-hidden">
-            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-red-500"></div>
-
             <div class="flex flex-col sm:flex-row sm:items-center gap-6 pb-6 border-b border-slate-100 pt-2">
               <img v-if="mayorData.portrait_path" :src="mayorData.portrait_path" alt="Mayor" class="w-28 h-28 object-cover object-top rounded-2xl border-2 border-amber-500 shadow-md shrink-0 bg-slate-100" />
               <div v-else class="w-28 h-28 rounded-2xl border-2 border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 shrink-0">
@@ -4433,11 +4837,6 @@ onUnmounted(() => {
       <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         <!-- Sovereign Modal Header -->
         <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white p-5 sm:p-6 relative shrink-0">
-          <div class="absolute top-0 inset-x-0 h-1 flex">
-            <div class="h-full flex-1 bg-emerald-500"></div>
-            <div class="h-full flex-1 bg-amber-400"></div>
-            <div class="h-full flex-1 bg-red-500"></div>
-          </div>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300">
@@ -5627,6 +6026,92 @@ onUnmounted(() => {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- UNIVERSAL ACTION & DELETE CONFIRMATION CARD MODAL -->
+    <div 
+      v-if="confirmModal.open" 
+      class="fixed inset-0 bg-[#071324]/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      @click.self="closeConfirmModal"
+    >
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden relative">
+        <!-- Top Accent Strip -->
+        <div 
+          class="h-1.5 w-full"
+          :class="confirmModal.variant === 'danger' ? 'bg-gradient-to-r from-rose-500 via-rose-600 to-red-600' : 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500'"
+        ></div>
+
+        <div class="p-6 sm:p-7">
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <!-- Icon Badge -->
+            <div 
+              class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+              :class="confirmModal.variant === 'danger' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-amber-50 text-amber-600 border border-amber-100'"
+            >
+              <Trash2 v-if="confirmModal.variant === 'danger'" class="w-6 h-6" />
+              <AlertCircle v-else class="w-6 h-6" />
+            </div>
+
+            <!-- Close Button -->
+            <button 
+              type="button" 
+              @click="closeConfirmModal" 
+              :disabled="confirmModal.loading"
+              class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer transition-colors disabled:opacity-50"
+              title="Close"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+
+          <!-- Card Title -->
+          <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
+            {{ confirmModal.title }}
+          </h3>
+
+          <!-- Highlighted Target Item Badge -->
+          <div v-if="confirmModal.itemName" class="my-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5">
+            <span 
+              class="w-2.5 h-2.5 rounded-full shrink-0"
+              :class="confirmModal.variant === 'danger' ? 'bg-rose-500' : 'bg-amber-500'"
+            ></span>
+            <span class="font-black text-slate-800 text-xs truncate break-all">
+              "{{ confirmModal.itemName }}"
+            </span>
+          </div>
+
+          <!-- Explanatory Message -->
+          <p class="text-xs text-slate-500 leading-relaxed">
+            {{ confirmModal.message }}
+          </p>
+
+          <!-- Card Action Buttons -->
+          <div class="flex items-center justify-end gap-3 pt-5 mt-5 border-t border-slate-100">
+            <button 
+              v-if="confirmModal.variant !== 'alert'"
+              type="button" 
+              @click="closeConfirmModal" 
+              :disabled="confirmModal.loading"
+              class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {{ confirmModal.cancelText }}
+            </button>
+
+            <button 
+              type="button" 
+              @click="handleConfirmModalAction" 
+              :disabled="confirmModal.loading"
+              class="px-5 py-2.5 rounded-xl text-xs font-black shadow-lg cursor-pointer flex items-center gap-2 transition-all disabled:opacity-50"
+              :class="confirmModal.variant === 'danger' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/30' : 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/30'"
+            >
+              <Loader2 v-if="confirmModal.loading" class="w-4 h-4 animate-spin" />
+              <Trash2 v-else-if="confirmModal.variant === 'danger'" class="w-4 h-4" />
+              <Check v-else class="w-4 h-4" />
+              <span>{{ confirmModal.loading ? 'Processing...' : confirmModal.confirmText }}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -17,7 +17,7 @@ export default {
   },
   nav: {
     home: 'Home',
-    about: 'About Us',
+    about: 'About',
     about_city: 'About',
     about_history: 'History',
     about_vision: 'Vision and Mission',
@@ -38,7 +38,7 @@ export default {
     events: 'Events & Programs',
     tenders: 'Tender',
     vacancies: 'Vacancy',
-    projects: 'Program & Project',
+    projects: 'Projects',
     mega_projects: 'Mega Infrastructure',
     urban_development: 'Urban Development',
     resources: 'Resources',

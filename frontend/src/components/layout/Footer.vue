@@ -48,10 +48,6 @@ const directionsUrl = computed(() => {
 
 <template>
   <footer class="bg-gradient-to-b from-slate-950 via-[#071324] to-[#040B15] text-slate-300 border-t border-amber-500/30 relative font-sans">
-    
-    <!-- Top Civic Gradient Ribbon -->
-    <div class="h-1 w-full bg-gradient-to-r from-emerald-600 via-amber-400 to-red-600"></div>
-
     <!-- Quick Emergency Dispatch Strip -->
     <div class="border-b border-slate-800/80 bg-slate-900/60 py-3 px-4 sm:px-8 xl:px-12">
       <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">

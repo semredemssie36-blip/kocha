@@ -276,22 +276,35 @@ function navigateToArticle(item) {
               </h3>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-3.5">
               <div 
                 v-for="recent in recentNews" 
                 :key="recent.id" 
                 @click="navigateToArticle(recent)"
-                class="group cursor-pointer pb-3 border-b border-slate-100 last:border-0 last:pb-0"
+                class="group cursor-pointer p-2.5 -mx-2 rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3.5 border-b border-slate-100 last:border-0"
               >
-                <span class="text-[10px] text-amber-700 font-bold uppercase block mb-1">
-                  {{ recent.category || 'Gazette' }}
-                </span>
-                <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-900 leading-snug transition-colors line-clamp-2">
-                  {{ getTitle(recent) }}
-                </h4>
-                <span class="text-[10px] text-slate-400 font-mono mt-1 block">
-                  {{ new Date(recent.published_at || recent.created_at).toLocaleDateString() }}
-                </span>
+                <!-- Article Thumbnail -->
+                <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 border border-slate-200 shadow-2xs relative">
+                  <img 
+                    :src="recent.thumbnail_path || '/assets/industry.jpg'" 
+                    :alt="getTitle(recent)"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    @error="$event.target.src = '/assets/industry.jpg'"
+                  />
+                </div>
+                
+                <!-- Content Details -->
+                <div class="min-w-0 flex-1">
+                  <span class="text-[10px] text-amber-700 font-bold uppercase block tracking-wider leading-none mb-1">
+                    {{ recent.category || 'Gazette' }}
+                  </span>
+                  <h4 class="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-snug transition-colors line-clamp-2">
+                    {{ getTitle(recent) }}
+                  </h4>
+                  <span class="text-[10px] text-slate-400 font-mono mt-1 block">
+                    {{ new Date(recent.published_at || recent.created_at).toLocaleDateString() }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
