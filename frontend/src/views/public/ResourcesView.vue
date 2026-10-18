@@ -11,7 +11,11 @@ import {
   Filter, 
   CheckCircle,
   FileCheck,
-  Building
+  Building2,
+  Landmark,
+  Layers,
+  Sparkles,
+  ExternalLink
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
@@ -23,10 +27,10 @@ const selectedYear = ref('all')
 
 const categories = [
   { key: 'all', label_en: 'All Documents', label_am: 'ሁሉንም ሰነዶች', label_om: 'Sanadoota Hunda' },
-  { key: 'Master Plan', label_en: 'Master Plan', label_am: 'የከተማ ማስተር ፕላን', label_om: 'Pilaanii Magaalaa' },
-  { key: 'Directives', label_en: 'Directives & Bylaws', label_am: 'መመሪያዎችና ደንቦች', label_om: 'Qajeelfamoota' },
-  { key: 'Annual Reports', label_en: 'Annual Budgets & Reports', label_am: 'ዓመታዊ በጀትና ሪፖርቶች', label_om: 'Baajata fi Gabaasa' },
-  { key: 'Forms', label_en: 'Application Forms & Charters', label_am: 'የማመልከቻ ቅጾች', label_om: 'Uunkaalee Iyyannoo' },
+  { key: 'Master Plan', label_en: 'Master Plan & Spatial', label_am: 'የከተማ ማስተር ፕላን', label_om: 'Pilaanii Magaalaa' },
+  { key: 'Directives', label_en: 'Directives & Regulations', label_am: 'መመሪያዎችና ደንቦች', label_om: 'Qajeelfamoota' },
+  { key: 'Annual Reports', label_en: 'Annual Budgets & Fiscal Reports', label_am: 'ዓመታዊ በጀትና ሪፖርቶች', label_om: 'Baajata fi Gabaasa' },
+  { key: 'Forms', label_en: 'Official Application Forms', label_am: 'የማመልከቻ ቅጾች', label_om: 'Uunkaalee Iyyannoo' },
 ]
 
 const years = ['all', '2026', '2025', '2024']
@@ -38,7 +42,7 @@ const fetchResources = async () => {
     if (selectedCategory.value !== 'all') params.category = selectedCategory.value
     if (selectedYear.value !== 'all') params.year = selectedYear.value
     const res = await api.getResources(params)
-    resources.value = res.data || []
+    resources.value = Array.isArray(res.data) ? res.data : []
   } catch (err) {
     console.error('Failed to load resources:', err)
   } finally {
@@ -68,9 +72,9 @@ const getTitle = (doc) => {
 
 const getDescription = (doc) => {
   const lang = langStore.currentLang
-  if (lang === 'am') return doc.description_am || doc.description_en
-  if (lang === 'om') return doc.description_om || doc.description_en || doc.description_am
-  return doc.description_en || doc.description_am
+  if (lang === 'am') return doc.description_am || doc.description_en || ''
+  if (lang === 'om') return doc.description_om || doc.description_en || doc.description_am || ''
+  return doc.description_en || doc.description_am || ''
 }
 
 const downloadDocument = (doc) => {
@@ -78,7 +82,6 @@ const downloadDocument = (doc) => {
     window.open(doc.file_path, '_blank')
     return
   }
-  // Trigger simulated official PDF download
   const blob = new Blob([`Kombolcha City Administration Official Document\nTitle: ${getTitle(doc)}\nReference: ${doc.id}\nYear: ${doc.year}`], { type: 'text/plain' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -94,47 +97,77 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
-    <!-- Header Banner: Clean White Official Style -->
-    <div class="bg-white border-b border-slate-200 pb-8 mb-10">
-      <div class="max-w-3xl">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-200">
-          <FileCheck class="w-3.5 h-3.5 text-blue-700" />
-          {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ይፋዊ ሰነዶች ማዕከል' : (langStore.currentLang === 'om' ? 'Wiirtuu Sanadoota Bulchiinsa Magaalaa Kombolchaa' : 'Official Document & Public Resource Repository') }}
+  <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
+    
+    <!-- Prestige Civic Header Strip -->
+    <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl">
+      <div class="w-full max-w-[1700px] mx-auto">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black uppercase tracking-widest">
+            <FileCheck class="w-3.5 h-3.5 text-amber-400" />
+            Official Gazette & Legal Documentation Repository
+          </span>
+          <span class="text-xs text-slate-400 font-mono">Public Access to Information</span>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3">
-          {{ langStore.currentLang === 'am' ? 'የሰነዶችና መመሪያዎች ማውረጃ ማዕከል' : (langStore.currentLang === 'om' ? 'Kuusaa Sanadootaa fi Qajeelfamootaa' : 'Public Resources & Directives Library') }}
+
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+          {{ langStore.currentLang === 'am' ? 'የሰነዶች፣ መመሪያዎችና የማመልከቻ ቅጾች ቤተ-መዛግብት' : 'Public Resources & Municipal Directives Library' }}
         </h1>
-        <p class="text-slate-600 text-base leading-relaxed">
-          {{ langStore.currentLang === 'am' ? 'በምክር ቤቱ የጸደቁ ደንቦች፣ የከተማ መሪ ማስተር ፕላን፣ ዓመታዊ በጀቶች እና የንግድ ምዝገባ ቅጾችን ያውርዱ።' : (langStore.currentLang === 'om' ? 'Qajeelfamoota mana mareetiin mirkanaa\'an, pilaanii magaalaa, baajata waggaa fi uunkaalee adda addaa buufadhaa.' : 'Freely download approved municipal directives, land cadastre manuals, urban spatial plans, and annual fiscal reports.') }}
+        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+          {{ langStore.currentLang === 'am'
+            ? 'በምክር ቤቱ የጸደቁ ይፋዊ ደንቦች፣ የከተማ መሪ ማስተር ፕላን፣ ዓመታዊ በጀቶችና የዜጎች አገልግሎት መጠየቂያ ቅጾችን በነፃ ያውርዱ።'
+            : 'Download approved municipal regulations, master spatial plans, annual fiscal budget declarations, and standardized citizen application forms.'
+          }}
         </p>
+
+        <!-- Document Analytics Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
+            <span class="text-slate-400 text-xs block font-bold mb-1">Cataloged Publications</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ resources.length }} Documents</div>
+          </div>
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
+            <span class="text-blue-400 text-xs block font-bold mb-1">Access Protocol</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-blue-300">Open Public Domain</div>
+          </div>
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+            <span class="text-emerald-400 text-xs block font-bold mb-1">Official Formats</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">PDF • Gazette Form</div>
+          </div>
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
+            <span class="text-slate-400 text-xs block font-bold mb-1">Archive Integrity</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-slate-300">Secretariat Verified</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Search & Filter Bar -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-10">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-        <!-- Search Input -->
-        <div class="md:col-span-6 relative">
-          <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            :placeholder="langStore.currentLang === 'am' ? 'ሰነዶችን በርእስ ወይም በመመሪያ ቁጥር ይፈልጉ...' : (langStore.currentLang === 'om' ? 'Sanada barbaadaa...' : 'Search documents by title or topic...')"
-            class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm bg-slate-50/50"
-          />
-        </div>
+    <!-- Main Content Container -->
+    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-8">
+      
+      <!-- Filter & Search Toolbar -->
+      <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-sm mb-8 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          
+          <!-- Search Input -->
+          <div class="md:col-span-8 relative">
+            <Search class="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              :placeholder="langStore.currentLang === 'am' ? 'ሰነዶችን በርዕስ ወይም በመመሪያ ቁጥር ይፈልጉ...' : 'Search documents by title, directive number, or keyword...'" 
+              class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 text-xs sm:text-sm bg-slate-50 transition"
+            />
+          </div>
 
-        <!-- Year Filter -->
-        <div class="md:col-span-3">
-          <div class="relative">
-            <Calendar class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <!-- Year Filter -->
+          <div class="md:col-span-4">
             <select 
               v-model="selectedYear" 
               @change="fetchResources"
-              class="w-full pl-10 pr-8 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm bg-slate-50/50 font-medium text-slate-700"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 text-xs sm:text-sm bg-slate-50 font-bold text-slate-700 cursor-pointer"
             >
-              <option value="all">{{ langStore.currentLang === 'am' ? 'ሁሉም ዓመታት' : (langStore.currentLang === 'om' ? 'Waggaa Hunda' : 'All Publication Years') }}</option>
+              <option value="all">All Publication Years</option>
               <option value="2026">2026 (2018 ዓ.ም)</option>
               <option value="2025">2025 (2017 ዓ.ም)</option>
               <option value="2024">2024 (2016 ዓ.ም)</option>
@@ -142,104 +175,87 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Document Count Stats -->
-        <div class="md:col-span-3 flex justify-end">
-          <div class="px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-900 text-xs font-semibold inline-flex items-center gap-2">
-            <HardDrive class="w-4 h-4 text-blue-600" />
-            <span>{{ filteredResources.length }} {{ langStore.currentLang === 'am' ? 'የተገኙ ሰነዶች' : (langStore.currentLang === 'om' ? 'Sanadoota' : 'Documents Available') }}</span>
-          </div>
+        <!-- Category Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 border-t border-slate-100 pt-3 scrollbar-none">
+          <button
+            v-for="cat in categories"
+            :key="cat.key"
+            @click="selectedCategory = cat.key; fetchResources()"
+            :class="[
+              'px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap shadow-2xs',
+              selectedCategory === cat.key 
+                ? 'bg-blue-900 text-amber-300 ring-2 ring-blue-900/20' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+            ]"
+          >
+            {{ langStore.currentLang === 'am' ? cat.label_am : (langStore.currentLang === 'om' ? cat.label_om : cat.label_en) }}
+          </button>
         </div>
       </div>
 
-      <!-- Categories Pills -->
-      <div class="flex items-center gap-2 mt-6 overflow-x-auto pb-2 scrollbar-none">
-        <button
-          v-for="cat in categories"
-          :key="cat.key"
-          @click="selectedCategory = cat.key; fetchResources()"
-          :class="[
-            'px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer',
-            selectedCategory === cat.key
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          ]"
+      <!-- Loading Skeletons -->
+      <div v-if="loading" class="space-y-4">
+        <div v-for="n in 4" :key="n" class="bg-white rounded-3xl border border-slate-200 p-6 animate-pulse h-28"></div>
+      </div>
+
+      <!-- Resources Document List -->
+      <div v-else-if="filteredResources.length > 0" class="space-y-4">
+        <div 
+          v-for="doc in filteredResources" 
+          :key="doc.id" 
+          class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs hover:border-blue-500 hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-6 group"
         >
-          {{ langStore.currentLang === 'am' ? cat.label_am : (langStore.currentLang === 'om' ? cat.label_om : cat.label_en) }}
-        </button>
-      </div>
-    </div>
+          <div class="flex items-start gap-4">
+            <!-- PDF Icon Badge -->
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center font-mono font-black text-xs shrink-0 border border-rose-200 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+              PDF
+            </div>
 
-    <!-- Documents Grid -->
-    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div v-for="i in 4" :key="i" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-pulse">
-        <div class="h-6 w-1/4 bg-slate-200 rounded mb-4"></div>
-        <div class="h-8 w-3/4 bg-slate-200 rounded mb-2"></div>
-        <div class="h-16 w-full bg-slate-100 rounded mb-4"></div>
-        <div class="h-10 w-full bg-slate-200 rounded"></div>
-      </div>
-    </div>
+            <!-- Content -->
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200">
+                  {{ doc.category || 'Gazette' }}
+                </span>
+                <span v-if="doc.year" class="text-xs font-mono font-bold text-slate-400">
+                  {{ doc.year }}
+                </span>
+              </div>
 
-    <div v-else-if="filteredResources.length === 0" class="text-center py-16 bg-white rounded-2xl border border-slate-200">
-      <FileText class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-      <h3 class="text-lg font-bold text-slate-800">
-        {{ langStore.currentLang === 'am' ? 'ምንም አይነት ሰነድ አልተገኘም' : (langStore.currentLang === 'om' ? 'Sanadni homaayyuu hin argamne' : 'No Documents Found') }}
-      </h3>
-      <p class="text-slate-500 text-sm mt-1">
-        {{ langStore.currentLang === 'am' ? 'እባክዎ የፍለጋ ቃላትን ይቀይሩ ወይም ምድቦችን ያስተካክሉ።' : 'Try broadening your search keywords or switching filters.' }}
-      </p>
-    </div>
+              <h2 class="text-base sm:text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors leading-snug">
+                {{ getTitle(doc) }}
+              </h2>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div 
-        v-for="doc in filteredResources" 
-        :key="doc.id"
-        class="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
-      >
-        <div>
-          <!-- Header Meta -->
-          <div class="flex items-center justify-between mb-3">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">
-              <Building class="w-3 h-3 text-blue-600" />
-              {{ doc.category }}
-            </span>
-            <div class="flex items-center gap-3 text-xs text-slate-400 font-medium">
-              <span class="flex items-center gap-1">
-                <Calendar class="w-3.5 h-3.5 text-slate-400" />
-                {{ doc.year }}
-              </span>
-              <span class="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-600 uppercase text-[10px]">
-                {{ doc.file_extension || 'PDF' }}
-              </span>
+              <p v-if="getDescription(doc)" class="text-xs text-slate-500 line-clamp-1 leading-relaxed">
+                {{ getDescription(doc) }}
+              </p>
             </div>
           </div>
 
-          <!-- Title -->
-          <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 mb-2 leading-snug">
-            {{ getTitle(doc) }}
-          </h3>
-
-          <!-- Description -->
-          <p class="text-slate-600 text-sm leading-relaxed mb-6 line-clamp-3">
-            {{ getDescription(doc) }}
-          </p>
-        </div>
-
-        <!-- Footer Actions -->
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div class="text-xs text-slate-500 font-medium">
-            <span class="font-bold text-slate-700">{{ doc.file_size_formatted || '2.4 MB' }}</span>
-            <span class="mx-1.5">•</span>
-            <span>{{ doc.downloads_count || 120 }} {{ langStore.currentLang === 'am' ? 'ውርዶች' : 'Downloads' }}</span>
+          <!-- Download Action -->
+          <div class="shrink-0 flex items-center gap-3 border-t sm:border-t-0 pt-4 sm:pt-0">
+            <button 
+              @click="downloadDocument(doc)"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-amber-300 text-xs font-black uppercase tracking-wider transition-all shadow-md hover:scale-105 cursor-pointer"
+            >
+              <Download class="w-4 h-4 text-amber-400" />
+              <span>Download PDF</span>
+            </button>
           </div>
-
-          <button 
-            @click="downloadDocument(doc)"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition-all duration-200 shadow-sm cursor-pointer hover:shadow-md hover:shadow-blue-600/20"
-          >
-            <Download class="w-4 h-4" />
-            <span>{{ langStore.currentLang === 'am' ? 'ሰነዱን አውርድ' : (langStore.currentLang === 'om' ? 'Buufadhaa' : 'Download File') }}</span>
-          </button>
         </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+        <FileCheck class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+        <h3 class="text-lg font-black text-slate-800">No public documents found</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">Try clearing your search keyword or switching categories.</p>
+        <button 
+          @click="selectedCategory = 'all'; selectedYear = 'all'; searchQuery = ''; fetchResources()" 
+          class="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors"
+        >
+          View All Documents
+        </button>
       </div>
     </div>
   </div>

@@ -16,7 +16,10 @@ import {
   TrendingUp,
   FolderOpen,
   Send,
-  Sparkles
+  Sparkles,
+  Bookmark,
+  Building2,
+  Copy
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -130,274 +133,191 @@ function navigateToArticle(item) {
 </script>
 
 <template>
-  <div class="bg-slate-50 min-h-screen py-8">
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-      
-      <!-- Top Breadcrumb Navigation -->
-      <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium mb-6 flex-wrap">
-        <router-link to="/" class="hover:text-blue-700 transition">Home</router-link>
-        <ChevronRight class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        <router-link to="/media/news" class="hover:text-blue-700 transition">News & Press</router-link>
-        <ChevronRight class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        <span class="text-slate-900 font-bold truncate max-w-xs sm:max-w-md">
-          {{ article ? getTitle(article) : 'Article Detail' }}
-        </span>
-      </nav>
+  <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
+    
+    <!-- Top Breadcrumb & Return Bar -->
+    <div class="bg-white border-b border-slate-200 py-4 px-4 sm:px-8 xl:px-12 shadow-2xs">
+      <div class="w-full max-w-[1700px] mx-auto flex items-center justify-between gap-4 flex-wrap">
+        <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium truncate">
+          <router-link to="/" class="hover:text-blue-900 transition">Home</router-link>
+          <ChevronRight class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <router-link to="/media/news" class="hover:text-blue-900 transition">Press Bureau</router-link>
+          <ChevronRight class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span class="text-slate-900 font-bold truncate max-w-xs sm:max-w-md">
+            {{ article ? getTitle(article) : 'Gazette Article' }}
+          </span>
+        </nav>
 
-      <!-- Back to News Button -->
-      <div class="mb-6">
         <router-link 
           to="/media/news" 
-          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:text-blue-700 hover:border-blue-300 shadow-2xs transition"
+          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition shadow-2xs shrink-0"
         >
           <ArrowLeft class="w-3.5 h-3.5" />
-          <span>Back to All News</span>
+          <span>Back to Press Room</span>
         </router-link>
       </div>
+    </div>
 
-      <!-- Loading State Skeleton -->
+    <!-- Main Content Container -->
+    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
+      
+      <!-- Loading Skeleton -->
       <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
-        <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 space-y-6">
-          <div class="h-6 w-32 bg-slate-200 rounded-lg"></div>
-          <div class="h-10 w-3/4 bg-slate-200 rounded-xl"></div>
-          <div class="h-80 w-full bg-slate-200 rounded-2xl"></div>
+        <div class="lg:col-span-8 bg-white rounded-3xl p-8 border border-slate-200 space-y-6">
+          <div class="h-8 bg-slate-200 rounded w-1/3"></div>
+          <div class="h-12 bg-slate-200 rounded w-full"></div>
+          <div class="h-64 bg-slate-100 rounded-2xl"></div>
           <div class="space-y-3">
-            <div class="h-4 bg-slate-200 rounded"></div>
-            <div class="h-4 bg-slate-200 rounded"></div>
-            <div class="h-4 w-5/6 bg-slate-200 rounded"></div>
+            <div class="h-4 bg-slate-200 rounded w-full"></div>
+            <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+            <div class="h-4 bg-slate-200 rounded w-3/4"></div>
           </div>
         </div>
         <div class="lg:col-span-4 space-y-6">
-          <div class="bg-white rounded-3xl p-6 border border-slate-200 h-96"></div>
+          <div class="h-64 bg-white rounded-3xl border border-slate-200 p-6"></div>
         </div>
       </div>
 
-      <!-- Main 2-Column Editorial Grid (70% Article + 30% Sidebar) -->
-      <div v-else-if="article" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- Article Reading Chamber -->
+      <div v-else-if="article" class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
-        <!-- ================= LEFT: MAIN ARTICLE ================= -->
-        <article class="lg:col-span-8 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 overflow-hidden">
+        <!-- Left Article Main Column (8 cols) -->
+        <article class="lg:col-span-8 bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-sm relative overflow-hidden">
           
-          <!-- Meta Header -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-slate-100">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 text-xs font-black uppercase tracking-wider">
-                {{ article.category || 'General' }}
+          <!-- Category & Metadata Header Strip -->
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <span class="px-3.5 py-1 rounded-full bg-blue-900 text-amber-300 text-xs font-black uppercase tracking-wider shadow-2xs">
+              {{ article.category || 'Gazette Dispatch' }}
+            </span>
+            <div class="flex items-center gap-4 text-xs font-mono text-slate-500 font-semibold">
+              <span class="flex items-center gap-1.5">
+                <Calendar class="w-3.5 h-3.5 text-blue-700" />
+                {{ new Date(article.published_at || article.created_at).toLocaleDateString() }}
               </span>
-              <span class="text-xs text-slate-400">•</span>
-              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                <Calendar class="w-3.5 h-3.5 text-slate-400" />
-                {{ new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }}
-              </span>
-            </div>
-
-            <div class="flex items-center gap-3 text-xs font-semibold text-slate-400">
-              <span class="inline-flex items-center gap-1">
-                <Eye class="w-3.5 h-3.5 text-slate-400" />
-                {{ article.views_count || 1 }} views
-              </span>
-              <span>•</span>
-              <span class="inline-flex items-center gap-1">
-                <Clock class="w-3.5 h-3.5 text-slate-400" />
+              <span class="flex items-center gap-1.5">
+                <Clock class="w-3.5 h-3.5 text-amber-600" />
                 {{ readingTime }} min read
+              </span>
+              <span v-if="article.views_count" class="flex items-center gap-1.5">
+                <Eye class="w-3.5 h-3.5 text-slate-400" />
+                {{ article.views_count }} views
               </span>
             </div>
           </div>
 
-          <!-- Main Article Title -->
-          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight mt-6 mb-6">
+          <!-- Headline -->
+          <h1 class="text-2xl sm:text-4xl font-black text-slate-900 leading-tight tracking-tight mb-6">
             {{ getTitle(article) }}
           </h1>
 
-          <!-- Featured Hero Image -->
-          <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-xs mb-8 bg-slate-100">
-            <img 
-              v-if="article.thumbnail_path || article.featured_image"
-              :src="article.thumbnail_path || article.featured_image" 
-              :alt="getTitle(article)" 
-              class="w-full max-h-[500px] object-cover"
-            />
-            <div v-else class="h-64 flex flex-col items-center justify-center text-slate-400 bg-slate-100">
-              <Newspaper class="w-12 h-12 mb-2 text-slate-300" />
-              <span class="text-xs font-bold text-slate-400">Kombolcha Metropolitan Press Release</span>
-            </div>
-          </div>
-
-          <!-- Summary / Lead Quote -->
-          <div v-if="getSummary(article)" class="p-5 rounded-2xl bg-blue-50/70 border-l-4 border-blue-600 text-slate-700 text-sm sm:text-base font-semibold leading-relaxed mb-8">
+          <!-- Summary Blockquote Box -->
+          <div v-if="getSummary(article)" class="p-5 sm:p-6 rounded-2xl bg-slate-50 border-l-4 border-amber-500 mb-8 text-sm sm:text-base text-slate-700 leading-relaxed font-medium">
             {{ getSummary(article) }}
           </div>
 
-          <!-- Full Article Body -->
-          <div class="prose max-w-none text-slate-800 text-base leading-relaxed whitespace-pre-line space-y-4">
-            {{ getContent(article) }}
+          <!-- Featured Photography Frame -->
+          <div v-if="article.thumbnail_path" class="w-full h-72 sm:h-96 rounded-2xl overflow-hidden mb-8 bg-slate-900 shadow-md">
+            <img 
+              :src="article.thumbnail_path" 
+              :alt="getTitle(article)" 
+              class="w-full h-full object-cover"
+            />
           </div>
 
-          <!-- Social Share Bar & Actions -->
-          <div class="mt-10 pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <!-- Article Prose Body -->
+          <div 
+            class="prose max-w-none text-slate-800 text-base leading-relaxed space-y-4 pt-2 border-t border-slate-100"
+            v-html="getContent(article) || getSummary(article)"
+          ></div>
+
+          <!-- Social Sharing & Verification Footer -->
+          <div class="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
-                <Share2 class="w-3.5 h-3.5 text-blue-600" />
-                Share Article:
-              </span>
-              
-              <!-- Telegram -->
+              <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Share Dispatch:</span>
               <button 
                 @click="shareOnTelegram" 
-                class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                class="p-2 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 transition cursor-pointer"
                 title="Share on Telegram"
               >
-                <Send class="w-3 h-3" />
-                <span>Telegram</span>
+                <Send class="w-4 h-4" />
               </button>
-
-              <!-- Facebook -->
               <button 
                 @click="shareOnFacebook" 
-                class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition cursor-pointer"
+                class="p-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition cursor-pointer"
                 title="Share on Facebook"
               >
-                Facebook
+                <Share2 class="w-4 h-4" />
               </button>
-
-              <!-- Twitter / X -->
-              <button 
-                @click="shareOnTwitter" 
-                class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition cursor-pointer"
-                title="Share on Twitter / X"
-              >
-                X
-              </button>
-
-              <!-- Copy Link -->
               <button 
                 @click="copyShareLink" 
-                class="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
               >
-                <Check v-if="copied" class="w-3 h-3 text-emerald-600" />
-                <span>{{ copied ? 'Copied!' : 'Copy Link' }}</span>
+                <Check v-if="copied" class="w-4 h-4 text-emerald-600" />
+                <Copy v-else class="w-4 h-4" />
+                <span>{{ copied ? 'Link Copied!' : 'Copy Link' }}</span>
               </button>
             </div>
 
-            <!-- Return Link -->
-            <router-link to="/media/news" class="text-xs font-bold text-blue-700 hover:underline">
-              ← Explore all news & press releases
-            </router-link>
+            <div class="text-xs text-slate-400 font-mono">
+              Kombolcha Municipal Communications Directorate
+            </div>
           </div>
         </article>
 
-        <!-- ================= RIGHT: SIDEBAR WIDGETS ================= -->
-        <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+        <!-- Right Sidebar (4 cols) -->
+        <aside class="lg:col-span-4 space-y-6">
           
-          <!-- 1. Recent News Widget (Matching Addis Cadaster UX) -->
-          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
-            <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
-              <Newspaper class="w-4 h-4 text-blue-600 shrink-0" />
-              <h3 class="text-sm font-black uppercase text-slate-900 tracking-wider">
-                Recent News
+          <!-- Recent Gazette Dispatches Widget -->
+          <div v-if="recentNews.length > 0" class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <TrendingUp class="w-4 h-4 text-blue-700" />
+                <span>Recent Press Dispatches</span>
               </h3>
             </div>
 
-            <div v-if="recentNews.length > 0" class="divide-y divide-slate-100">
+            <div class="space-y-4">
               <div 
-                v-for="item in recentNews" 
-                :key="item.id"
-                @click="navigateToArticle(item)"
-                class="py-3.5 first:pt-0 last:pb-0 flex items-start gap-3.5 group cursor-pointer"
+                v-for="recent in recentNews" 
+                :key="recent.id" 
+                @click="navigateToArticle(recent)"
+                class="group cursor-pointer pb-3 border-b border-slate-100 last:border-0 last:pb-0"
               >
-                <!-- Thumbnail -->
-                <div class="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 relative">
-                  <img 
-                    v-if="item.thumbnail_path || item.featured_image" 
-                    :src="item.thumbnail_path || item.featured_image" 
-                    :alt="getTitle(item)" 
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                  />
-                  <div v-else class="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
-                    <TrendingUp class="w-5 h-5 opacity-40 text-blue-600" />
-                  </div>
-                </div>
-
-                <!-- Text & Metadata -->
-                <div class="flex-1 min-w-0">
-                  <h4 class="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition leading-snug line-clamp-2 mb-1.5">
-                    {{ getTitle(item) }}
-                  </h4>
-                  <div class="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                    <Clock class="w-3 h-3 text-slate-400 shrink-0" />
-                    <span>{{ new Date(item.published_at || item.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) }}</span>
-                  </div>
-                </div>
+                <span class="text-[10px] text-amber-700 font-bold uppercase block mb-1">
+                  {{ recent.category || 'Gazette' }}
+                </span>
+                <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-900 leading-snug transition-colors line-clamp-2">
+                  {{ getTitle(recent) }}
+                </h4>
+                <span class="text-[10px] text-slate-400 font-mono mt-1 block">
+                  {{ new Date(recent.published_at || recent.created_at).toLocaleDateString() }}
+                </span>
               </div>
-            </div>
-
-            <div v-else class="py-6 text-center text-slate-400 text-xs">
-              No other recent articles available.
             </div>
           </div>
 
-          <!-- 2. News Categories Widget -->
-          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
-            <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
-              <FolderOpen class="w-4 h-4 text-blue-600 shrink-0" />
-              <h3 class="text-sm font-black uppercase text-slate-900 tracking-wider">
-                Categories
-              </h3>
-            </div>
-
+          <!-- Gazette Categories Widget -->
+          <div v-if="categories.length > 0" class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 mb-4 flex items-center gap-2">
+              <FolderOpen class="w-4 h-4 text-blue-700" />
+              <span>Press Categories</span>
+            </h3>
             <div class="space-y-1.5">
               <button 
-                v-for="cat in (categories.length ? categories : [{ category: 'Development', count: 1 }, { category: 'Governance', count: 1 }, { category: 'General', count: 1 }])"
+                v-for="cat in categories" 
                 :key="cat.category"
                 @click="navigateToCategory(cat.category)"
-                class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-blue-700 transition text-xs font-bold cursor-pointer group"
+                class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-700 transition cursor-pointer"
               >
-                <div class="flex items-center gap-2">
-                  <Tag class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600" />
-                  <span class="capitalize">{{ cat.category }}</span>
-                </div>
-                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono text-[10px]">
-                  {{ cat.count || 1 }}
+                <span>{{ cat.category }}</span>
+                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono font-bold text-[10px]">
+                  {{ cat.count }}
                 </span>
               </button>
             </div>
           </div>
-
-          <!-- 3. Official Press Desk Help Card -->
-          <div class="bg-gradient-to-br from-blue-700 to-indigo-900 text-white rounded-3xl p-6 shadow-md relative overflow-hidden">
-            <div class="flex items-center gap-2 text-blue-200 text-xs font-black uppercase tracking-wider mb-2">
-              <Sparkles class="w-3.5 h-3.5 text-blue-300" />
-              <span>Communications Bureau</span>
-            </div>
-            <h4 class="text-base font-black text-white leading-snug mb-2">
-              Media Inquiries & Press Briefings
-            </h4>
-            <p class="text-xs text-blue-100 leading-relaxed mb-4">
-              For accredited press inquiries, official mayoral statements, or interview requests, reach the Press Secretary.
-            </p>
-            <router-link 
-              to="/contact" 
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-blue-900 text-xs font-black hover:bg-blue-50 transition shadow-xs"
-            >
-              <span>Contact Press Desk</span>
-              <ChevronRight class="w-3.5 h-3.5" />
-            </router-link>
-          </div>
-
         </aside>
-
       </div>
-
-      <!-- Not Found Fallback -->
-      <div v-else class="text-center py-24 bg-white rounded-3xl border border-slate-200 p-8 max-w-lg mx-auto">
-        <Newspaper class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <h3 class="text-lg font-black text-slate-900 mb-1">Article Not Found</h3>
-        <p class="text-xs text-slate-500 mb-6">The requested news article may have been relocated or updated.</p>
-        <router-link to="/media/news" class="px-5 py-2.5 rounded-xl bg-blue-700 text-white text-xs font-bold hover:bg-blue-800 transition">
-          Return to News Directory
-        </router-link>
-      </div>
-
     </div>
   </div>
 </template>

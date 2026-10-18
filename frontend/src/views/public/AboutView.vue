@@ -15,7 +15,10 @@ import {
   Calendar,
   CloudSun,
   Award,
-  Layers
+  Layers,
+  Sparkles,
+  Mountain,
+  HeartHandshake
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
@@ -23,12 +26,12 @@ const route = useRoute()
 const router = useRouter()
 
 const tabs = [
-  { id: 'about', label_en: 'About', label_am: 'ስለ ከተማዋ', label_om: 'Waa\'ee Magaalaa' },
-  { id: 'history', label_en: 'History', label_am: 'ታሪክ', label_om: 'Seenaa' },
-  { id: 'vision', label_en: 'Vision and Mission', label_am: 'ራዕይ እና ተልዕኮ', label_om: 'Mul\'ata fi Ergama' },
+  { id: 'about', label_en: 'About Kombolcha', label_am: 'ስለ ከተማዋ', label_om: 'Waa\'ee Magaalaa' },
+  { id: 'history', label_en: 'Historical Heritage', label_am: 'ታሪክና አመጣጥ', label_om: 'Seenaa' },
+  { id: 'vision', label_en: 'Vision & Mission', label_am: 'ራዕይ እና ተልዕኮ', label_om: 'Mul\'ata fi Ergama' },
   { id: 'people', label_en: 'People & Culture', label_am: 'ህዝብና ባህል', label_om: 'Ummata fi Aadaa' },
-  { id: 'geography', label_en: 'Geography & Climate', label_am: 'መልክዓ ምድር', label_om: 'Teessuma Lafaa' },
-  { id: 'administration', label_en: 'Administration', label_am: 'የአስተዳደር መዋቅር', label_om: 'Caasaa Bulchiinsaa' }
+  { id: 'geography', label_en: 'Geography & Climate', label_am: 'መልክዓ ምድርና አየር ንብረት', label_om: 'Teessuma Lafaa' },
+  { id: 'administration', label_en: 'Governance Charter', label_am: 'የአስተዳደር መዋቅር', label_om: 'Caasaa Bulchiinsaa' }
 ]
 
 const activeTab = ref('about')
@@ -62,90 +65,105 @@ const getTabLabel = (t) => {
 </script>
 
 <template>
-  <div class="w-full bg-white min-h-screen">
-    <!-- Breadcrumb Bar (Matching Old Government Website) -->
-    <div class="bg-slate-50 border-b border-slate-200 py-3 px-4 sm:px-8 xl:px-12 text-xs text-slate-500">
-      <div class="w-full max-w-[1700px] mx-auto flex items-center gap-2">
-        <router-link to="/" class="hover:text-[#0b3c5d] font-medium">Home</router-link>
-        <span>/</span>
-        <router-link to="/about" class="hover:text-[#0b3c5d] font-medium">About</router-link>
-        <span>/</span>
-        <span class="text-[#0b3c5d] font-bold">{{ getTabLabel(currentTabObj) }}</span>
+  <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
+    
+    <!-- Prestige Civic Header Strip -->
+    <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl">
+      <div class="w-full max-w-[1700px] mx-auto">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black uppercase tracking-widest">
+            <Landmark class="w-3.5 h-3.5 text-amber-400" />
+            Amhara National Regional State • Kombolcha Metropolitan Charter
+          </span>
+          <span class="text-xs text-slate-400 font-mono">Civic Profile & Heritage</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+          {{ langStore.currentLang === 'am' ? 'ስለ ኮምቦልቻ ከተማ አስተዳደር' : 'About Kombolcha Metropolitan City' }}
+        </h1>
+        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+          {{ langStore.currentLang === 'am'
+            ? 'የከተማዋ አመሰራረት፣ ታሪክ፣ ራዕይና ተልዕኮ፣ የህዝብና ባህል አኗኗር፣ የመልክዓ ምድር ገጽታ እና የዘመናዊው አስተዳደር መዋቅር።'
+            : 'Explore the founding history, geographic advantage, vision, cultural diversity, and public administration framework of Kombolcha.'
+          }}
+        </p>
       </div>
     </div>
 
-    <!-- Main Content Container with Left Sidebar (Exact Old Site Layout) -->
-    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-8 lg:py-12">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        <!-- Left Sidebar Navigation -->
-        <aside class="lg:col-span-3">
-          <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs sticky top-28">
-            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 font-bold text-slate-800 text-sm flex items-center justify-between">
-              <span>{{ langStore.currentLang === 'am' ? 'የይዘት ማውጫ' : 'Navigation Menu' }}</span>
-              <Layers class="w-4 h-4 text-[#0b3c5d]" />
+    <!-- Main Content Container with Left Sidebar -->
+    <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Sidebar Navigation & Fast Facts (3 cols) -->
+        <aside class="lg:col-span-3 space-y-6">
+          <div class="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm sticky top-28">
+            <div class="bg-slate-900 text-white px-5 py-4 border-b border-slate-800 font-black text-xs uppercase tracking-wider flex items-center justify-between">
+              <span>{{ langStore.currentLang === 'am' ? 'የይዘት ማውጫ' : 'Civic Directory' }}</span>
+              <Layers class="w-4 h-4 text-amber-400" />
             </div>
-            <nav class="flex flex-col divide-y divide-slate-100 text-sm">
+            <nav class="flex flex-col divide-y divide-slate-100 text-xs sm:text-sm font-bold">
               <button
                 v-for="tab in tabs"
                 :key="tab.id"
                 @click="selectTab(tab.id)"
                 :class="[
-                  'w-full text-left px-4 py-3.5 font-semibold transition-all flex items-center justify-between cursor-pointer',
+                  'w-full text-left px-5 py-4 transition-all flex items-center justify-between cursor-pointer',
                   activeTab === tab.id
-                    ? 'bg-[#0b3c5d] text-white shadow-inner font-bold'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-[#0b3c5d]'
+                    ? 'bg-blue-900 text-amber-300 shadow-inner font-black'
+                    : 'text-slate-700 hover:bg-slate-50 hover:text-blue-900'
                 ]"
               >
                 <span>{{ getTabLabel(tab) }}</span>
-                <ChevronRight class="w-4 h-4 opacity-75" :class="{ 'text-white': activeTab === tab.id, 'text-slate-400': activeTab !== tab.id }" />
+                <ChevronRight class="w-4 h-4 opacity-75" :class="activeTab === tab.id ? 'text-amber-400' : 'text-slate-400'" />
               </button>
             </nav>
           </div>
 
           <!-- Quick Fast Facts Widget -->
-          <div class="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-5 text-xs text-slate-600">
-            <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Landmark class="w-4 h-4 text-[#0b3c5d]" />
-              {{ langStore.currentLang === 'am' ? 'አጫጭር መረጃዎች' : 'Quick City Facts' }}
+          <div class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm text-xs text-slate-600">
+            <h4 class="font-black text-slate-900 text-xs uppercase tracking-wider mb-4 flex items-center gap-2 pb-3 border-b border-slate-100">
+              <Landmark class="w-4 h-4 text-blue-700" />
+              <span>{{ langStore.currentLang === 'am' ? 'አጫጭር የከተማዋ መረጃዎች' : 'Quick City Facts' }}</span>
             </h4>
-            <ul class="space-y-2.5">
-              <li class="flex justify-between border-b border-slate-200 pb-1.5">
-                <span class="text-slate-500">Foundation:</span>
-                <span class="font-bold text-slate-800">1928 E.C / 1936 G.C</span>
+            <ul class="space-y-3 font-medium">
+              <li class="flex justify-between border-b border-slate-100 pb-2">
+                <span class="text-slate-400 font-bold">Foundation:</span>
+                <span class="font-black text-slate-900">1928 E.C / 1936 G.C</span>
               </li>
-              <li class="flex justify-between border-b border-slate-200 pb-1.5">
-                <span class="text-slate-500">Elevation:</span>
-                <span class="font-bold text-slate-800">1,842 meters</span>
+              <li class="flex justify-between border-b border-slate-100 pb-2">
+                <span class="text-slate-400 font-bold">Elevation:</span>
+                <span class="font-black text-slate-900 font-mono">1,842 meters</span>
               </li>
-              <li class="flex justify-between border-b border-slate-200 pb-1.5">
-                <span class="text-slate-500">Sub-Cities:</span>
-                <span class="font-bold text-slate-800">4 Divisions</span>
+              <li class="flex justify-between border-b border-slate-100 pb-2">
+                <span class="text-slate-400 font-bold">Sub-Cities:</span>
+                <span class="font-black text-slate-900">4 Autonomous</span>
               </li>
-              <li class="flex justify-between border-b border-slate-200 pb-1.5">
-                <span class="text-slate-500">Sector Offices:</span>
-                <span class="font-bold text-slate-800">22 Municipal Directorates</span>
+              <li class="flex justify-between border-b border-slate-100 pb-2">
+                <span class="text-slate-400 font-bold">Sector Bureaus:</span>
+                <span class="font-black text-slate-900">22 Directorates</span>
               </li>
               <li class="flex justify-between">
-                <span class="text-slate-500">Distance from A.A:</span>
-                <span class="font-bold text-slate-800">375 km North</span>
+                <span class="text-slate-400 font-bold">Distance from A.A:</span>
+                <span class="font-black text-slate-900 font-mono">375 km North</span>
               </li>
             </ul>
           </div>
         </aside>
 
-        <!-- Right Main Panel Content -->
-        <main class="lg:col-span-9 bg-white">
-          <!-- TAB 1: ABOUT (Exact Amharic title & Italian history from screenshot) -->
+        <!-- Right Main Panel Content (9 cols) -->
+        <main class="lg:col-span-9 bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-12 shadow-sm">
+          
+          <!-- TAB 1: ABOUT -->
           <div v-if="activeTab === 'about'" class="space-y-6">
-            <div class="border-b border-slate-200 pb-4">
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0b3c5d]">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
                 {{ langStore.currentLang === 'am' ? 'ስለ ኮምቦልቻ ከተማ' : 'About Kombolcha' }}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Official Municipal Heritage, Origin, and Overview</p>
+              <p class="text-xs text-slate-400 mt-1">Official Municipal Heritage, Origin, and Overview</p>
             </div>
 
             <div class="prose max-w-none text-slate-700 leading-relaxed space-y-4">
-              <h3 class="text-xl font-bold text-slate-900 border-l-4 border-[#0b3c5d] pl-3">
+              <h3 class="text-xl font-black text-slate-900 border-l-4 border-blue-700 pl-4">
                 የከተማዋ ስያሜ እና አመጣጥ (Origin of the Name)
               </h3>
               <p class="text-justify text-base">
@@ -156,23 +174,19 @@ const getTabLabel = (t) => {
               </p>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                  <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                    <Building2 class="w-4 h-4 text-[#0b3c5d]" />
-                    Industrial Distinction
+                <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                    <Building2 class="w-4 h-4 text-blue-700" />
+                    <span>Industrial Identity</span>
                   </h4>
-                  <p class="text-xs text-slate-600 leading-relaxed">
-                    Home to Ethiopia's state-of-the-art Kombolcha Industrial Park, specialized textile mills, brewery complexes, steel fabrication plants, and the region's primary multi-modal Dry Port logistics terminal.
-                  </p>
+                  <p class="text-xs text-slate-600">Home to Kombolcha Industrial Park, modern textile mills, brewery plants, and steel fabrication centers.</p>
                 </div>
-                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                  <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                    <Compass class="w-4 h-4 text-[#0b3c5d]" />
-                    Transport & Connectivity
+                <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                    <Compass class="w-4 h-4 text-emerald-600" />
+                    <span>Multimodal Logistics Hub</span>
                   </h4>
-                  <p class="text-xs text-slate-600 leading-relaxed">
-                    Accessible via the modern Kombolcha Domestic Airport with daily scheduled passenger and cargo flights, express arterial highways, and planned regional railway links.
-                  </p>
+                  <p class="text-xs text-slate-600">Anchored by the Kombolcha Dry Port, airport corridor, and Ethio-Djibouti Railway line connection.</p>
                 </div>
               </div>
             </div>
@@ -180,199 +194,110 @@ const getTabLabel = (t) => {
 
           <!-- TAB 2: HISTORY -->
           <div v-else-if="activeTab === 'history'" class="space-y-6">
-            <div class="border-b border-slate-200 pb-4">
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0b3c5d]">
-                {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ታሪክ' : 'Historical Genesis of Kombolcha' }}
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ታሪክ' : 'Historical Heritage' }}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">From a crossroad transit outpost to an industrial metropolis</p>
+              <p class="text-xs text-slate-400 mt-1">Foundation, Evolution, and Modern Development</p>
             </div>
-
-            <div class="space-y-6 text-slate-700 leading-relaxed">
-              <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-50 text-[#0b3c5d] font-bold flex items-center justify-center shrink-0 border border-blue-200">
-                  1928
-                </div>
-                <div>
-                  <h4 class="text-base font-bold text-slate-900">Establishment During Italian Occupation (1928 E.C / 1936 G.C)</h4>
-                  <p class="text-sm text-slate-600 mt-1 text-justify">
-                    During the Italian occupation of Ethiopia, the strategic topography between Dessie and the lowlands was selected as a strategic transit and military encampment. Roads were constructed across the challenging mountainous corridors connecting to Asmara and Addis Ababa.
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-50 text-[#0b3c5d] font-bold flex items-center justify-center shrink-0 border border-blue-200">
-                  1960s
-                </div>
-                <div>
-                  <h4 class="text-base font-bold text-slate-900">The Rise of Manufacturing Hub (1960s - 1980s)</h4>
-                  <p class="text-sm text-slate-600 mt-1 text-justify">
-                    Kombolcha emerged as a premier manufacturing destination in Ethiopia with the inauguration of the Kombolcha Textile Share Company (KTSC), meat processing factories, tanneries, and metallurgical industries, providing employment to tens of thousands across Wollo.
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-50 text-[#0b3c5d] font-bold flex items-center justify-center shrink-0 border border-blue-200">
-                  2015+
-                </div>
-                <div>
-                  <h4 class="text-base font-bold text-slate-900">Modern Eco-Industrial Park & Metropolitan Evolution</h4>
-                  <p class="text-sm text-slate-600 mt-1 text-justify">
-                    In 2017, the federal and regional governments inaugurated the Kombolcha Eco-Industrial Park, alongside expanding dry port freight customs terminals and airport infrastructure, firmly consolidating Kombolcha's status as a 21st-century economic titan.
-                  </p>
-                </div>
-              </div>
+            <div class="text-slate-700 leading-relaxed space-y-4 text-base">
+              <p>
+                Kombolcha's historical evolution began as a strategic crossroad in the 1930s. The town expanded rapidly due to its location at the intersection of historical trade caravans connecting Northern Ethiopia to the Red Sea coast.
+              </p>
+              <p>
+                During the mid-20th century, the opening of major textile and manufacturing plants transformed Kombolcha into one of Ethiopia's premier industrial epicenters, earning it the moniker "The Industrial Hearth of Wollo."
+              </p>
             </div>
           </div>
 
-          <!-- TAB 3: VISION AND MISSION -->
+          <!-- TAB 3: VISION & MISSION -->
           <div v-else-if="activeTab === 'vision'" class="space-y-6">
-            <div class="border-b border-slate-200 pb-4">
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0b3c5d]">
-                {{ langStore.currentLang === 'am' ? 'ራዕይ እና ተልዕኮ' : 'Vision, Mission & Core Values' }}
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'ራዕይ፣ ተልዕኮ እና እሴቶች' : 'Vision, Mission & Core Values' }}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Guiding principles of the Kombolcha City Administration</p>
+              <p class="text-xs text-slate-400 mt-1">Guiding Principles of Kombolcha Municipal Administration</p>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="bg-slate-50 border-2 border-blue-100 rounded-xl p-6">
-                <div class="flex items-center gap-2 text-xs font-bold text-[#0b3c5d] uppercase tracking-wider mb-2">
-                  <Compass class="w-5 h-5 text-[#0b3c5d]" />
-                  <span>{{ langStore.currentLang === 'am' ? 'የከተማው ራዕይ' : 'Municipal Vision' }}</span>
-                </div>
-                <h3 class="text-lg font-bold text-slate-900 mb-3">Our 2030 Horizon</h3>
+              <div class="p-6 rounded-2xl bg-blue-50/60 border border-blue-200">
+                <h3 class="text-lg font-black text-blue-900 mb-2">Our Vision</h3>
                 <p class="text-sm text-slate-700 leading-relaxed">
-                  "በ 2030 ኮምቦልቻ በኢትዮጵያ ውስጥ በኢንዱስትሪ ማኑፋክቸሪንግ፣ በሎጂስቲክስ እና በዘመናዊ ዲጂታል አገልግሎት አሰጣጥ ግንባር ቀደም፣ ለነዋሪዎቿ ምቹና አረንጓዴ ሜትሮፖሊታን ከተማ ሆና ማየት።"
-                </p>
-                <p class="text-xs text-slate-500 mt-3 italic">
-                  To be Ethiopia's premier center of industrial excellence, green commerce, and accountable public service by 2030.
+                  To become an internationally competitive industrial, logistics, and tourism hub in Eastern Africa by 2035, ensuring sustainable prosperity and high quality of life for all residents.
                 </p>
               </div>
-
-              <div class="bg-slate-50 border-2 border-emerald-100 rounded-xl p-6">
-                <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">
-                  <TrendingUp class="w-5 h-5 text-emerald-700" />
-                  <span>{{ langStore.currentLang === 'am' ? 'የከተማው ተልዕኮ' : 'Municipal Mission' }}</span>
-                </div>
-                <h3 class="text-lg font-bold text-slate-900 mb-3">Core Operational Purpose</h3>
+              <div class="p-6 rounded-2xl bg-emerald-50/60 border border-emerald-200">
+                <h3 class="text-lg font-black text-emerald-900 mb-2">Our Mission</h3>
                 <p class="text-sm text-slate-700 leading-relaxed">
-                  "የነዋሪዎችን የኑሮ ደረጃ የሚያሻሽሉ ጥራት ያላቸው መሰረተ ልማቶችን መገንባት፣ ኢንቨስትመንትን ማበረታታት እና ፍትሃዊ፣ ፈጣንና ከአድልዎ የጸዳ የመንግስት አገልግሎት ማረጋገጥ።"
-                </p>
-                <p class="text-xs text-slate-500 mt-3 italic">
-                  Cultivating resilient infrastructure, attracting high-yield investments, and delivering transparent, corruption-free public administration.
+                  Delivering fast, equitable, and transparent public services, fostering investor confidence, upgrading modern infrastructure, and protecting our natural heritage.
                 </p>
               </div>
             </div>
           </div>
 
-          <!-- TAB 4: PEOPLE -->
+          <!-- TAB 4: PEOPLE & CULTURE -->
           <div v-else-if="activeTab === 'people'" class="space-y-6">
-            <div class="border-b border-slate-200 pb-4">
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0b3c5d]">
-                {{ langStore.currentLang === 'am' ? 'ህዝብና ባህል' : 'People, Demographics & Cultural Harmony' }}
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'ህዝብ፣ ባህልና አኗኗር' : 'People & Culture' }}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">A vibrant tapestry of Wollo warmth and peaceful coexistence</p>
+              <p class="text-xs text-slate-400 mt-1">Demographics, Wollo Hospitality, and Social Harmony</p>
             </div>
-
-            <div class="prose max-w-none text-slate-700 leading-relaxed space-y-4">
-              <p class="text-base text-justify">
-                Kombolcha is renowned across Ethiopia as a beacon of fraternal coexistence, religious harmony, and genuine Wollo hospitality. For generations, Orthodox Christians, Muslims, and Protestant believers have celebrated holidays, shared meals, and built communities side-by-side with profound respect.
+            <div class="text-slate-700 leading-relaxed space-y-4 text-base">
+              <p>
+                Kombolcha is renowned across Ethiopia for its deep culture of tolerance, hospitality, and peaceful interfaith coexistence. Christians and Muslims have cohabited harmoniously for generations, celebrating religious festivals and cultural traditions together.
               </p>
-              <p class="text-base text-justify">
-                The current estimated population exceeds 220,000 residents, driven by young, dynamic workforce inflows seeking careers in the manufacturing parks, university institutions, commercial markets, and transport logistics firms.
-              </p>
-
-              <div class="bg-slate-50 border border-slate-200 rounded-lg p-5 mt-4">
-                <h4 class="font-bold text-slate-900 mb-2">Key Cultural Milestones</h4>
-                <ul class="list-disc pl-5 space-y-1 text-sm text-slate-600">
-                  <li>Celebration of Meskel, Eid al-Fitr, Timket, and Eid al-Adha as unified community events.</li>
-                  <li>Traditional Wollo music, poetic debate (Qene), and culinary traditions.</li>
-                  <li>Active participation of youth and women associations in municipal civic deliberations.</li>
-                </ul>
+              <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
+                <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <HeartHandshake class="w-5 h-5 text-rose-600" />
+                  <span>The Spirit of Wollo Hospitality</span>
+                </h4>
+                <p class="text-xs sm:text-sm text-slate-600">The people of Kombolcha welcome visitors and investors with traditional coffee ceremonies, vibrant Sunday markets, and renowned Wollo cultural melodies.</p>
               </div>
             </div>
           </div>
 
-          <!-- TAB 5: GEOGRAPHY -->
+          <!-- TAB 5: GEOGRAPHY & CLIMATE -->
           <div v-else-if="activeTab === 'geography'" class="space-y-6">
-            <div class="border-b border-slate-200 pb-4">
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0b3c5d]">
-                {{ langStore.currentLang === 'am' ? 'መልክዓ ምድርና የአየር ንብረት' : 'Geography, Climate & Watersheds' }}
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'መልክዓ ምድርና አየር ንብረት' : 'Geography & Climate' }}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Surrounded by Mount Yegof and the fertile Borkena basin</p>
+              <p class="text-xs text-slate-400 mt-1">Topography, Mount Yegof, and Weather Characteristics</p>
             </div>
-
-            <div class="prose max-w-none text-slate-700 leading-relaxed space-y-4">
-              <p class="text-base text-justify">
-                Kombolcha is situated at a latitude of 11°05′N and longitude of 39°44′E, with an elevation ranging from 1,840 to 1,900 meters above sea level. It enjoys a subtropical highland climate with moderate temperatures throughout the year (averaging 18°C to 28°C), making it ideal for urban living and heavy industry.
+            <div class="text-slate-700 leading-relaxed space-y-4 text-base">
+              <p>
+                Nestled at an average altitude of 1,842 meters above sea level, Kombolcha enjoys a pleasant subtropical highland climate (Woina Dega) characterized by moderate temperatures year-round ranging from 15°C to 28°C.
               </p>
-              
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
-                  <div class="text-xl font-bold text-[#0b3c5d]">Mount Yegof</div>
-                  <p class="text-xs text-slate-600 mt-1">Majestic forested mountain ridge guarding the city's south and protecting vital water aquifers.</p>
-                </div>
-                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
-                  <div class="text-xl font-bold text-[#0b3c5d]">Borkena River</div>
-                  <p class="text-xs text-slate-600 mt-1">Primary hydrological lifeline supplying valley irrigation and municipal greenery initiatives.</p>
-                </div>
-                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
-                  <div class="text-xl font-bold text-[#0b3c5d]">Woina Dega</div>
-                  <p class="text-xs text-slate-600 mt-1">Temperate, invigorating climate with distinct bi-modal rainfall seasons (Belg and Kiremt).</p>
-                </div>
+              <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
+                <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <Mountain class="w-5 h-5 text-emerald-600" />
+                  <span>Mount Yegof Ecological Sanctuary</span>
+                </h4>
+                <p class="text-xs sm:text-sm text-slate-600">Rising to over 2,600 meters directly overlooking the city, Mount Yegof serves as a vital watershed catchment, ecological barrier, and protected indigenous forest sanctuary.</p>
               </div>
             </div>
           </div>
 
           <!-- TAB 6: ADMINISTRATION -->
           <div v-else-if="activeTab === 'administration'" class="space-y-6">
-            <div class="border-b border-slate-200 pb-4">
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-[#0b3c5d]">
-                {{ langStore.currentLang === 'am' ? 'የከተማው የአስተዳደር መዋቅር' : 'Municipal Governance Structure' }}
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'የከተማው አስተዳደር መዋቅር' : 'Municipal Governance Charter' }}
               </h2>
-              <p class="text-xs sm:text-sm text-slate-500 mt-1">Administrative hierarchy, Sub-Cities, and Directorates</p>
+              <p class="text-xs text-slate-400 mt-1">Cabinet, Council, Sub-Cities, and Directorate Framework</p>
             </div>
-
-            <div class="space-y-4 text-slate-700 leading-relaxed">
-              <p class="text-base text-justify">
-                Kombolcha operates under a metropolitan municipal administration model chartered under the Amhara National Regional State. Executive leadership is spearheaded by the Mayor and City Cabinet, accountable to the democratically elected City Council.
+            <div class="text-slate-700 leading-relaxed space-y-4 text-base">
+              <p>
+                Kombolcha is chartered under the Amhara National Regional State Municipal Proclamation. Governance is spearheaded by the Executive Mayor, assisted by the Mayoral Cabinet and accountable to the elected City Council.
               </p>
-
-              <div class="border border-slate-200 rounded-lg overflow-hidden">
-                <div class="bg-slate-100 px-4 py-2.5 font-bold text-slate-800 text-sm">
-                  The Four Sub-City Administrations (ክፍለ ከተሞች)
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 text-sm">
-                  <div class="p-4 space-y-1">
-                    <div class="font-bold text-[#0b3c5d]">1. Abishager Sub-City (አቢሻገር)</div>
-                    <p class="text-xs text-slate-600">Central municipal sector, historical commercial avenues, and central administrative buildings.</p>
-                  </div>
-                  <div class="p-4 space-y-1">
-                    <div class="font-bold text-[#0b3c5d]">2. Borkena Sub-City (ቦርከና)</div>
-                    <p class="text-xs text-slate-600">Flanking the river valley, modern residential extensions, and agricultural green belts.</p>
-                  </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 text-sm border-t border-slate-200">
-                  <div class="p-4 space-y-1">
-                    <div class="font-bold text-[#0b3c5d]">3. Hasenager Sub-City (ሀሰናገር)</div>
-                    <p class="text-xs text-slate-600">Dynamic logistics district, transportation centers, and highway commercial activity.</p>
-                  </div>
-                  <div class="p-4 space-y-1">
-                    <div class="font-bold text-[#0b3c5d]">4. Biraro Sub-City (ቢራሮ)</div>
-                    <p class="text-xs text-slate-600">Industrial park zone, dry port facilities, airport access corridors, and new housing developments.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="pt-4 flex gap-4">
-                <router-link to="/government/offices" class="inline-flex items-center gap-2 px-4 py-2 bg-[#0b3c5d] text-white rounded-lg text-xs font-bold hover:bg-[#0c4a6e] transition-colors">
-                  <Layers class="w-4 h-4" />
-                  View All 22 Sector Offices Directory
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <router-link to="/government/sub-cities" class="p-5 rounded-2xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition-all block">
+                  <h4 class="font-bold text-blue-900 mb-1">4 Sub-Cities</h4>
+                  <p class="text-xs text-slate-500">Explore Abishager, Borkena, Hasenager, and Biraro administrative zones.</p>
                 </router-link>
-                <router-link to="/government/mayor" class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors">
-                  <Landmark class="w-4 h-4" />
-                  Mayor's Office Executive Profile
+                <router-link to="/government/offices" class="p-5 rounded-2xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition-all block">
+                  <h4 class="font-bold text-blue-900 mb-1">22 Sector Bureaus</h4>
+                  <p class="text-xs text-slate-500">Access direct room numbers and phone extensions across municipal bureaus.</p>
                 </router-link>
               </div>
             </div>
