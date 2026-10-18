@@ -83,7 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/upload', [AdminContentController::class, 'uploadMedia']);
 
     // ----------------------------------------------------
-    // AUTHOR, EDITOR & SUPER_ADMIN (Content Creation & Drafting)
+    // AUTHOR, EDITOR & SUPER_ADMIN (News Content Submission & Drafting)
     // ----------------------------------------------------
     Route::middleware('role:author,editor,super_admin')->group(function () {
         // Articles Management (List, Create, Edit & Delete own drafts)
@@ -91,23 +91,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/news', [AdminContentController::class, 'storeNews']);
         Route::put('/admin/news/{id}', [AdminContentController::class, 'updateNews']);
         Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);
-
-        // Gallery Management (Upload & Edit)
-        Route::get('/admin/gallery', [AdminContentController::class, 'getGallery']);
-        Route::post('/admin/gallery', [AdminContentController::class, 'storeGalleryItem']);
-        Route::put('/admin/gallery/{id}', [AdminContentController::class, 'updateGalleryItem']);
-
-        // Resources Management (Create & Edit)
-        Route::post('/admin/resources', [AdminContentController::class, 'storeResource']);
-        Route::put('/admin/resources/{id}', [AdminContentController::class, 'updateResource']);
     });
 
     // ----------------------------------------------------
-    // EDITOR & SUPER_ADMIN (Editorial, Public Services, Destinations, Inquiries & Deletion)
+    // EDITOR & SUPER_ADMIN (Editorial, Resources, Gallery, Public Services, Destinations, Inquiries & Deletion)
     // ----------------------------------------------------
     Route::middleware('role:editor,super_admin')->group(function () {
-        // Content Deletion
+        // Gallery Management (Upload, Edit, Delete)
+        Route::get('/admin/gallery', [AdminContentController::class, 'getGallery']);
+        Route::post('/admin/gallery', [AdminContentController::class, 'storeGalleryItem']);
+        Route::put('/admin/gallery/{id}', [AdminContentController::class, 'updateGalleryItem']);
         Route::delete('/admin/gallery/{id}', [AdminContentController::class, 'deleteGalleryItem']);
+
+        // Resources & Directives Management (Create, Edit, Delete)
+        Route::post('/admin/resources', [AdminContentController::class, 'storeResource']);
+        Route::put('/admin/resources/{id}', [AdminContentController::class, 'updateResource']);
         Route::delete('/admin/resources/{id}', [AdminContentController::class, 'deleteResource']);
 
         // Citizen Inquiries & Feedback

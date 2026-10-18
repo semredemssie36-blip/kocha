@@ -12,10 +12,11 @@ import {
   ShieldCheck, 
   ArrowRight,
   Eye,
-  CheckCircle2,
-  Clock,
-  Layers,
-  Camera
+  CheckCircle2, 
+  Clock, 
+  Layers, 
+  Camera,
+  Globe
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -105,38 +106,48 @@ const emit = defineEmits(['navigate', 'openModal'])
       </div>
     </div>
 
-    <!-- 4 AWS-Style High-Density Metrics Cards -->
+    <!-- 4 AWS-Style High-Density Metrics Cards (Role-Aware) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      <!-- Card 1: Views -->
+      <!-- Card 1: Views / Audience Impact -->
       <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
         <div class="absolute top-0 left-0 right-0 h-1 bg-blue-600"></div>
         <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-          <span>{{ adminT('stat_views') }}</span>
+          <span>{{ isAuthor ? 'My Article Readers' : adminT('stat_views') }}</span>
           <Eye class="w-4 h-4 text-slate-400" />
         </div>
         <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.monthly_views || '24,520' }}</div>
         <div class="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 font-bold">
           <TrendingUp class="w-3.5 h-3.5" />
-          <span>{{ adminT('stat_traffic') }}</span>
+          <span>{{ isAuthor ? 'Audience Reach & Impact' : adminT('stat_traffic') }}</span>
         </div>
       </div>
 
-      <!-- Card 2: News Articles -->
+      <!-- Card 2: Published Articles -->
       <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
         <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
         <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-          <span>{{ adminT('stat_articles') }}</span>
+          <span>{{ isAuthor ? 'Live Published Articles' : adminT('stat_articles') }}</span>
           <FileText class="w-4 h-4 text-slate-400" />
         </div>
-        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.news_count || 0 }}</div>
+        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.published_news || 0 }}</div>
         <div class="mt-2 text-xs text-slate-500 font-medium">
-          <span class="text-emerald-700 font-bold">{{ stats.published_news || 0 }} live</span>
-          <span v-if="stats.pending_drafts > 0" class="ml-2 text-amber-600 font-bold">({{ stats.pending_drafts }} pending review)</span>
+          <span class="text-emerald-700 font-bold">{{ stats.published_news || 0 }} live on public site</span>
         </div>
       </div>
 
-      <!-- Card 3: Active Tenders -->
-      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
+      <!-- Card 3: Author -> Pending Editorial Review | Admin -> Active Tenders -->
+      <div v-if="isAuthor" class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
+        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          <span>Pending Review</span>
+          <Clock class="w-4 h-4 text-slate-400" />
+        </div>
+        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ stats.pending_drafts || 0 }}</div>
+        <div class="mt-2 text-xs text-amber-700 font-bold">
+          {{ stats.pending_drafts > 0 ? 'Awaiting Editor Approval' : 'No articles in queue' }}
+        </div>
+      </div>
+      <div v-else class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
         <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
         <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
           <span>{{ adminT('stat_tenders') }}</span>
@@ -148,8 +159,19 @@ const emit = defineEmits(['navigate', 'openModal'])
         </div>
       </div>
 
-      <!-- Card 4: Citizen Inquiries -->
-      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
+      <!-- Card 4: Author -> Personal Drafts | Admin -> Citizen Inquiries -->
+      <div v-if="isAuthor" class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-purple-600"></div>
+        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          <span>Personal Drafts</span>
+          <PenTool class="w-4 h-4 text-slate-400" />
+        </div>
+        <div class="text-3xl font-black text-slate-900 font-mono tracking-tight">{{ Math.max(0, (stats.news_count || 0) - (stats.published_news || 0) - (stats.pending_drafts || 0)) }}</div>
+        <div class="mt-2 text-xs text-purple-700 font-bold">
+          Work in progress
+        </div>
+      </div>
+      <div v-else class="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:border-slate-300 transition-all relative overflow-hidden">
         <div class="absolute top-0 left-0 right-0 h-1 bg-purple-600"></div>
         <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
           <span>Citizen Inquiries</span>
@@ -162,16 +184,82 @@ const emit = defineEmits(['navigate', 'openModal'])
       </div>
     </div>
 
-    <!-- Rapid Management Shortcuts (AWS Console Grid) -->
+    <!-- Rapid Management Shortcuts (AWS Console Grid - Role-Aware) -->
     <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
         <div>
-          <h3 class="text-base font-black text-slate-900">{{ adminT('rapid_shortcuts') }}</h3>
-          <p class="text-xs text-slate-500">Direct navigation to active administrative modules.</p>
+          <h3 class="text-base font-black text-slate-900">
+            {{ isAuthor ? 'Journalist Quick Actions' : adminT('rapid_shortcuts') }}
+          </h3>
+          <p class="text-xs text-slate-500">
+            {{ isAuthor ? 'Direct shortcuts to write, review, and preview your municipal press releases.' : 'Direct navigation to active administrative modules.' }}
+          </p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <!-- Author Shortcuts (Only Authorized Content Actions) -->
+      <div v-if="isAuthor" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button 
+          @click="emit('openModal', 'news')" 
+          class="p-5 rounded-2xl border border-blue-100 bg-blue-50/50 hover:bg-blue-100/60 hover:border-blue-300 text-left transition-all group cursor-pointer"
+        >
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-sm">
+            <Plus class="w-5 h-5" />
+          </div>
+          <div class="text-xs font-extrabold text-slate-900 group-hover:text-blue-700">Submit Press Release</div>
+          <div class="text-[11px] text-slate-500 mt-1">Draft new trilingual article for editor review</div>
+        </button>
+
+        <button 
+          @click="emit('navigate', 'news')" 
+          class="p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-left transition-all group cursor-pointer"
+        >
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+            <FileText class="w-5 h-5" />
+          </div>
+          <div class="text-xs font-extrabold text-slate-900 group-hover:text-blue-700">My Press Releases</div>
+          <div class="text-[11px] text-slate-500 mt-1">Track published, pending, and drafts</div>
+        </button>
+
+        <router-link 
+          to="/media/news" 
+          target="_blank"
+          class="p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-left transition-all group cursor-pointer flex flex-col justify-between"
+        >
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <Eye class="w-5 h-5" />
+            </div>
+            <div class="text-xs font-extrabold text-slate-900 group-hover:text-emerald-700">Live Public News</div>
+            <div class="text-[11px] text-slate-500 mt-1">View news portal as seen by citizens</div>
+          </div>
+          <div class="mt-3 flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+            <span>Open Feed</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </div>
+        </router-link>
+
+        <router-link 
+          to="/" 
+          target="_blank"
+          class="p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-left transition-all group cursor-pointer flex flex-col justify-between"
+        >
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <Globe class="w-5 h-5" />
+            </div>
+            <div class="text-xs font-extrabold text-slate-900 group-hover:text-indigo-700">City Portal Home</div>
+            <div class="text-[11px] text-slate-500 mt-1">Official homepage of Kombolcha City</div>
+          </div>
+          <div class="mt-3 flex items-center gap-1 text-[11px] font-bold text-indigo-700">
+            <span>Visit Homepage</span>
+            <ArrowRight class="w-3.5 h-3.5" />
+          </div>
+        </router-link>
+      </div>
+
+      <!-- Editor & Super Admin Shortcuts (Full Administrative Modules) -->
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <button 
           @click="emit('navigate', 'news')" 
           class="p-4 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-blue-50/50 hover:border-blue-200 text-left transition-all group cursor-pointer"

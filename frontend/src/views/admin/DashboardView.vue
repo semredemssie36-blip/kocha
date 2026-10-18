@@ -366,12 +366,12 @@ const can = computed(() => ({
   editNews: true,
   deleteNews: isEditor.value,
 
-  uploadMedia: true,
-  editMedia: true,
+  uploadMedia: isEditor.value,
+  editMedia: isEditor.value,
   deleteMedia: isEditor.value,
 
-  createResources: true,
-  editResources: true,
+  createResources: isEditor.value,
+  editResources: isEditor.value,
   deleteResources: isEditor.value,
 
   manageHeroSlides: isEditor.value,
@@ -396,7 +396,7 @@ const can = computed(() => ({
 
 // Section navigation guard: redirect if role has no permission
 watch(activeSection, (sec) => {
-  if (isAuthor.value && !['dashboard', 'news', 'gallery', 'resources'].includes(sec)) {
+  if (isAuthor.value && !['dashboard', 'news'].includes(sec)) {
     activeSection.value = 'news'
     showToast('Permission restricted: Navigated to your authorized workspace.')
   } else if (!isSuperAdmin.value && ['staff', 'settings'].includes(sec)) {
@@ -1770,6 +1770,7 @@ onUnmounted(() => {
             <span>{{ adminT('nav_hero_slides') }}</span>
           </button>
           <button 
+            v-if="can.uploadMedia"
             @click="selectSection('gallery')"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
@@ -1854,7 +1855,7 @@ onUnmounted(() => {
           </button>
 
           <!-- Civic Services Category -->
-          <div class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
+          <div v-if="can.manageServices || can.manageProjects || can.createResources || can.manageDestinations || can.manageHotlines" class="pt-3 pb-1 px-3 text-[10px] font-black uppercase tracking-wider text-slate-400">
             {{ adminT('cat_services_resources') }}
           </div>
           <button 
@@ -1880,6 +1881,7 @@ onUnmounted(() => {
             <span>{{ adminT('nav_projects') }}</span>
           </button>
           <button 
+            v-if="can.createResources"
             @click="selectSection('resources')"
             :class="[
               'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left',
