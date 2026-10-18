@@ -1,0 +1,240 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" xmlns:c2pa="http://c2pa.org/manifest"><metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTowOTRhMThlMS01M2I4LTRlMTYtYTBlZC03OWViOTdiYjRiY2UAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaL12Eu9bqGrNgjDHKfib/6MAAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDphYmRmNmI4Mi1mNjVmLTRkNjMtYWFkYy0yMTY4NjMxN2E4MjBscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNoEexVKD52K+TUfrZJ0Y+igAAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggCpbzHEqfVG8IolstJaTf6LZpndz3FXQUd5vGZNjCkDSkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaBPo2HyCRioK9iuZLkG5l6EAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRNAAAAAAAAAAAAAAAAAGRoYXNoWCAUwGHnjI+4MCqXCiosNvZTB1Zq7wowoDi2D4+yKJQFsGRuYW1lbmp1bWJmIG1hbmlmZXN0amV4Y2x1c2lvbnOBomVzdGFydBjWZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjA5NGExOGUxLTUzYjgtNGUxNi1hMGVkLTc5ZWI5N2JiNGJjZS9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOmEwMDBjODcyLTUwMzgtNGI5OC04MTk4LWFhZjhjYzE5OTE1OHJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCAKlvMcSp9UbwiiWy0lpN/otmmd3PcVdBR3m8Zk2MKQNKJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFgghFcgDjhUbHLuQqPHIisPVlzWURQw/+zv4S3vb9P+/s6iY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFgg2sfrocb/KwgVrBHE5xUpkrtmy4DOyVwJz5ycebE7z4F0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQLEs+788+phcgpDArviHhPcJNwqW/BEvh6uJE5IyfieIQxsYpQZtsiPmEuIt2KxJnAPobw4uA+2Z8bqH0MDv45g=</c2pa:manifest></metadata>
+  <title>Pharmacy ERP dashboard</title>
+  <defs>
+    <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1F7A5C" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#1F7A5C" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="1280" height="800" fill="#F3F6F4"/>
+
+  <!-- ============ SIDEBAR ============ -->
+  <rect width="232" height="800" fill="#10332B"/>
+
+  <!-- Logo: capsule + name -->
+  <g transform="translate(28,26)">
+    <g transform="rotate(-40 14 14)">
+      <rect x="0" y="6" width="28" height="16" rx="8" fill="#E3F1EA"/>
+      <path d="M14 6 h6 a8 8 0 0 1 0 16 h-6 z" fill="#4FBF95"/>
+    </g>
+    <text x="42" y="14" font-size="17" font-weight="700" fill="#FFFFFF">PharmaCore</text>
+    <text x="42" y="30" font-size="11" fill="#8FB5A6">Pharmacy ERP</text>
+  </g>
+
+  <g fill="none" stroke="#A9C9BC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" font-size="14">
+    <!-- Dashboard (active) -->
+    <g transform="translate(0,112)">
+      <rect x="12" y="0" width="208" height="40" rx="8" fill="#FFFFFF" fill-opacity="0.12" stroke="none"/>
+      <g transform="translate(28,12)" stroke="#FFFFFF">
+        <rect x="0" y="0" width="6" height="6" rx="1.5"/><rect x="10" y="0" width="6" height="6" rx="1.5"/>
+        <rect x="0" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/>
+      </g>
+      <text x="56" y="25" fill="#FFFFFF" stroke="none" font-weight="600">Dashboard</text>
+    </g>
+    <!-- Point of sale -->
+    <g transform="translate(0,156)">
+      <g transform="translate(28,12)"><rect x="1" y="2" width="14" height="12" rx="2"/><line x1="1" y1="6" x2="15" y2="6"/><line x1="4" y1="10" x2="8" y2="10"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Point of sale</text>
+    </g>
+    <!-- Inventory -->
+    <g transform="translate(0,200)">
+      <g transform="translate(28,12)"><rect x="1" y="4" width="14" height="11" rx="2"/><line x1="8" y1="4" x2="8" y2="9"/><path d="M3 4 L5 0.5 H11 L13 4"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Inventory</text>
+      <rect x="164" y="10" width="34" height="20" rx="10" fill="#D6453D" stroke="none"/>
+      <text x="181" y="24.5" text-anchor="middle" font-size="12" font-weight="600" fill="#FFFFFF" stroke="none">17</text>
+    </g>
+    <!-- Prescriptions -->
+    <g transform="translate(0,244)">
+      <g transform="translate(28,12)"><rect x="2" y="0" width="12" height="16" rx="2"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="9" x2="11" y2="9"/><line x1="5" y1="13" x2="8" y2="13"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Prescriptions</text>
+      <rect x="164" y="10" width="34" height="20" rx="10" fill="#E8A33D" stroke="none"/>
+      <text x="181" y="24.5" text-anchor="middle" font-size="12" font-weight="600" fill="#3A2A05" stroke="none">9</text>
+    </g>
+    <!-- Purchasing -->
+    <g transform="translate(0,288)">
+      <g transform="translate(28,12)"><rect x="0" y="3" width="9" height="8"/><path d="M9 6 h4 l3 3 v2 h-7 z"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="13" r="2"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Purchasing</text>
+    </g>
+    <!-- Suppliers -->
+    <g transform="translate(0,332)">
+      <g transform="translate(28,12)"><rect x="2" y="1" width="12" height="14" rx="1"/><line x1="5" y1="5" x2="6" y2="5"/><line x1="10" y1="5" x2="11" y2="5"/><line x1="5" y1="9" x2="6" y2="9"/><line x1="10" y1="9" x2="11" y2="9"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Suppliers</text>
+    </g>
+    <!-- Customers -->
+    <g transform="translate(0,376)">
+      <g transform="translate(28,12)"><circle cx="6" cy="5" r="3"/><path d="M0 15 q6 -9 12 0"/><circle cx="13" cy="6" r="2"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Customers</text>
+    </g>
+    <!-- Accounting -->
+    <g transform="translate(0,420)">
+      <g transform="translate(28,12)"><circle cx="8" cy="8" r="7"/><text x="8" y="12" text-anchor="middle" font-size="10" fill="#A9C9BC" stroke="none" font-weight="700">$</text></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Accounting</text>
+    </g>
+    <!-- Reports -->
+    <g transform="translate(0,464)">
+      <g transform="translate(28,12)"><rect x="1" y="8" width="3" height="7"/><rect x="6.5" y="4" width="3" height="11"/><rect x="12" y="0" width="3" height="15"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Reports</text>
+    </g>
+    <!-- Settings -->
+    <g transform="translate(0,508)">
+      <g transform="translate(28,12)"><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="7" stroke-dasharray="3 2"/></g>
+      <text x="56" y="25" fill="#CFE3DA" stroke="none">Settings</text>
+    </g>
+  </g>
+
+  <!-- Sidebar footer -->
+  <line x1="24" y1="716" x2="208" y2="716" stroke="#FFFFFF" stroke-opacity="0.15"/>
+  <circle cx="44" cy="750" r="16" fill="#4FBF95"/>
+  <text x="44" y="755" text-anchor="middle" font-size="12" font-weight="700" fill="#10332B">HM</text>
+  <text x="68" y="747" font-size="13" font-weight="600" fill="#FFFFFF">Hana M.</text>
+  <text x="68" y="764" font-size="11" fill="#8FB5A6">Pharmacist in charge</text>
+
+  <!-- ============ TOP BAR ============ -->
+  <rect x="232" y="0" width="1048" height="72" fill="#FFFFFF"/>
+  <line x1="232" y1="72" x2="1280" y2="72" stroke="#DFE7E3"/>
+  <rect x="260" y="16" width="380" height="40" rx="20" fill="#EEF3F0"/>
+  <circle cx="284" cy="35" r="6" fill="none" stroke="#6F8179" stroke-width="1.8"/>
+  <line x1="288.5" y1="39.5" x2="293" y2="44" stroke="#6F8179" stroke-width="1.8" stroke-linecap="round"/>
+  <text x="304" y="41" font-size="13" fill="#7A8A84">Search medicines, batches or patients</text>
+  <text x="1140" y="41" text-anchor="end" font-size="13" fill="#6F8179">Tue, 6 Oct 2026</text>
+  <path d="M1162 40 q0 -14 6 -14 q6 0 6 14 z" fill="none" stroke="#1B2B26" stroke-width="1.8" stroke-linejoin="round"/>
+  <circle cx="1168" cy="46" r="2" fill="#1B2B26"/>
+  <circle cx="1176" cy="27" r="4" fill="#D6453D"/>
+  <circle cx="1228" cy="36" r="18" fill="#10332B"/>
+  <text x="1228" y="41" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">HM</text>
+
+  <!-- ============ HEADER ============ -->
+  <text x="260" y="104" font-size="24" font-weight="700" fill="#1B2B26">Today at a glance</text>
+  <text x="260" y="125" font-size="13" fill="#6F8179">Main branch, Tuesday 6 October</text>
+  <rect x="1112" y="86" width="140" height="38" rx="8" fill="#1F7A5C"/>
+  <text x="1182" y="110" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF">New sale</text>
+
+  <!-- ============ KPI CARDS ============ -->
+  <g>
+    <rect x="260" y="144" width="236" height="104" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+    <text x="280" y="174" font-size="13" fill="#6F8179">Today's sales</text>
+    <text x="280" y="210" font-size="28" font-weight="700" fill="#1B2B26">ETB 48,250</text>
+    <text x="280" y="232" font-size="12" font-weight="600" fill="#1F7A5C">+12% vs yesterday</text>
+
+    <rect x="512" y="144" width="236" height="104" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+    <text x="532" y="174" font-size="13" fill="#6F8179">Prescriptions filled</text>
+    <text x="532" y="210" font-size="28" font-weight="700" fill="#1B2B26">63</text>
+    <text x="532" y="232" font-size="12" fill="#6F8179">9 waiting for pickup</text>
+
+    <rect x="764" y="144" width="236" height="104" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+    <text x="784" y="174" font-size="13" fill="#6F8179">Low-stock items</text>
+    <text x="784" y="210" font-size="28" font-weight="700" fill="#D6453D">17</text>
+    <text x="784" y="232" font-size="12" fill="#6F8179">5 need reordering today</text>
+
+    <rect x="1016" y="144" width="236" height="104" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+    <text x="1036" y="174" font-size="13" fill="#6F8179">Expiring in 90 days</text>
+    <text x="1036" y="210" font-size="28" font-weight="700" fill="#B7791F">29</text>
+    <text x="1036" y="232" font-size="12" fill="#6F8179">ETB 31,400 of stock at risk</text>
+  </g>
+
+  <!-- ============ SALES CHART ============ -->
+  <rect x="260" y="268" width="600" height="270" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+  <text x="284" y="300" font-size="15" font-weight="600" fill="#1B2B26">Sales, last 7 days</text>
+  <text x="836" y="300" text-anchor="end" font-size="13" fill="#6F8179">ETB 375k this week</text>
+
+  <g stroke="#E6EDE9" stroke-width="1">
+    <line x1="296" y1="330" x2="836" y2="330"/>
+    <line x1="296" y1="370" x2="836" y2="370"/>
+    <line x1="296" y1="410" x2="836" y2="410"/>
+    <line x1="296" y1="450" x2="836" y2="450"/>
+    <line x1="296" y1="490" x2="836" y2="490" stroke="#CBD7D1"/>
+  </g>
+  <g font-size="11" fill="#8A9A93" text-anchor="end">
+    <text x="288" y="334">80k</text><text x="288" y="374">60k</text>
+    <text x="288" y="414">40k</text><text x="288" y="454">20k</text>
+    <text x="288" y="494">0</text>
+  </g>
+
+  <path d="M300 414 L388 386 L476 400 L564 368 L652 374 L740 346 L828 392 L828 490 L300 490 Z" fill="url(#areaFill)"/>
+  <path d="M300 414 L388 386 L476 400 L564 368 L652 374 L740 346 L828 392" fill="none" stroke="#1F7A5C" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <g fill="#FFFFFF" stroke="#1F7A5C" stroke-width="2">
+    <circle cx="300" cy="414" r="4"/><circle cx="388" cy="386" r="4"/><circle cx="476" cy="400" r="4"/>
+    <circle cx="564" cy="368" r="4"/><circle cx="652" cy="374" r="4"/><circle cx="828" cy="392" r="4"/>
+  </g>
+  <circle cx="740" cy="346" r="6" fill="#1F7A5C" stroke="#FFFFFF" stroke-width="2"/>
+  <rect x="696" y="304" width="88" height="28" rx="6" fill="#10332B"/>
+  <text x="740" y="323" text-anchor="middle" font-size="12" font-weight="600" fill="#FFFFFF">ETB 72k</text>
+
+  <g font-size="12" fill="#6F8179" text-anchor="middle">
+    <text x="300" y="514">Wed</text><text x="388" y="514">Thu</text><text x="476" y="514">Fri</text>
+    <text x="564" y="514">Sat</text><text x="652" y="514">Sun</text>
+    <text x="740" y="514" font-weight="700" fill="#1B2B26">Mon</text><text x="828" y="514">Tue</text>
+  </g>
+
+  <!-- ============ STOCK DONUT ============ -->
+  <rect x="876" y="268" width="376" height="270" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+  <text x="900" y="300" font-size="15" font-weight="600" fill="#1B2B26">Stock by category</text>
+  <g transform="rotate(-90 950 420)" fill="none" stroke-width="22">
+    <circle cx="950" cy="420" r="52" stroke="#1F7A5C" stroke-dasharray="104.55 222.18" stroke-dashoffset="0"/>
+    <circle cx="950" cy="420" r="52" stroke="#2F6FDE" stroke-dasharray="78.4 248.33" stroke-dashoffset="-104.55"/>
+    <circle cx="950" cy="420" r="52" stroke="#E8A33D" stroke-dasharray="65.35 261.38" stroke-dashoffset="-182.95"/>
+    <circle cx="950" cy="420" r="52" stroke="#8A6FD1" stroke-dasharray="45.74 280.99" stroke-dashoffset="-248.3"/>
+    <circle cx="950" cy="420" r="52" stroke="#B8C4BF" stroke-dasharray="32.67 294.06" stroke-dashoffset="-294.05"/>
+  </g>
+  <text x="950" y="420" text-anchor="middle" font-size="22" font-weight="700" fill="#1B2B26">1,284</text>
+  <text x="950" y="438" text-anchor="middle" font-size="11" fill="#6F8179">products</text>
+
+  <g font-size="13" fill="#1B2B26">
+    <circle cx="1040" cy="372" r="5" fill="#1F7A5C"/><text x="1054" y="376">Antibiotics</text><text x="1228" y="376" text-anchor="end" fill="#6F8179">32%</text>
+    <circle cx="1040" cy="400" r="5" fill="#2F6FDE"/><text x="1054" y="404">Pain relief</text><text x="1228" y="404" text-anchor="end" fill="#6F8179">24%</text>
+    <circle cx="1040" cy="428" r="5" fill="#E8A33D"/><text x="1054" y="432">Chronic care</text><text x="1228" y="432" text-anchor="end" fill="#6F8179">20%</text>
+    <circle cx="1040" cy="456" r="5" fill="#8A6FD1"/><text x="1054" y="460">Vitamins</text><text x="1228" y="460" text-anchor="end" fill="#6F8179">14%</text>
+    <circle cx="1040" cy="484" r="5" fill="#B8C4BF"/><text x="1054" y="488">Other</text><text x="1228" y="488" text-anchor="end" fill="#6F8179">10%</text>
+  </g>
+
+  <!-- ============ NEEDS ATTENTION TABLE ============ -->
+  <rect x="260" y="558" width="600" height="220" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+  <text x="284" y="592" font-size="15" font-weight="600" fill="#1B2B26">Needs attention</text>
+  <text x="836" y="592" text-anchor="end" font-size="13" font-weight="600" fill="#1F7A5C">Create purchase order</text>
+  <g font-size="12" fill="#8A9A93">
+    <text x="284" y="626">Medicine</text><text x="520" y="626">On hand</text>
+    <text x="610" y="626">Expires</text><text x="716" y="626">Status</text>
+  </g>
+  <line x1="284" y1="636" x2="836" y2="636" stroke="#E6EDE9"/>
+  <g font-size="13" fill="#1B2B26">
+    <text x="284" y="660">Amoxicillin 500 mg</text><text x="520" y="660">24</text><text x="610" y="660" fill="#8A9A93">Jan 2027</text>
+    <rect x="716" y="645" width="96" height="22" rx="11" fill="#FBE6E4"/><text x="764" y="660" text-anchor="middle" font-size="12" font-weight="600" fill="#D6453D">Low stock</text>
+    <line x1="284" y1="672" x2="836" y2="672" stroke="#EEF3F0"/>
+
+    <text x="284" y="696">Insulin glargine</text><text x="520" y="696">11</text><text x="610" y="696">14 Nov</text>
+    <rect x="716" y="681" width="96" height="22" rx="11" fill="#FBF0DA"/><text x="764" y="696" text-anchor="middle" font-size="12" font-weight="600" fill="#B7791F">Expiring</text>
+    <line x1="284" y1="708" x2="836" y2="708" stroke="#EEF3F0"/>
+
+    <text x="284" y="732">Salbutamol inhaler</text><text x="520" y="732">6</text><text x="610" y="732" fill="#8A9A93">Aug 2027</text>
+    <rect x="716" y="717" width="96" height="22" rx="11" fill="#FBE6E4"/><text x="764" y="732" text-anchor="middle" font-size="12" font-weight="600" fill="#D6453D">Low stock</text>
+    <line x1="284" y1="744" x2="836" y2="744" stroke="#EEF3F0"/>
+
+    <text x="284" y="768">Cetirizine 10 mg</text><text x="520" y="768">58</text><text x="610" y="768">21 Oct</text>
+    <rect x="716" y="753" width="96" height="22" rx="11" fill="#FBF0DA"/><text x="764" y="768" text-anchor="middle" font-size="12" font-weight="600" fill="#B7791F">Expiring</text>
+  </g>
+
+  <!-- ============ PRESCRIPTION QUEUE ============ -->
+  <rect x="876" y="558" width="376" height="220" rx="10" fill="#FFFFFF" stroke="#DFE7E3"/>
+  <text x="900" y="592" font-size="15" font-weight="600" fill="#1B2B26">Prescription queue</text>
+
+  <circle cx="918" cy="632" r="17" fill="#E3F1EA"/><text x="918" y="636" text-anchor="middle" font-size="12" font-weight="700" fill="#1F7A5C">AT</text>
+  <text x="946" y="628" font-size="14" font-weight="600" fill="#1B2B26">Abebe Tadesse</text>
+  <text x="946" y="645" font-size="12" fill="#6F8179">Metformin 850 mg, 30 days</text>
+  <rect x="1160" y="621" width="68" height="22" rx="11" fill="#E3F1EA"/><text x="1194" y="636" text-anchor="middle" font-size="12" font-weight="600" fill="#1F7A5C">Ready</text>
+
+  <line x1="900" y1="660" x2="1228" y2="660" stroke="#EEF3F0"/>
+
+  <circle cx="918" cy="690" r="17" fill="#DCE8FB"/><text x="918" y="694" text-anchor="middle" font-size="12" font-weight="700" fill="#2F6FDE">SK</text>
+  <text x="946" y="686" font-size="14" font-weight="600" fill="#1B2B26">Selam Kebede</text>
+  <text x="946" y="703" font-size="12" fill="#6F8179">Amoxicillin 500 mg, 7 days</text>
+  <rect x="1148" y="679" width="80" height="22" rx="11" fill="#DCE8FB"/><text x="1188" y="694" text-anchor="middle" font-size="12" font-weight="600" fill="#2F6FDE">Verifying</text>
+
+  <line x1="900" y1="718" x2="1228" y2="718" stroke="#EEF3F0"/>
+
+  <circle cx="918" cy="748" r="17" fill="#FBF0DA"/><text x="918" y="752" text-anchor="middle" font-size="12" font-weight="700" fill="#B7791F">YB</text>
+  <text x="946" y="744" font-size="14" font-weight="600" fill="#1B2B26">Yonas Bekele</text>
+  <text x="946" y="761" font-size="12" fill="#6F8179">Insulin glargine, 1 pen</text>
+  <rect x="1150" y="737" width="78" height="22" rx="11" fill="#FBF0DA"/><text x="1189" y="752" text-anchor="middle" font-size="12" font-weight="600" fill="#B7791F">Waiting</text>
+</svg>

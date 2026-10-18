@@ -57,11 +57,6 @@ const filteredHotlines = computed(() => {
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-          <span>Public Safety & Civic Defense</span>
-          <span>/</span>
-          <span class="text-blue-600 font-bold">Emergency Hotlines</span>
-        </div>
         <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
           <span>24/7 Emergency Dispatch Hotlines</span>
           <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -243,8 +238,9 @@ const filteredHotlines = computed(() => {
       <div 
         v-for="item in filteredHotlines" 
         :key="item.id"
-        class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between"
+        class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
       >
+        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-600 via-rose-500 to-amber-500"></div>
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">

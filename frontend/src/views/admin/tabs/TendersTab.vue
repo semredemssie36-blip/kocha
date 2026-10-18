@@ -96,11 +96,6 @@ const closedCount = computed(() => props.tendersList.filter(t => isClosed(t) || 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-          <span>Finance & Procurement Bureau</span>
-          <span>/</span>
-          <span class="text-blue-600 font-bold">Public Bidding</span>
-        </div>
         <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
           <span>Public Tenders & RFPs</span>
           <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">

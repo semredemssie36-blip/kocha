@@ -2229,15 +2229,6 @@ onUnmounted(() => {
             <span>{{ adminT('nav_settings') }}</span>
           </button>
         </nav>
-
-        <!-- Bottom Session Security Badge -->
-        <div class="p-3 m-3 rounded-2xl bg-[#071324] border border-amber-500/20 text-center text-[10px] text-slate-400">
-          <div class="flex items-center justify-center gap-1.5 text-amber-300 font-bold mb-1">
-            <ShieldCheck class="w-3.5 h-3.5 text-amber-400" />
-            <span>256-Bit SSL Encrypted</span>
-          </div>
-          <span>Kombolcha Metropolitan CMS v2.4</span>
-        </div>
       </aside>
 
       <!-- Dynamic Workspace Area (Independent Scrollable Container) -->
@@ -2262,11 +2253,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'hero_slides'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Media & Visuals</span>
-                <span>/</span>
-                <span class="text-blue-600 font-bold">Homepage Carousel</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Hero Slider Manager</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -2392,7 +2378,8 @@ onUnmounted(() => {
 
           <!-- 2. CARD GRID VIEW -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div v-for="slide in filteredHeroSlides" :key="slide.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+            <div v-for="slide in filteredHeroSlides" :key="slide.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between relative">
+              <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-blue-700 z-10"></div>
               <div>
                 <div class="h-48 bg-slate-900 relative overflow-hidden group">
                   <img :src="slide.image_path" :alt="slide.title_en || slide.title_am" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -2431,11 +2418,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'gallery'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Media & Visuals</span>
-                <span>/</span>
-                <span class="text-blue-600 font-bold">Documentary Collections</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Media Gallery Manager</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -2588,7 +2570,8 @@ onUnmounted(() => {
           <!-- 2. CARD GRID VIEW -->
           <div v-else class="space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <div v-for="item in paginatedGallery" :key="item.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+              <div v-for="item in paginatedGallery" :key="item.id" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition-all flex flex-col justify-between relative">
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-400 z-10"></div>
                 <div>
                   <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center group">
                     <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -2707,11 +2690,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'vacancies'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Civil Service Bureau</span>
-                <span>/</span>
-                <span class="text-emerald-700 font-bold">Talent & Recruitment Desk</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Civil Service Vacancies & Careers</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -3005,11 +2983,6 @@ onUnmounted(() => {
         <!-- 5. MAYOR PROFILE & KEYNOTE -->
         <div v-else-if="activeSection === 'mayor'" class="space-y-6 max-w-4xl">
           <div>
-            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-              <span>Executive Leadership</span>
-              <span>/</span>
-              <span class="text-amber-600 font-bold">Office of the Mayor</span>
-            </div>
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">Office of the Mayor & Executive Keynote</h2>
             <p class="text-xs text-slate-500 mt-1">Configure the official Mayoral portrait, keynote greeting, and executive biography published to citizens and diplomatic delegations.</p>
           </div>
@@ -3108,11 +3081,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'leadership'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Executive Leadership</span>
-                <span>/</span>
-                <span class="text-blue-600 font-bold">Cabinet & Council</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Cabinet & City Council Members</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -3274,7 +3242,8 @@ onUnmounted(() => {
 
           <!-- 2. CARD GRID VIEW -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="m in filteredLeadership" :key="m.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between">
+            <div v-for="m in filteredLeadership" :key="m.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between relative overflow-hidden">
+              <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-600 to-amber-500"></div>
               <div>
                 <div class="flex items-center gap-4 mb-3">
                   <img 
@@ -3316,11 +3285,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'offices'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Administrative Infrastructure</span>
-                <span>/</span>
-                <span class="text-blue-600 font-bold">Public Directory</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Municipal Offices & Directorate Directory</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -3545,11 +3509,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'services'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Public Service Delivery</span>
-                <span>/</span>
-                <span class="text-blue-600 font-bold">Citizen Procedural Portal</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Municipal Citizen Services & Guides</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -3629,11 +3588,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'projects'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Urban Planning & Construction Bureau</span>
-                <span>/</span>
-                <span class="text-amber-700 font-bold">Capital Infrastructure Tracking</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Infrastructure & Urban Development Projects</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -3729,11 +3683,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'resources'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-                <span>Legal & Document Archival</span>
-                <span>/</span>
-                <span class="text-blue-600 font-bold">Official Repository</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Public Directives & Document Library</span>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -4275,10 +4224,6 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'polls'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center gap-2 text-blue-600 font-extrabold text-xs uppercase tracking-wider mb-1">
-                <Vote class="w-4 h-4 shrink-0" />
-                <span>Citizen Opinion & Priority Ballots</span>
-              </div>
               <h2 class="text-2xl font-black text-slate-900">{{ adminT('nav_polls') || 'Civic Opinion Polls' }}</h2>
               <p class="text-xs text-slate-500 mt-0.5">
                 Create new citizen infrastructure polls, manage expiration dates, reset test/demo data, and view real-time verified ballot counts.
@@ -4374,7 +4319,8 @@ onUnmounted(() => {
           </div>
 
           <!-- All Polls Table -->
-          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
+            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-600 to-amber-500"></div>
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 class="font-black text-sm text-slate-900">All Civic Polls & Ballots</h3>
@@ -5579,7 +5525,6 @@ onUnmounted(() => {
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
             <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
             <button type="submit" :disabled="profileLoading || uploadingFile" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 transition-all">
               {{ profileLoading ? 'Saving...' : 'Save Profile Changes' }}

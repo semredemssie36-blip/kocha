@@ -120,11 +120,6 @@ function getRoleBadge(role) {
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-          <span>Security & System Governance</span>
-          <span>/</span>
-          <span class="text-blue-600 font-bold">Audit Trail</span>
-        </div>
         <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
           <Shield class="w-7 h-7 text-blue-600" />
           <span>System Audit & User Activity Logs</span>

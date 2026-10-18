@@ -81,11 +81,6 @@ function canDelete(item) {
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
-        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
-          <span>Investment & Tourism Directorate</span>
-          <span>/</span>
-          <span class="text-blue-600 font-bold">Spotlight Locations</span>
-        </div>
         <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
           <span>Tourism, Heritage & Industrial Hubs</span>
           <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
@@ -308,8 +303,9 @@ function canDelete(item) {
       <div 
         v-for="item in filteredDestinations" 
         :key="item.id" 
-        class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 hover:shadow-lg transition-all flex flex-col justify-between"
+        class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 hover:shadow-lg transition-all flex flex-col justify-between relative"
       >
+        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-500 z-10"></div>
         <div>
           <!-- Thumbnail Image -->
           <div class="h-48 bg-slate-900 relative overflow-hidden group">
