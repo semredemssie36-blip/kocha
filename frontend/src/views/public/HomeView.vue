@@ -191,6 +191,44 @@ const getTenderTitle = (item) => {
   return item.title_en
 }
 
+const isTenderClosed = (tender) => {
+  if (!tender) return true
+  if (tender.status === 'closed') return true
+  if (!tender.closing_datetime) return false
+  return new Date(tender.closing_datetime).getTime() <= Date.now()
+}
+
+const formatTenderCountdown = (closingDatetime) => {
+  if (!closingDatetime) return { closed: true, text: langStore.currentLang === 'am' ? 'ጨረታው ተዘግቷል' : (langStore.currentLang === 'om' ? 'Caalbaasiin Cufameera' : 'Tender Closed') }
+  const diff = new Date(closingDatetime) - new Date()
+  if (diff <= 0) {
+    return { 
+      closed: true, 
+      text: langStore.currentLang === 'am' ? 'ጨረታው ተዘግቷል' : (langStore.currentLang === 'om' ? 'Caalbaasiin Cufameera' : 'Tender Closed') 
+    }
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+  const minutes = Math.floor((diff / 1000 / 60) % 60)
+
+  if (days <= 0) {
+    return {
+      closed: false,
+      text: langStore.currentLang === 'am' 
+        ? `${hours} ሰዓታት : ${minutes} ደቂቃዎች ቀርተዋል` 
+        : `${hours} Hours : ${minutes} Mins left`
+    }
+  }
+
+  return {
+    closed: false,
+    text: langStore.currentLang === 'am' 
+      ? `${days} ቀናት : ${hours} ሰዓታት ቀርተዋል` 
+      : `${days} Days : ${hours} Hours : ${minutes} Mins left`
+  }
+}
+
 const getPollQuestion = () => {
   if (!pollData.value?.poll) return ''
   const lang = langStore.currentLang
@@ -762,8 +800,19 @@ onUnmounted(() => {
               <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-mono font-bold">
                 {{ tender.reference_number }}
               </span>
-              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                Open Bid
+              <span 
+                :class="[
+                  'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider',
+                  !isTenderClosed(tender)
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-rose-50 text-rose-700 border-rose-200'
+                ]"
+              >
+                <span class="w-1.5 h-1.5 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                {{ !isTenderClosed(tender) 
+                  ? (langStore.currentLang === 'am' ? 'ክፍት ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Bantamaa' : 'Open Bid'))
+                  : (langStore.currentLang === 'am' ? 'የተዘጋ ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Cufame' : 'Closed')) 
+                }}
               </span>
             </div>
 
@@ -774,13 +823,27 @@ onUnmounted(() => {
 
           <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
             <div class="text-xs">
-              <span class="text-slate-400 block">{{ langStore.t('tenders.closing_in') }}:</span>
-              <span class="font-bold text-amber-700 text-sm font-mono">
-                {{ tender.closing_datetime }}
+              <span class="text-slate-400 block mb-0.5">{{ langStore.t('tenders.closing_in') }}:</span>
+              <span 
+                class="font-mono text-xs sm:text-sm font-bold"
+                :class="isTenderClosed(tender) ? 'text-rose-600 font-extrabold' : 'text-amber-700'"
+              >
+                {{ formatTenderCountdown(tender.closing_datetime).text }}
               </span>
             </div>
 
+            <a 
+              v-if="tender.document_url || tender.document_path"
+              :href="tender.document_url || tender.document_path" 
+              target="_blank"
+              download
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              <Download class="w-3.5 h-3.5" />
+              {{ langStore.t('common.download_pdf') }}
+            </a>
             <router-link 
+              v-else
               to="/media/tenders" 
               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-700 hover:text-white text-xs font-bold transition-colors"
             >
