@@ -46,7 +46,7 @@ const emit = defineEmits(['openCreate', 'openEdit', 'deleteItem', 'toggleActive'
       <button 
         v-if="isEditor"
         @click="emit('openCreate')" 
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer shrink-0"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer shrink-0"
       >
         <Plus class="w-4 h-4" />
         <span>Add Emergency Hotline</span>

@@ -69,7 +69,12 @@ import {
   ShieldAlert,
   Flame,
   Droplets,
-  Vote
+  Vote,
+  Loader2,
+  ExternalLink,
+  LayoutGrid,
+  List,
+  Download
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -330,16 +335,18 @@ const adminT = computed(() => {
 // Global Search in Admin
 const adminSearch = ref('')
 
-// KPIs & Stats
+// KPIs & Stats bound strictly to real database endpoints
 const stats = ref({
   news_count: 0,
   published_news: 0,
   pending_drafts: 0,
   active_tenders: 0,
   offices_count: 0,
+  total_offices: 0,
   unread_messages: 0,
   projects_count: 0,
-  monthly_views: '24,520'
+  destinations_count: 0,
+  staff_count: 0
 })
 
 const currentUser = ref(JSON.parse(localStorage.getItem('kombolcha_admin_user') || '{}'))
@@ -463,6 +470,7 @@ const resourcesList = ref([])
 const officesList = ref([])
 
 // Offices Search & Pagination Controls
+const officesViewMode = ref('grid') // 'grid' | 'table'
 const officeSearch = ref('')
 const officePage = ref(1)
 const officePerPage = ref(8)
@@ -556,6 +564,7 @@ const paginatedTenders = computed(() => {
 watch(tendersSearch, () => { tendersPage.value = 1 })
 
 // Vacancies Search & Pagination
+const vacanciesViewMode = ref('table') // 'table' | 'grid'
 const vacanciesSearch = ref('')
 const vacanciesPage = ref(1)
 const vacanciesPerPage = ref(8)
@@ -577,6 +586,7 @@ const paginatedVacancies = computed(() => {
 watch(vacanciesSearch, () => { vacanciesPage.value = 1 })
 
 // Resources Search & Pagination
+const resourcesViewMode = ref('table') // 'table' | 'grid'
 const resourcesSearch = ref('')
 const resourcesPage = ref(1)
 const resourcesPerPage = ref(8)
@@ -2216,7 +2226,7 @@ onUnmounted(() => {
               <h2 class="text-2xl font-black text-slate-900">Hero Slider Manager</h2>
               <p class="text-xs text-slate-500">Configure public homepage carousel slides, high-res photography, and bilingual call-to-actions.</p>
             </div>
-            <button @click="editingId = null; modalType = 'hero_slide'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="editingId = null; modalType = 'hero_slide'" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 transition-all">
               <Plus class="w-4 h-4" />
               <span>Add New Hero Slide</span>
             </button>
@@ -2280,7 +2290,7 @@ onUnmounted(() => {
                   class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
                 />
               </div>
-              <button @click="editingId = null; modalType = 'gallery'" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+              <button @click="editingId = null; modalType = 'gallery'" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
                 <Plus class="w-4 h-4" />
                 <span>Add Media</span>
               </button>
@@ -2411,11 +2421,17 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'vacancies'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                Civil Service Vacancies & Careers
-                <span class="text-emerald-600 font-mono text-xl">({{ filteredVacancies.length }})</span>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Civil Service Bureau</span>
+                <span>/</span>
+                <span class="text-emerald-700 font-bold">Talent & Recruitment Desk</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Civil Service Vacancies & Careers</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ filteredVacancies.length }} positions
+                </span>
               </h2>
-              <p class="text-xs text-slate-500">Post employment openings, salary scales, and application guidelines.</p>
             </div>
             <div class="flex items-center gap-3">
               <div class="relative w-64">
@@ -2424,88 +2440,151 @@ onUnmounted(() => {
                   v-model="vacanciesSearch"
                   type="text"
                   placeholder="Filter by code, title, type..."
-                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none shadow-xs"
+                  class="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none shadow-xs font-medium"
                 />
               </div>
-              <button @click="openNewModal('vacancy')" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+
+              <!-- View Mode Switcher -->
+              <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+                <button 
+                  @click="vacanciesViewMode = 'table'"
+                  :class="['p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer', vacanciesViewMode === 'table' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800']"
+                  title="Table View"
+                >
+                  <List class="w-4 h-4" />
+                  <span class="hidden sm:inline">Table</span>
+                </button>
+                <button 
+                  @click="vacanciesViewMode = 'grid'"
+                  :class="['p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer', vacanciesViewMode === 'grid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800']"
+                  title="Card Grid View"
+                >
+                  <LayoutGrid class="w-4 h-4" />
+                  <span class="hidden sm:inline">Cards</span>
+                </button>
+              </div>
+
+              <button @click="openNewModal('vacancy')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
                 <Plus class="w-4 h-4" />
                 <span>Post Job Vacancy</span>
               </button>
             </div>
           </div>
 
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div v-if="filteredVacancies.length === 0" class="p-12 text-center text-slate-400 text-xs">
-              No vacancies found matching "<span class="font-bold text-slate-600">{{ vacanciesSearch }}</span>".
-            </div>
-            <div v-else class="divide-y divide-slate-100">
-              <div v-for="job in paginatedVacancies" :key="job.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
-                <div>
-                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase mr-2">{{ job.employment_type }}</span>
-                  <span 
-                    :class="[
-                      'px-2 py-0.5 rounded-full text-[10px] font-black uppercase mr-2 border',
-                      job.status === 'draft' ? 'bg-slate-100 text-slate-700 border-slate-300' :
-                      job.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-300' :
-                      (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date())
-                        ? 'bg-rose-50 text-rose-700 border-rose-200' 
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    ]"
-                  >
-                    {{ job.status === 'draft' ? 'Draft' : job.status === 'pending' ? 'Under Review' : (job.status === 'closed' || new Date(job.deadline.includes('T') ? job.deadline : job.deadline + 'T23:59:59') <= new Date()) ? 'Closed' : 'Open' }}
-                  </span>
-                  <span class="text-xs font-mono text-slate-500 font-bold">Code: {{ job.position_code }}</span>
-                  <h4 class="font-bold text-base text-slate-900 mt-1">{{ job.title_en || job.title_am }}</h4>
-                  <div class="text-xs text-slate-500 mt-1">Scale: {{ job.salary_grade }} | Deadline: {{ job.deadline }}</div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button 
-                    v-if="isEditor && job.status !== 'open'" 
-                    @click="approveAndPublishItem('vacancy', job)" 
-                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
-                    title="Approve & open vacancy"
-                  >
-                    Approve
-                  </button>
-                  <button 
-                    v-if="isEditor && job.status === 'open'" 
-                    @click="unpublishItem('vacancy', job)" 
-                    class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
-                    title="Move back to draft"
-                  >
-                    Unpublish
-                  </button>
-                  <button v-if="canEditItem(job)" @click="editItem('vacancy', job)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Vacancy">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button v-if="canDeleteItem(job)" @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Vacancy">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          <div v-if="filteredVacancies.length === 0" class="p-12 text-center text-slate-400 bg-white rounded-3xl border border-slate-200 shadow-xs">
+            <Briefcase class="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-400" />
+            <p class="text-xs font-bold text-slate-600">No vacancies found matching "<span class="font-bold text-slate-900">{{ vacanciesSearch }}</span>".</p>
+            <p class="text-[11px] text-slate-400 mt-1">Adjust search filter or click "Post Job Vacancy" above.</p>
+          </div>
+
+          <!-- TABLE VIEW -->
+          <div v-else-if="vacanciesViewMode === 'table'" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                    <th class="py-3 px-4">Position Code & Type</th>
+                    <th class="py-3 px-4">Job Title & Scale</th>
+                    <th class="py-3 px-4">Application Deadline</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium">
+                  <tr v-for="job in paginatedVacancies" :key="job.id" class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <div class="font-mono font-black text-slate-900 text-xs">{{ job.position_code }}</div>
+                      <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase border border-emerald-200">
+                        {{ job.employment_type }}
+                      </span>
+                    </td>
+
+                    <td class="py-3.5 px-4 max-w-sm">
+                      <div class="font-bold text-slate-900 text-xs leading-snug">{{ job.title_en || job.title_am }}</div>
+                      <div class="text-[11px] text-slate-400 truncate mt-0.5 font-mono">AM: {{ job.title_am }}</div>
+                      <div class="text-[10px] text-slate-500 font-bold mt-1">Scale: {{ job.salary_grade || 'Government Scale' }}</div>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <div class="font-mono text-xs text-slate-800 font-bold">{{ job.deadline }}</div>
+                      <span 
+                        :class="[
+                          'inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold border',
+                          (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date())
+                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        ]"
+                      >
+                        {{ (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date()) ? 'Closed' : 'Accepting Applications' }}
+                      </span>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <span 
+                        :class="[
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase border',
+                          job.status === 'draft' ? 'bg-slate-100 text-slate-700 border-slate-300' :
+                          job.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                          (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date())
+                            ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        ]"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full" :class="job.status === 'draft' ? 'bg-slate-400' : job.status === 'pending' ? 'bg-amber-500' : (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date()) ? 'bg-rose-500' : 'bg-emerald-500'"></span>
+                        {{ job.status === 'draft' ? 'Draft' : job.status === 'pending' ? 'Under Review' : (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date()) ? 'Closed' : 'Open' }}
+                      </span>
+                    </td>
+
+                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                      <div class="inline-flex items-center gap-1.5">
+                        <button 
+                          v-if="isEditor && job.status !== 'open'" 
+                          @click="approveAndPublishItem('vacancy', job)" 
+                          class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                          title="Approve & open vacancy"
+                        >
+                          Approve
+                        </button>
+                        <button 
+                          v-if="isEditor && job.status === 'open'" 
+                          @click="unpublishItem('vacancy', job)" 
+                          class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                          title="Move back to draft"
+                        >
+                          Unpublish
+                        </button>
+                        <button v-if="canEditItem(job)" @click="editItem('vacancy', job)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-200 cursor-pointer transition" title="Edit Vacancy">
+                          <Edit class="w-3.5 h-3.5" />
+                        </button>
+                        <button v-if="canDeleteItem(job)" @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg border border-rose-200 cursor-pointer transition" title="Delete Vacancy">
+                          <Trash2 class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <!-- Vacancies Pagination Controls Bar -->
-            <div v-if="filteredVacancies.length > vacanciesPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <div v-if="filteredVacancies.length > vacanciesPerPage" class="p-3.5 px-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
               <div>
-                Showing <span class="font-bold text-slate-900">{{ (vacanciesPage - 1) * vacanciesPerPage + 1 }}</span> to 
-                <span class="font-bold text-slate-900">{{ Math.min(vacanciesPage * vacanciesPerPage, filteredVacancies.length) }}</span> of 
-                <span class="font-bold text-slate-900">{{ filteredVacancies.length }}</span> vacancies
+                Showing page <span class="font-bold text-slate-900">{{ vacanciesPage }}</span> of <span class="font-bold text-slate-900">{{ totalVacanciesPages }}</span>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1">
                 <button 
                   :disabled="vacanciesPage === 1" 
                   @click="vacanciesPage--"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
                 >
-                  Previous
+                  <ChevronLeft class="w-3.5 h-3.5" />
                 </button>
                 <button 
                   v-for="p in totalVacanciesPages" 
                   :key="p"
                   @click="vacanciesPage = p"
                   :class="[
-                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    'w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer text-xs',
                     vacanciesPage === p ? 'bg-emerald-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
                   ]"
                 >
@@ -2514,9 +2593,123 @@ onUnmounted(() => {
                 <button 
                   :disabled="vacanciesPage === totalVacanciesPages" 
                   @click="vacanciesPage++"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
                 >
-                  Next
+                  <ChevronRight class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD GRID VIEW -->
+          <div v-else class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div 
+                v-for="job in paginatedVacancies" 
+                :key="job.id" 
+                class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+              >
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-blue-900"></div>
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-3 pt-1">
+                    <span class="px-2.5 py-0.5 rounded-md bg-slate-100 font-mono text-xs font-black text-slate-800 border border-slate-200">
+                      {{ job.position_code }}
+                    </span>
+                    <span 
+                      :class="[
+                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border',
+                        job.status === 'draft' ? 'bg-slate-100 text-slate-700 border-slate-300' :
+                        job.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                        (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date())
+                          ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      ]"
+                    >
+                      {{ job.status === 'draft' ? 'Draft' : job.status === 'pending' ? 'Under Review' : (job.status === 'closed' || new Date(job.deadline?.includes('T') ? job.deadline : (job.deadline || '') + 'T23:59:59') <= new Date()) ? 'Closed' : 'Open' }}
+                    </span>
+                  </div>
+
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase border border-emerald-200 inline-block mb-2">
+                    {{ job.employment_type }}
+                  </span>
+
+                  <h4 class="font-black text-base text-slate-900 leading-snug line-clamp-2">{{ job.title_en || job.title_am }}</h4>
+                  <p class="text-xs text-slate-500 font-mono mt-1">AM: {{ job.title_am }}</p>
+
+                  <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                    <div class="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <span class="text-[10px] text-slate-400 font-black uppercase block">Scale</span>
+                      <span class="font-mono font-bold text-slate-900 text-xs truncate block">{{ job.salary_grade || 'Gov Scale' }}</span>
+                    </div>
+                    <div class="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                      <span class="text-[10px] text-slate-400 font-black uppercase block">Deadline</span>
+                      <span class="font-mono font-bold text-amber-800 text-xs truncate block">{{ job.deadline }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <button 
+                      v-if="isEditor && job.status !== 'open'" 
+                      @click="approveAndPublishItem('vacancy', job)" 
+                      class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                      title="Approve & open vacancy"
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      v-if="isEditor && job.status === 'open'" 
+                      @click="unpublishItem('vacancy', job)" 
+                      class="px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                      title="Move back to draft"
+                    >
+                      Unpublish
+                    </button>
+                  </div>
+
+                  <div class="flex items-center gap-1.5">
+                    <button v-if="canEditItem(job)" @click="editItem('vacancy', job)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl border border-slate-200 cursor-pointer transition" title="Edit Vacancy">
+                      <Edit class="w-3.5 h-3.5" />
+                    </button>
+                    <button v-if="canDeleteItem(job)" @click="deleteItem('/admin/vacancies', job.id, job.title_en || job.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl border border-rose-200 cursor-pointer transition" title="Delete Vacancy">
+                      <Trash2 class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vacancies Pagination Controls Bar (Cards) -->
+            <div v-if="filteredVacancies.length > vacanciesPerPage" class="p-4 px-6 bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing page <span class="font-bold text-slate-900">{{ vacanciesPage }}</span> of <span class="font-bold text-slate-900">{{ totalVacanciesPages }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button 
+                  :disabled="vacanciesPage === 1" 
+                  @click="vacanciesPage--"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  <ChevronLeft class="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  v-for="p in totalVacanciesPages" 
+                  :key="p"
+                  @click="vacanciesPage = p"
+                  :class="[
+                    'w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer text-xs',
+                    vacanciesPage === p ? 'bg-emerald-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="vacanciesPage === totalVacanciesPages" 
+                  @click="vacanciesPage++"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  <ChevronRight class="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -2526,30 +2719,37 @@ onUnmounted(() => {
         <!-- 5. MAYOR PROFILE & KEYNOTE -->
         <div v-else-if="activeSection === 'mayor'" class="space-y-6 max-w-4xl">
           <div>
-            <h2 class="text-2xl font-black text-slate-900">Office of the Mayor & Keynote</h2>
-            <p class="text-xs text-slate-500">Update the Mayor's official portrait, welcome letter, vision, and executive biography.</p>
+            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+              <span>Executive Leadership</span>
+              <span>/</span>
+              <span class="text-amber-600 font-bold">Office of the Mayor</span>
+            </div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Office of the Mayor & Executive Keynote</h2>
+            <p class="text-xs text-slate-500 mt-1">Configure the official Mayoral portrait, keynote greeting, and executive biography published to citizens and diplomatic delegations.</p>
           </div>
 
-          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-6 pb-6 border-b border-slate-100">
-              <img v-if="mayorData.portrait_path" :src="mayorData.portrait_path" alt="Mayor" class="w-28 h-28 object-cover object-top rounded-2xl border-2 border-blue-600 shadow-md shrink-0" />
+          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs space-y-6 relative overflow-hidden">
+            <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-red-500"></div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-6 pb-6 border-b border-slate-100 pt-2">
+              <img v-if="mayorData.portrait_path" :src="mayorData.portrait_path" alt="Mayor" class="w-28 h-28 object-cover object-top rounded-2xl border-2 border-amber-500 shadow-md shrink-0 bg-slate-100" />
               <div v-else class="w-28 h-28 rounded-2xl border-2 border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 shrink-0">
                 <Users class="w-10 h-10 opacity-30 text-blue-600" />
                 <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase">No Photo</span>
               </div>
               <div class="flex-1 space-y-2">
                 <h3 class="text-xl font-black text-slate-900">{{ mayorData.name_en || mayorData.name_am }}</h3>
-                <p class="text-xs text-slate-500 font-mono">Current Term: {{ mayorData.term_start || '2021' }} - {{ mayorData.term_end || 'Present' }}</p>
+                <p class="text-xs text-slate-500 font-mono">Current Mayoral Term: {{ mayorData.term_start || '2021' }} - {{ mayorData.term_end || 'Present' }}</p>
 
                 <!-- Mayor Photo Upload Input -->
                 <div class="pt-2">
-                  <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Update Mayoral Portrait</label>
+                  <label class="block text-[11px] font-black text-slate-700 uppercase tracking-wider mb-1.5">Official Mayoral Portrait</label>
                   <div class="flex items-center gap-3 max-w-md">
                     <input 
                       v-model="mayorData.portrait_path" 
                       type="text" 
-                      placeholder="/uploads/... or click Upload Photo" 
-                      class="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono" 
+                      placeholder="/assets/... or click Upload Photo" 
+                      class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none" 
                     />
                     <label class="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
                       <Upload class="w-4 h-4" />
@@ -2561,52 +2761,60 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mayor Full Name (Amharic - አማርኛ) *</label>
-                <input v-model="mayorData.name_am" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Mayor Full Name (Amharic) *</span>
+                  <span class="text-slate-400 font-normal">የከንቲባው ሙሉ ስም</span>
+                </label>
+                <input v-model="mayorData.name_am" type="text" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mayor Full Name (English)</label>
-                <input v-model="mayorData.name_en" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Mayor Full Name (English)</label>
+                <input v-model="mayorData.name_en" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition" />
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Term Start Year</label>
-                <input v-model="mayorData.term_start" type="text" placeholder="2021" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Term Start Year</label>
+                <input v-model="mayorData.term_start" type="text" placeholder="2021" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Term End Year</label>
-                <input v-model="mayorData.term_end" type="text" placeholder="Present" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+                <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Term End Year</label>
+                <input v-model="mayorData.term_end" type="text" placeholder="Present" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition" />
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keynote Welcome Message (Amharic - የእንኳን ደህና መጡ መልእክት) *</label>
-              <textarea v-model="mayorData.welcome_message_am" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Keynote Greeting Letter (Amharic) *</span>
+                <span class="text-slate-400 font-normal">የእንኳን ደህና መጡ መልእክት</span>
+              </label>
+              <textarea v-model="mayorData.welcome_message_am" rows="3" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition"></textarea>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keynote Welcome Message (English)</label>
-              <textarea v-model="mayorData.welcome_message_en" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+              <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Keynote Greeting Letter (English)</label>
+              <textarea v-model="mayorData.welcome_message_en" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition"></textarea>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Executive Biography (Amharic)</label>
-                <textarea v-model="mayorData.biography_am" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+                <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Executive Biography (Amharic)</label>
+                <textarea v-model="mayorData.biography_am" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition"></textarea>
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Executive Biography (English)</label>
-                <textarea v-model="mayorData.biography_en" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs"></textarea>
+                <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Executive Biography (English)</label>
+                <textarea v-model="mayorData.biography_en" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition"></textarea>
               </div>
             </div>
 
-            <button @click="updateMayorProfile" class="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer shadow-md">
-              Save Mayor Profile Changes
-            </button>
+            <div class="pt-3">
+              <button @click="updateMayorProfile" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs cursor-pointer shadow-md shadow-amber-500/20 transition-all">
+                Save Mayoral Profile Changes
+              </button>
+            </div>
           </div>
         </div>
 
@@ -2617,7 +2825,7 @@ onUnmounted(() => {
               <h2 class="text-2xl font-black text-slate-900">Cabinet & City Council Members</h2>
               <p class="text-xs text-slate-500">Manage municipal cabinet portfolios and council committee heads.</p>
             </div>
-            <button @click="openNewModal('leadership')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('leadership')" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 transition-all">
               <Plus class="w-4 h-4" />
               <span>Add Member</span>
             </button>
@@ -2665,11 +2873,17 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'offices'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                Municipal Offices & Public Directory 
-                <span class="text-blue-600 font-mono text-xl">({{ filteredOffices.length }})</span>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Administrative Infrastructure</span>
+                <span>/</span>
+                <span class="text-blue-600 font-bold">Public Directory</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Municipal Offices & Directorate Directory</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ filteredOffices.length }} offices
+                </span>
               </h2>
-              <p class="text-xs text-slate-500">Maintain official directory, building locations, room numbers and direct phone lines.</p>
             </div>
             <div class="flex items-center gap-3">
               <!-- Live Filter Search Bar -->
@@ -2679,61 +2893,114 @@ onUnmounted(() => {
                   v-model="officeSearch"
                   type="text"
                   placeholder="Filter by name, room, phone..."
-                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+                  class="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs font-medium"
                 />
               </div>
-              <button @click="openNewModal('office')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+
+              <!-- View Mode Switcher -->
+              <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+                <button 
+                  @click="officesViewMode = 'grid'"
+                  :class="['p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer', officesViewMode === 'grid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800']"
+                  title="Card Grid View"
+                >
+                  <LayoutGrid class="w-4 h-4" />
+                  <span class="hidden sm:inline">Cards</span>
+                </button>
+                <button 
+                  @click="officesViewMode = 'table'"
+                  :class="['p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer', officesViewMode === 'table' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800']"
+                  title="Directory Table View"
+                >
+                  <List class="w-4 h-4" />
+                  <span class="hidden sm:inline">Table</span>
+                </button>
+              </div>
+
+              <button @click="openNewModal('office')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
                 <Plus class="w-4 h-4" />
                 <span>Add Office</span>
               </button>
             </div>
           </div>
 
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div v-if="filteredOffices.length === 0" class="p-12 text-center text-slate-400 text-xs">
-              No municipal offices found matching "<span class="font-bold text-slate-600">{{ officeSearch }}</span>".
-            </div>
-            <div v-else class="divide-y divide-slate-100">
-              <div v-for="off in paginatedOffices" :key="off.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
-                <div>
-                  <h4 class="font-bold text-base text-slate-900">{{ off.name_en || off.name_am }}</h4>
-                  <div class="text-xs text-slate-500 font-mono mt-1">
-                    Amharic: {{ off.name_am }} | Phone: {{ off.phone }} | Room: {{ off.room_number || 'Main' }}
-                  </div>
-                  <div class="text-xs text-slate-400 mt-0.5">{{ off.building_location_am }}</div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button @click="editItem('office', off)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Office">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button v-if="isSuperAdmin" @click="deleteItem('/admin/offices', off.id, off.name_en || off.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Office">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          <div v-if="filteredOffices.length === 0" class="p-12 text-center text-slate-400 bg-white rounded-3xl border border-slate-200 shadow-xs">
+            <Building2 class="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-400" />
+            <p class="text-xs font-bold text-slate-600">No municipal offices found matching "<span class="font-bold text-slate-900">{{ officeSearch }}</span>".</p>
+            <p class="text-[11px] text-slate-400 mt-1">Try another search keyword or click "Add Office" to register a new bureau.</p>
+          </div>
+
+          <!-- 1. DIRECTORY TABLE VIEW -->
+          <div v-else-if="officesViewMode === 'table'" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                    <th class="py-3 px-4">Office & Directorate</th>
+                    <th class="py-3 px-4">Building Location</th>
+                    <th class="py-3 px-4">Room #</th>
+                    <th class="py-3 px-4">Phone Line</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium">
+                  <tr v-for="off in paginatedOffices" :key="off.id" class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3.5 px-4 max-w-sm">
+                      <div class="font-bold text-slate-900 text-xs leading-snug">{{ off.name_en || off.name_am }}</div>
+                      <div class="text-[11px] text-slate-400 truncate mt-0.5 font-mono">AM: {{ off.name_am }}</div>
+                    </td>
+
+                    <td class="py-3.5 px-4 text-slate-700 text-xs font-semibold whitespace-nowrap">
+                      {{ off.building_location_en || off.building_location_am || 'Main Administrative Complex' }}
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <span class="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-mono font-bold text-xs border border-blue-200">
+                        {{ off.room_number ? 'Room ' + off.room_number : 'Main Hall' }}
+                      </span>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <a :href="'tel:' + off.phone" class="font-mono text-xs font-bold text-blue-700 hover:underline inline-flex items-center gap-1.5">
+                        <Phone class="w-3 h-3 text-slate-400" />
+                        <span>{{ off.phone || 'N/A' }}</span>
+                      </a>
+                    </td>
+
+                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                      <div class="inline-flex items-center gap-1.5">
+                        <button @click="editItem('office', off)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-200 cursor-pointer transition" title="Edit Office">
+                          <Edit class="w-3.5 h-3.5" />
+                        </button>
+                        <button v-if="isSuperAdmin" @click="deleteItem('/admin/offices', off.id, off.name_en || off.name_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg border border-rose-200 cursor-pointer transition" title="Delete Office">
+                          <Trash2 class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <!-- Offices Pagination Controls Bar -->
-            <div v-if="filteredOffices.length > officePerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <!-- Offices Pagination Controls Bar (Table) -->
+            <div v-if="filteredOffices.length > officePerPage" class="p-3.5 px-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
               <div>
-                Showing <span class="font-bold text-slate-900">{{ (officePage - 1) * officePerPage + 1 }}</span> to 
-                <span class="font-bold text-slate-900">{{ Math.min(officePage * officePerPage, filteredOffices.length) }}</span> of 
-                <span class="font-bold text-slate-900">{{ filteredOffices.length }}</span> offices
+                Showing page <span class="font-bold text-slate-900">{{ officePage }}</span> of <span class="font-bold text-slate-900">{{ totalOfficePages }}</span>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1">
                 <button 
                   :disabled="officePage === 1" 
                   @click="officePage--"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
                 >
-                  Previous
+                  <ChevronLeft class="w-3.5 h-3.5" />
                 </button>
                 <button 
                   v-for="p in totalOfficePages" 
                   :key="p"
                   @click="officePage = p"
                   :class="[
-                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    'w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer text-xs',
                     officePage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
                   ]"
                 >
@@ -2742,9 +3009,89 @@ onUnmounted(() => {
                 <button 
                   :disabled="officePage === totalOfficePages" 
                   @click="officePage++"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
                 >
-                  Next
+                  <ChevronRight class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. CARD GRID VIEW -->
+          <div v-else class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div 
+                v-for="off in paginatedOffices" 
+                :key="off.id" 
+                class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+              >
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-600 to-amber-500"></div>
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-3 pt-1">
+                    <span class="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-mono text-xs font-bold border border-blue-200">
+                      {{ off.room_number ? 'Room ' + off.room_number : 'Main Hall' }}
+                    </span>
+                    <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                      Desk #{{ off.id }}
+                    </span>
+                  </div>
+
+                  <h4 class="font-black text-base text-slate-900 leading-snug">{{ off.name_en || off.name_am }}</h4>
+                  <p class="text-xs text-slate-500 font-mono mt-1">AM: {{ off.name_am }}</p>
+
+                  <div class="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5 text-xs">
+                    <div class="text-slate-600 flex items-center gap-1.5">
+                      <Building2 class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span class="truncate">{{ off.building_location_en || off.building_location_am || 'Administrative Complex' }}</span>
+                    </div>
+                    <div class="text-slate-800 font-mono font-bold flex items-center gap-1.5">
+                      <Phone class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <a :href="'tel:' + off.phone" class="text-blue-700 hover:underline">{{ off.phone || 'N/A' }}</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-1.5">
+                  <button @click="editItem('office', off)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl border border-slate-200 cursor-pointer transition" title="Edit Office">
+                    <Edit class="w-3.5 h-3.5" />
+                  </button>
+                  <button v-if="isSuperAdmin" @click="deleteItem('/admin/offices', off.id, off.name_en || off.name_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl border border-rose-200 cursor-pointer transition" title="Delete Office">
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Offices Pagination Controls Bar (Cards) -->
+            <div v-if="filteredOffices.length > officePerPage" class="p-4 px-6 bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing page <span class="font-bold text-slate-900">{{ officePage }}</span> of <span class="font-bold text-slate-900">{{ totalOfficePages }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button 
+                  :disabled="officePage === 1" 
+                  @click="officePage--"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  <ChevronLeft class="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  v-for="p in totalOfficePages" 
+                  :key="p"
+                  @click="officePage = p"
+                  :class="[
+                    'w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer text-xs',
+                    officePage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="officePage === totalOfficePages" 
+                  @click="officePage++"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  <ChevronRight class="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -2753,32 +3100,48 @@ onUnmounted(() => {
 
         <!-- 8. SERVICES (TEXT & STEP) -->
         <div v-else-if="activeSection === 'services'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Municipal Citizen Services</h2>
-              <p class="text-xs text-slate-500">Configure text service guidelines and step-by-step civic procedural walkthroughs.</p>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Public Service Delivery</span>
+                <span>/</span>
+                <span class="text-blue-600 font-bold">Citizen Procedural Portal</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Municipal Citizen Services & Guides</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ servicesList.length }} services
+                </span>
+              </h2>
             </div>
-            <button @click="openNewModal('service')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('service')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 transition-all shrink-0">
               <Plus class="w-4 h-4" />
-              <span>Add Service</span>
+              <span>Add Service Guide</span>
             </button>
           </div>
 
-          <div v-if="servicesList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm">
-            No citizen services cataloged yet.
+          <div v-if="servicesList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm shadow-xs">
+            <Layers class="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-400" />
+            <p class="font-bold text-slate-600 text-xs">No citizen services cataloged yet.</p>
+            <p class="text-[11px] text-slate-400 mt-1">Click "Add Service Guide" above to register civic guidelines.</p>
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div v-for="srv in servicesList" :key="srv.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+            <div 
+              v-for="srv in servicesList" 
+              :key="srv.id" 
+              class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+            >
+              <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-blue-900"></div>
               <div>
-                <div class="flex items-center justify-between mb-2">
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase" :class="srv.type === 'step' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'">
-                    {{ srv.type === 'step' ? 'Step-by-Step Walkthrough' : 'Direct Guide' }}
+                <div class="flex items-center justify-between mb-3 pt-1">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border" :class="srv.type === 'step' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'">
+                    {{ srv.type === 'step' ? '● Step-by-Step Walkthrough' : '■ Direct Civic Guide' }}
                   </span>
                   <div class="flex items-center gap-1">
                     <button 
                       v-if="isEditor && srv.status !== 'published'" 
                       @click="approveAndPublishItem('service', srv)" 
-                      class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
                       title="Approve & publish service"
                     >
                       Approve
@@ -2786,27 +3149,34 @@ onUnmounted(() => {
                     <button 
                       v-if="isEditor && srv.status === 'published'" 
                       @click="unpublishItem('service', srv)" 
-                      class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      class="px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
                       title="Move to draft"
                     >
                       Unpublish
                     </button>
-                    <button v-if="canEditItem(srv)" @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Service">
-                      <Edit class="w-4 h-4" />
+                    <button v-if="canEditItem(srv)" @click="editItem('service', srv)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-xl border border-slate-200 cursor-pointer transition" title="Edit Service">
+                      <Edit class="w-3.5 h-3.5" />
                     </button>
-                    <button v-if="canDeleteItem(srv)" @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Service">
-                      <Trash2 class="w-4 h-4" />
+                    <button v-if="canDeleteItem(srv)" @click="deleteItem('/admin/services', srv.id, srv.title_en || srv.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-xl border border-rose-200 cursor-pointer transition" title="Delete Service">
+                      <Trash2 class="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
-                <h4 class="font-extrabold text-base text-slate-900 leading-snug">{{ srv.title_en || srv.title_am }}</h4>
-                <p class="text-xs text-slate-500 font-mono mt-0.5">Amharic: {{ srv.title_am }}</p>
-                <p class="text-xs text-slate-600 mt-2 line-clamp-2">{{ srv.summary_en || srv.summary_am }}</p>
+
+                <h4 class="font-black text-base text-slate-900 leading-snug">{{ srv.title_en || srv.title_am }}</h4>
+                <p class="text-xs text-slate-500 font-mono mt-1">AM: {{ srv.title_am }}</p>
+                <p class="text-xs text-slate-600 mt-2.5 line-clamp-2 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100 font-medium">
+                  {{ srv.summary_en || srv.summary_am }}
+                </p>
               </div>
 
-              <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-mono">
-                <span>Fee: {{ srv.fee_amount ? srv.fee_amount + ' ETB' : 'Free' }}</span>
-                <span>Time: {{ srv.estimated_time_am || '1-3 Days' }}</span>
+              <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-mono">
+                <span class="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg">
+                  Fee: {{ srv.fee_amount ? Number(srv.fee_amount).toLocaleString() + ' ETB' : 'Free of Charge' }}
+                </span>
+                <span class="text-amber-800 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                  Est: {{ srv.estimated_time_am || srv.estimated_time_en || '1-3 Business Days' }}
+                </span>
               </div>
             </div>
           </div>
@@ -2814,29 +3184,48 @@ onUnmounted(() => {
 
         <!-- 9. MEGA INFRASTRUCTURE PROJECTS -->
         <div v-else-if="activeSection === 'projects'" class="space-y-6">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">Infrastructure & Urban Development Projects</h2>
-              <p class="text-xs text-slate-500">Track construction progress %, contractors, and capital allocations.</p>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Urban Planning & Construction Bureau</span>
+                <span>/</span>
+                <span class="text-amber-700 font-bold">Capital Infrastructure Tracking</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Infrastructure & Urban Development Projects</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ projectsList.length }} tracked
+                </span>
+              </h2>
             </div>
-            <button @click="openNewModal('project')" class="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md">
+            <button @click="openNewModal('project')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 transition-all shrink-0">
               <Plus class="w-4 h-4" />
-              <span>Add Project</span>
+              <span>Track New Project</span>
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div v-for="proj in projectsList" :key="proj.id" class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+          <div v-if="projectsList.length === 0" class="bg-white p-12 text-center rounded-3xl border border-slate-200 text-slate-400 text-sm shadow-xs">
+            <HardHat class="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-400" />
+            <p class="font-bold text-slate-600 text-xs">No capital projects cataloged yet.</p>
+            <p class="text-[11px] text-slate-400 mt-1">Register municipal construction and urban transformation projects.</p>
+          </div>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div 
+              v-for="proj in projectsList" 
+              :key="proj.id" 
+              class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+            >
+              <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-amber-400 to-emerald-600"></div>
               <div>
-                <div class="flex items-center justify-between">
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase" :class="proj.progress_percent === 100 ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'">
-                    {{ proj.status }}
+                <div class="flex items-center justify-between pt-1 mb-2">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border" :class="proj.progress_percent === 100 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'">
+                    {{ proj.status || (proj.progress_percent === 100 ? 'Completed' : 'Under Construction') }}
                   </span>
                   <div class="flex items-center gap-1">
                     <button 
                       v-if="isEditor && proj.publication_status !== 'published'" 
                       @click="approveAndPublishItem('project', proj)" 
-                      class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
                       title="Approve & publish project"
                     >
                       Approve
@@ -2844,42 +3233,49 @@ onUnmounted(() => {
                     <button 
                       v-if="isEditor && proj.publication_status === 'published'" 
                       @click="unpublishItem('project', proj)" 
-                      class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
+                      class="px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
                       title="Move to draft"
                     >
                       Unpublish
                     </button>
-                    <button v-if="canEditItem(proj)" @click="editItem('project', proj)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Project">
-                      <Edit class="w-4 h-4" />
+                    <button v-if="canEditItem(proj)" @click="editItem('project', proj)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-xl border border-slate-200 cursor-pointer transition" title="Edit Project">
+                      <Edit class="w-3.5 h-3.5" />
                     </button>
-                    <button v-if="canDeleteItem(proj)" @click="deleteItem('/admin/projects', proj.id, proj.title_en || proj.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Project">
-                      <Trash2 class="w-4 h-4" />
+                    <button v-if="canDeleteItem(proj)" @click="deleteItem('/admin/projects', proj.id, proj.title_en || proj.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-xl border border-rose-200 cursor-pointer transition" title="Delete Project">
+                      <Trash2 class="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
-                <h4 class="font-extrabold text-base text-slate-900 mt-2">{{ proj.title_en || proj.title_am }}</h4>
-                <div class="text-xs text-slate-500 mt-1 font-mono">Contractor: {{ proj.contractor_name || 'Municipal Agency' }}</div>
 
-                <!-- Progress Bar -->
-                <div class="mt-4">
-                  <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                    <span>Construction Progress</span>
-                    <span>{{ proj.progress_percent }}%</span>
+                <h4 class="font-black text-base text-slate-900 leading-snug">{{ proj.title_en || proj.title_am }}</h4>
+                <div class="text-xs text-slate-500 mt-1 font-mono flex items-center gap-1.5">
+                  <HardHat class="w-3.5 h-3.5 text-slate-400" />
+                  <span>Contractor: {{ proj.contractor_name || 'Kombolcha City Infrastructure Bureau' }}</span>
+                </div>
+
+                <!-- Progress Bar with Glowing Tip -->
+                <div class="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div class="flex justify-between text-xs font-black text-slate-800 mb-1.5">
+                    <span class="uppercase tracking-wider text-[10px] text-slate-500">Verified Construction Completion</span>
+                    <span class="font-mono text-blue-700">{{ proj.progress_percent }}%</span>
                   </div>
-                  <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-600 rounded-full transition-all" :style="{ width: `${proj.progress_percent}%` }"></div>
+                  <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden p-0.5">
+                    <div 
+                      class="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 rounded-full transition-all duration-500 shadow-sm" 
+                      :style="{ width: `${Math.min(100, Math.max(0, proj.progress_percent))}%` }"
+                    ></div>
                   </div>
                 </div>
               </div>
 
               <!-- Quick Progress Adjustment -->
               <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-slate-400 font-bold">Quick Set %:</span>
+                <span class="text-slate-500 font-bold uppercase text-[10px]">Quick Milestone:</span>
                 <div class="flex gap-1.5">
-                  <button @click="updateProgress(proj, 25)" class="px-2 py-1 rounded bg-slate-100 hover:bg-blue-50 font-bold">25%</button>
-                  <button @click="updateProgress(proj, 50)" class="px-2 py-1 rounded bg-slate-100 hover:bg-blue-50 font-bold">50%</button>
-                  <button @click="updateProgress(proj, 75)" class="px-2 py-1 rounded bg-slate-100 hover:bg-blue-50 font-bold">75%</button>
-                  <button @click="updateProgress(proj, 100)" class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-bold">100%</button>
+                  <button @click="updateProgress(proj, 25)" class="px-2.5 py-1 rounded-lg border font-bold text-xs cursor-pointer transition" :class="proj.progress_percent === 25 ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'">25%</button>
+                  <button @click="updateProgress(proj, 50)" class="px-2.5 py-1 rounded-lg border font-bold text-xs cursor-pointer transition" :class="proj.progress_percent === 50 ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'">50%</button>
+                  <button @click="updateProgress(proj, 75)" class="px-2.5 py-1 rounded-lg border font-bold text-xs cursor-pointer transition" :class="proj.progress_percent === 75 ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'">75%</button>
+                  <button @click="updateProgress(proj, 100)" class="px-2.5 py-1 rounded-lg border font-bold text-xs cursor-pointer transition" :class="proj.progress_percent === 100 ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-200'">100%</button>
                 </div>
               </div>
             </div>
@@ -2890,11 +3286,17 @@ onUnmounted(() => {
         <div v-else-if="activeSection === 'resources'" class="space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 class="text-2xl font-black text-slate-900">
-                Public Directives & Document Library
-                <span class="text-blue-600 font-mono text-xl">({{ filteredResources.length }})</span>
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                <span>Legal & Document Archival</span>
+                <span>/</span>
+                <span class="text-blue-600 font-bold">Official Repository</span>
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Public Directives & Document Library</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
+                  {{ filteredResources.length }} documents
+                </span>
               </h2>
-              <p class="text-xs text-slate-500">Upload official bylaws, directives, annual budgets, and master plan maps.</p>
             </div>
             <div class="flex items-center gap-3">
               <div class="relative w-64">
@@ -2903,76 +3305,155 @@ onUnmounted(() => {
                   v-model="resourcesSearch"
                   type="text"
                   placeholder="Filter by title, year, category..."
-                  class="w-full pl-9 pr-3 py-2 rounded-2xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs"
+                  class="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none shadow-xs font-medium"
                 />
               </div>
-              <button @click="openNewModal('resource')" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md shrink-0">
+
+              <!-- View Mode Switcher -->
+              <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0">
+                <button 
+                  @click="resourcesViewMode = 'table'"
+                  :class="['p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer', resourcesViewMode === 'table' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800']"
+                  title="Archive Table View"
+                >
+                  <List class="w-4 h-4" />
+                  <span class="hidden sm:inline">Table</span>
+                </button>
+                <button 
+                  @click="resourcesViewMode = 'grid'"
+                  :class="['p-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer', resourcesViewMode === 'grid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800']"
+                  title="Card Grid View"
+                >
+                  <LayoutGrid class="w-4 h-4" />
+                  <span class="hidden sm:inline">Cards</span>
+                </button>
+              </div>
+
+              <button @click="openNewModal('resource')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
                 <Plus class="w-4 h-4" />
                 <span>Catalog Directive</span>
               </button>
             </div>
           </div>
 
-          <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div v-if="filteredResources.length === 0" class="p-12 text-center text-slate-400 text-xs">
-              No directives or resources found matching "<span class="font-bold text-slate-600">{{ resourcesSearch }}</span>".
-            </div>
-            <div v-else class="divide-y divide-slate-100">
-              <div v-for="res in paginatedResources" :key="res.id" class="p-6 flex items-center justify-between gap-4 hover:bg-slate-50/50">
-                <div>
-                  <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase mr-2">{{ res.category }}</span>
-                  <span class="text-xs font-mono text-slate-500">{{ res.year }}</span>
-                  <h4 class="font-bold text-base text-slate-900 mt-1">{{ res.title_en || res.title_am }}</h4>
-                  <div class="text-xs text-slate-500 mt-1 font-mono">File: {{ res.file_size_formatted }} | Downloads: {{ res.downloads_count }}</div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button 
-                    v-if="isEditor && res.status !== 'published'" 
-                    @click="approveAndPublishItem('resource', res)" 
-                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition"
-                    title="Approve & publish directive"
-                  >
-                    Approve
-                  </button>
-                  <button 
-                    v-if="isEditor && res.status === 'published'" 
-                    @click="unpublishItem('resource', res)" 
-                    class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition"
-                    title="Move to draft"
-                  >
-                    Unpublish
-                  </button>
-                  <button v-if="canEditItem(res)" @click="editItem('resource', res)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer" title="Edit Directive">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button v-if="canDeleteItem(res)" @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer" title="Delete Directive">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          <div v-if="filteredResources.length === 0" class="p-12 text-center text-slate-400 bg-white rounded-3xl border border-slate-200 shadow-xs">
+            <BookOpen class="w-10 h-10 mx-auto mb-3 opacity-30 text-slate-400" />
+            <p class="text-xs font-bold text-slate-600">No directives or resources found matching "<span class="font-bold text-slate-900">{{ resourcesSearch }}</span>".</p>
+            <p class="text-[11px] text-slate-400 mt-1">Catalog a new directive or adjust your search filter above.</p>
+          </div>
+
+          <!-- 1. ARCHIVAL TABLE VIEW -->
+          <div v-else-if="resourcesViewMode === 'table'" class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                    <th class="py-3 px-4">Directive Title</th>
+                    <th class="py-3 px-4">Category</th>
+                    <th class="py-3 px-4">Year & Size</th>
+                    <th class="py-3 px-4">Downloads</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium">
+                  <tr v-for="res in paginatedResources" :key="res.id" class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-3.5 px-4 max-w-sm">
+                      <div class="font-bold text-slate-900 text-xs leading-snug">{{ res.title_en || res.title_am }}</div>
+                      <div class="text-[11px] text-slate-400 truncate mt-0.5 font-mono">AM: {{ res.title_am }}</div>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-[10px] uppercase border border-blue-200">
+                        {{ res.category }}
+                      </span>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap font-mono text-xs">
+                      <span class="font-bold text-slate-800">{{ res.year }}</span>
+                      <span class="text-slate-400 ml-1.5 font-normal">({{ res.file_size_formatted || 'PDF' }})</span>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap font-mono">
+                      <span class="font-bold text-blue-700">{{ res.downloads_count || 0 }}</span>
+                      <span class="text-[10px] text-slate-400 ml-1">hits</span>
+                    </td>
+
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <span 
+                        :class="[
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase border',
+                          res.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'
+                        ]"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full" :class="res.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'"></span>
+                        {{ res.status === 'published' ? 'Live Published' : 'Draft' }}
+                      </span>
+                    </td>
+
+                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                      <div class="inline-flex items-center gap-1.5">
+                        <a 
+                          v-if="res.file_path" 
+                          :href="res.file_path" 
+                          target="_blank" 
+                          download
+                          class="p-1.5 rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                          title="Download Document"
+                        >
+                          <Download class="w-3.5 h-3.5" />
+                        </a>
+
+                        <button 
+                          v-if="isEditor && res.status !== 'published'" 
+                          @click="approveAndPublishItem('resource', res)" 
+                          class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                          title="Approve & publish directive"
+                        >
+                          Approve
+                        </button>
+
+                        <button 
+                          v-if="isEditor && res.status === 'published'" 
+                          @click="unpublishItem('resource', res)" 
+                          class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                          title="Move to draft"
+                        >
+                          Unpublish
+                        </button>
+
+                        <button v-if="canEditItem(res)" @click="editItem('resource', res)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-200 cursor-pointer transition" title="Edit Directive">
+                          <Edit class="w-3.5 h-3.5" />
+                        </button>
+                        <button v-if="canDeleteItem(res)" @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg border border-rose-200 cursor-pointer transition" title="Delete Directive">
+                          <Trash2 class="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <!-- Resources Pagination Controls Bar -->
-            <div v-if="filteredResources.length > resourcesPerPage" class="p-4 px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <!-- Resources Pagination Controls Bar (Table) -->
+            <div v-if="filteredResources.length > resourcesPerPage" class="p-3.5 px-6 bg-slate-50/80 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
               <div>
-                Showing <span class="font-bold text-slate-900">{{ (resourcesPage - 1) * resourcesPerPage + 1 }}</span> to 
-                <span class="font-bold text-slate-900">{{ Math.min(resourcesPage * resourcesPerPage, filteredResources.length) }}</span> of 
-                <span class="font-bold text-slate-900">{{ filteredResources.length }}</span> directives
+                Showing page <span class="font-bold text-slate-900">{{ resourcesPage }}</span> of <span class="font-bold text-slate-900">{{ totalResourcesPages }}</span>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1">
                 <button 
                   :disabled="resourcesPage === 1" 
                   @click="resourcesPage--"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
                 >
-                  Previous
+                  <ChevronLeft class="w-3.5 h-3.5" />
                 </button>
                 <button 
                   v-for="p in totalResourcesPages" 
                   :key="p"
                   @click="resourcesPage = p"
                   :class="[
-                    'w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs',
+                    'w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer text-xs',
                     resourcesPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
                   ]"
                 >
@@ -2981,9 +3462,111 @@ onUnmounted(() => {
                 <button 
                   :disabled="resourcesPage === totalResourcesPages" 
                   @click="resourcesPage++"
-                  class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
                 >
-                  Next
+                  <ChevronRight class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. CARD GRID VIEW -->
+          <div v-else class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div 
+                v-for="res in paginatedResources" 
+                :key="res.id" 
+                class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+              >
+                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-indigo-600 to-amber-500"></div>
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-3 pt-1">
+                    <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase border border-blue-200">
+                      {{ res.category }}
+                    </span>
+                    <span class="text-xs font-mono font-bold text-slate-500">{{ res.year }}</span>
+                  </div>
+
+                  <h4 class="font-black text-base text-slate-900 leading-snug line-clamp-2">{{ res.title_en || res.title_am }}</h4>
+                  <p class="text-xs text-slate-500 font-mono mt-1">AM: {{ res.title_am }}</p>
+
+                  <div class="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs font-mono">
+                    <span class="text-slate-600">Size: {{ res.file_size_formatted || 'PDF' }}</span>
+                    <span class="text-blue-700 font-bold">Downloads: {{ res.downloads_count || 0 }}</span>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <a 
+                    v-if="res.file_path" 
+                    :href="res.file_path" 
+                    target="_blank" 
+                    download
+                    class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:underline"
+                  >
+                    <Download class="w-3.5 h-3.5" />
+                    <span>Download</span>
+                  </a>
+                  <span v-else class="text-[11px] text-slate-400 italic">No file</span>
+
+                  <div class="flex items-center gap-1.5">
+                    <button 
+                      v-if="isEditor && res.status !== 'published'" 
+                      @click="approveAndPublishItem('resource', res)" 
+                      class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                      title="Approve & publish directive"
+                    >
+                      Approve
+                    </button>
+                    <button 
+                      v-if="isEditor && res.status === 'published'" 
+                      @click="unpublishItem('resource', res)" 
+                      class="px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
+                      title="Move to draft"
+                    >
+                      Unpublish
+                    </button>
+                    <button v-if="canEditItem(res)" @click="editItem('resource', res)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-xl border border-slate-200 cursor-pointer transition" title="Edit Directive">
+                      <Edit class="w-3.5 h-3.5" />
+                    </button>
+                    <button v-if="canDeleteItem(res)" @click="deleteItem('/admin/resources', res.id, res.title_en || res.title_am)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl border border-rose-200 cursor-pointer transition" title="Delete Directive">
+                      <Trash2 class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resources Pagination Controls Bar (Cards) -->
+            <div v-if="filteredResources.length > resourcesPerPage" class="p-4 px-6 bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+              <div>
+                Showing page <span class="font-bold text-slate-900">{{ resourcesPage }}</span> of <span class="font-bold text-slate-900">{{ totalResourcesPages }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button 
+                  :disabled="resourcesPage === 1" 
+                  @click="resourcesPage--"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  <ChevronLeft class="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  v-for="p in totalResourcesPages" 
+                  :key="p"
+                  @click="resourcesPage = p"
+                  :class="[
+                    'w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer text-xs',
+                    resourcesPage === p ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button 
+                  :disabled="resourcesPage === totalResourcesPages" 
+                  @click="resourcesPage++"
+                  class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-bold cursor-pointer transition-colors shadow-2xs"
+                >
+                  <ChevronRight class="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -3457,16 +4040,40 @@ onUnmounted(() => {
     </div>
 
     <!-- UNIVERSAL DYNAMIC CREATION MODAL -->
-    <div v-if="modalType" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-          <h3 class="text-xl font-black text-slate-900 capitalize">{{ editingId ? 'Edit ' + modalType : 'New ' + modalType }}</h3>
-          <button @click="modalType = ''; editingId = null" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl cursor-pointer">
-            <X class="w-5 h-5" />
-          </button>
+    <div v-if="modalType" class="fixed inset-0 bg-[#071324]/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col my-auto max-h-[92vh]">
+        <!-- Sovereign Modal Header -->
+        <div class="bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white p-5 sm:p-6 relative shrink-0">
+          <div class="absolute top-0 inset-x-0 h-1 flex">
+            <div class="h-full flex-1 bg-emerald-500"></div>
+            <div class="h-full flex-1 bg-amber-400"></div>
+            <div class="h-full flex-1 bg-red-500"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                <Edit v-if="editingId" class="w-5 h-5" />
+                <Plus v-else class="w-5 h-5" />
+              </div>
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-amber-400/90 block">
+                  Kombolcha Metropolitan Administrative Dossier
+                </span>
+                <h3 class="text-lg sm:text-xl font-black text-white capitalize">
+                  {{ editingId ? 'Edit ' + modalType.replace('_', ' ') : 'New ' + modalType.replace('_', ' ') }}
+                </h3>
+              </div>
+            </div>
+            <button 
+              @click="modalType = ''; editingId = null" 
+              class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        <form @submit.prevent="submitActiveModal" class="space-y-4">
+        <form @submit.prevent="submitActiveModal" class="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5">
           <!-- News Fields -->
           <div v-if="modalType === 'news'" class="space-y-4">
             <div>
@@ -4413,10 +5020,22 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" @click="modalType = ''; editingId = null" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="submitting" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
-              {{ submitting ? 'Saving...' : (isAuthor ? (editingId ? 'Save & Submit for Review' : 'Submit for Editorial Review') : (editingId ? 'Update & Save Changes' : 'Confirm & Publish Live')) }}
+          <div class="flex items-center justify-end gap-3 pt-5 mt-6 border-t border-slate-100">
+            <button 
+              type="button" 
+              @click="modalType = ''; editingId = null" 
+              class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              :disabled="submitting" 
+              class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 transition-all flex items-center gap-2"
+            >
+              <Loader2 v-if="submitting" class="w-3.5 h-3.5 animate-spin" />
+              <CheckCircle2 v-else class="w-3.5 h-3.5" />
+              <span>{{ submitting ? 'Saving...' : (isAuthor ? (editingId ? 'Save & Submit for Review' : 'Submit for Editorial Review') : (editingId ? 'Update & Save Changes' : 'Confirm & Publish Live')) }}</span>
             </button>
           </div>
         </form>
@@ -4518,7 +5137,8 @@ onUnmounted(() => {
 
           <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="profileLoading || uploadingFile" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
+            <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="profileLoading || uploadingFile" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 transition-all">
               {{ profileLoading ? 'Saving...' : 'Save Profile Changes' }}
             </button>
           </div>
@@ -4532,24 +5152,24 @@ onUnmounted(() => {
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Current Password</label>
-            <input v-model="passwordForm.current_password" type="password" required placeholder="Enter current password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Current Password</label>
+            <input v-model="passwordForm.current_password" type="password" required placeholder="Enter current password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none" />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
-              <input v-model="passwordForm.new_password" type="password" required minlength="8" placeholder="At least 8 characters" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">New Password</label>
+              <input v-model="passwordForm.new_password" type="password" required minlength="8" placeholder="At least 8 characters" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm New Password</label>
-              <input v-model="passwordForm.new_password_confirmation" type="password" required minlength="8" placeholder="Repeat new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+              <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">Confirm New Password</label>
+              <input v-model="passwordForm.new_password_confirmation" type="password" required minlength="8" placeholder="Repeat new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none" />
             </div>
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="profileLoading" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
+            <button type="button" @click="profileModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="profileLoading" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 transition-all">
               {{ profileLoading ? 'Updating...' : 'Update Password' }}
             </button>
           </div>
@@ -4558,11 +5178,12 @@ onUnmounted(() => {
     </div>
 
     <!-- SUPER ADMIN RESET STAFF PASSWORD OVERRIDE MODAL -->
-    <div v-if="resetStaffModalOpen && targetStaffUser" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-        <div class="p-6 border-b border-slate-100 bg-amber-50/50 flex items-center justify-between">
+    <div v-if="resetStaffModalOpen && targetStaffUser" class="fixed inset-0 bg-[#071324]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden relative">
+        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-blue-900 to-emerald-600"></div>
+        <div class="p-6 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between pt-5">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+            <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
               <KeyRound class="w-5 h-5" />
             </div>
             <div>
@@ -4577,34 +5198,34 @@ onUnmounted(() => {
 
         <form @submit.prevent="handleAdminResetPassword" class="p-6 space-y-4">
           <!-- Target Staff Info Card -->
-          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-slate-500">Staff Name:</span>
+              <span class="text-slate-500 font-bold">Staff Name:</span>
               <span class="font-extrabold text-slate-900">{{ targetStaffUser.name }}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-slate-500">Email:</span>
-              <span class="font-mono text-slate-700">{{ targetStaffUser.email }}</span>
+              <span class="text-slate-500 font-bold">Email:</span>
+              <span class="font-mono text-slate-800">{{ targetStaffUser.email }}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-slate-500">Role:</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-700">{{ targetStaffUser.role }}</span>
+              <span class="text-slate-500 font-bold">Role:</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-700 border border-blue-200">{{ targetStaffUser.role }}</span>
             </div>
           </div>
 
           <div class="space-y-1">
             <div class="flex items-center justify-between">
-              <label class="block text-xs font-bold text-slate-700 uppercase">New Password</label>
+              <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1">New Password</label>
               <button type="button" @click="generateRandomPassword" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1 cursor-pointer">
                 <span>Generate Strong Password</span>
               </button>
             </div>
-            <input v-model="resetStaffForm.password" type="text" required minlength="8" placeholder="Enter or generate password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            <input v-model="resetStaffForm.password" type="text" required minlength="8" placeholder="Enter or generate password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none" />
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm New Password</label>
-            <input v-model="resetStaffForm.password_confirmation" type="text" required minlength="8" placeholder="Repeat new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
+            <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1">Confirm New Password</label>
+            <input v-model="resetStaffForm.password_confirmation" type="text" required minlength="8" placeholder="Repeat new password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-mono font-medium focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none" />
           </div>
 
           <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-[11px] leading-relaxed">
@@ -4612,8 +5233,8 @@ onUnmounted(() => {
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-            <button type="button" @click="resetStaffModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="resetStaffLoading" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50">
+            <button type="button" @click="resetStaffModalOpen = false" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="resetStaffLoading" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 transition-all">
               {{ resetStaffLoading ? 'Resetting...' : 'Set New Password' }}
             </button>
           </div>

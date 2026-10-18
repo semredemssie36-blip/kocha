@@ -112,19 +112,19 @@ const emit = defineEmits(['navigate', 'openModal'])
 
     <!-- 4 High-Density Metrics Cards (Role-Aware) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-      <!-- Card 1: Views / Audience Impact -->
+      <!-- Card 1: Total Municipal Registry Publications -->
       <div class="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all relative overflow-hidden group">
         <div class="absolute top-0 left-0 right-0 h-1.5 bg-blue-600"></div>
         <div class="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
-          <span>{{ isAuthor ? 'My Article Readers' : adminT('stat_views') }}</span>
+          <span>{{ isAuthor ? 'My Registered Dispatches' : 'Articles in Registry' }}</span>
           <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Eye class="w-4 h-4" />
+            <Layers class="w-4 h-4" />
           </div>
         </div>
-        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.monthly_views || '24,520' }}</div>
-        <div class="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg w-fit">
-          <TrendingUp class="w-3.5 h-3.5" />
-          <span>{{ isAuthor ? 'Audience Reach & Impact' : adminT('stat_traffic') }}</span>
+        <div class="text-3xl sm:text-4xl font-black text-slate-900 font-mono tracking-tight">{{ stats.news_count ?? newsCount ?? 0 }}</div>
+        <div class="mt-3 flex items-center gap-1.5 text-xs text-blue-700 font-bold bg-blue-50 px-2.5 py-1 rounded-lg w-fit">
+          <FileText class="w-3.5 h-3.5" />
+          <span>{{ stats.published_news || 0 }} live • {{ stats.pending_drafts || 0 }} in review</span>
         </div>
       </div>
 
