@@ -2,11 +2,25 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
-import { Building2, Lock, Mail, ArrowRight, AlertCircle, Loader2 } from 'lucide-vue-next'
+import { 
+  Building2, 
+  Lock, 
+  Mail, 
+  ArrowRight, 
+  AlertCircle, 
+  Loader2, 
+  ShieldCheck, 
+  Eye, 
+  EyeOff, 
+  KeyRound, 
+  ArrowLeft,
+  CheckCircle2
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const email = ref('admin@kombolchacity.gov.et')
 const password = ref('Admin@2026!')
+const showPassword = ref(false)
 const errorMessage = ref('')
 const loading = ref(false)
 
@@ -37,7 +51,7 @@ async function handleLogin() {
     if (err.response && err.response.data && err.response.data.message) {
       errorMessage.value = err.response.data.message
     } else {
-      errorMessage.value = 'Failed to connect to authentication server.'
+      errorMessage.value = 'Failed to connect to authentication server. Please check your credentials.'
     }
   } finally {
     loading.value = false
@@ -46,63 +60,156 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-slate-100">
-      <div class="text-center mb-8">
-        <img src="/assets/logo.png" alt="Kombolcha City Seal" class="w-16 h-16 object-contain rounded-full bg-white p-1 shadow-md border border-slate-100 mx-auto mb-3" />
-        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Login</h2>
-        <p class="text-xs text-slate-500 mt-1">Kombolcha Metropolitan Administration CMS</p>
-      </div>
+  <div class="min-h-screen bg-[#071324] relative flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+    <!-- Ambient Civic Glow & Grid Overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(14,165,233,0.15),transparent)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_120%,rgba(217,119,6,0.12),transparent)]"></div>
+    <div class="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]"></div>
 
-      <!-- Error Alert -->
-      <div v-if="errorMessage" class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-        <AlertCircle class="w-4 h-4 shrink-0" />
-        <span>{{ errorMessage }}</span>
-      </div>
+    <!-- Sovereign Top Micro Bar -->
+    <div class="absolute top-0 inset-x-0 h-1.5 flex">
+      <div class="h-full flex-1 bg-emerald-600"></div>
+      <div class="h-full flex-1 bg-amber-400"></div>
+      <div class="h-full flex-1 bg-red-600"></div>
+    </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Official Email</label>
-          <div class="relative">
-            <Mail class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-            <input 
-              v-model="email" 
-              type="email" 
-              required 
-              placeholder="example@gmail.com" 
-              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" 
-            />
+    <!-- Main Card Container -->
+    <div class="w-full max-w-lg relative z-10">
+      <div class="bg-white rounded-3xl shadow-2xl shadow-black/50 border border-slate-100 overflow-hidden">
+        <!-- Card Header with Seal & Regal Authority -->
+        <div class="bg-gradient-to-b from-[#0B1E36] to-[#071324] px-8 pt-10 pb-8 text-center text-white relative">
+          <!-- Sovereign Ribbon -->
+          <div class="absolute top-0 inset-x-0 h-1 flex">
+            <div class="h-full flex-1 bg-emerald-500"></div>
+            <div class="h-full flex-1 bg-amber-400"></div>
+            <div class="h-full flex-1 bg-red-500"></div>
           </div>
+
+          <!-- Official Seal Halo -->
+          <div class="relative inline-block mb-4">
+            <div class="absolute -inset-2 bg-gradient-to-r from-amber-500/40 via-yellow-400/20 to-amber-600/40 rounded-full blur-md animate-pulse"></div>
+            <div class="relative w-20 h-20 rounded-full p-1.5 bg-gradient-to-b from-amber-400 via-amber-200 to-amber-600 shadow-xl mx-auto flex items-center justify-center">
+              <img 
+                src="/assets/logo.png" 
+                alt="Kombolcha Metropolitan Administration Seal" 
+                class="w-full h-full object-contain rounded-full bg-white p-1"
+              />
+            </div>
+          </div>
+
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-bold uppercase tracking-wider text-amber-300 mb-2.5">
+            <ShieldCheck class="w-3.5 h-3.5 text-amber-400" />
+            <span>Official Administrative Gateway</span>
+          </div>
+
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">
+            የኮምቦልቻ ከተማ አስተዳደር
+          </h1>
+          <p class="text-xs sm:text-sm font-bold text-amber-400/90 tracking-wide mt-1">
+            Metropolitan Command & Content Portal
+          </p>
+          <p class="text-[11px] text-slate-400 mt-1">
+            Secure sign-in for authorized municipal executives, editors, and officers
+          </p>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Password</label>
-          <div class="relative">
-            <Lock class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-            <input 
-              v-model="password" 
-              type="password" 
-              required 
-              placeholder="••••••••" 
-              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" 
-            />
+        <!-- Form Body -->
+        <div class="p-8 sm:p-10">
+          <!-- Error Alert Banner -->
+          <div v-if="errorMessage" class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-start gap-3 shadow-sm animate-shake">
+            <AlertCircle class="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+            <div class="flex-1">
+              <span class="font-bold block">Authentication Notice</span>
+              <span>{{ errorMessage }}</span>
+            </div>
+          </div>
+
+          <form @submit.prevent="handleLogin" class="space-y-5">
+            <!-- Email Field -->
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
+                <span>Official Municipal Email</span>
+                <span class="text-[10px] text-slate-400 font-normal">gov.et domain</span>
+              </label>
+              <div class="relative">
+                <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center absolute left-1.5 top-1.5 text-slate-400">
+                  <Mail class="w-4 h-4 text-slate-500" />
+                </div>
+                <input 
+                  v-model="email" 
+                  type="email" 
+                  required 
+                  placeholder="officer@kombolchacity.gov.et" 
+                  class="w-full pl-14 pr-4 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all shadow-xs" 
+                />
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div>
+              <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
+                <span>Administrative Password</span>
+                <span class="text-[10px] text-slate-400 font-normal">Case-sensitive</span>
+              </label>
+              <div class="relative">
+                <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center absolute left-1.5 top-1.5 text-slate-400">
+                  <Lock class="w-4 h-4 text-slate-500" />
+                </div>
+                <input 
+                  v-model="password" 
+                  :type="showPassword ? 'text' : 'password'" 
+                  required 
+                  placeholder="••••••••••••" 
+                  class="w-full pl-14 pr-12 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all shadow-xs" 
+                />
+                <button 
+                  type="button" 
+                  @click="showPassword = !showPassword"
+                  class="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  tabindex="-1"
+                >
+                  <EyeOff v-if="showPassword" class="w-4 h-4" />
+                  <Eye v-else class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Security Badge Info -->
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5 text-[11px] text-slate-600">
+              <ShieldCheck class="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Protected by 256-Bit SSL encryption & municipal audit trail logging.</span>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              :disabled="loading"
+              class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0B1E36] via-[#102A4C] to-[#0B1E36] hover:from-[#102A4C] hover:to-[#0E223D] text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-blue-950/20 hover:shadow-xl flex items-center justify-center gap-2.5 transition-all border border-amber-500/30 cursor-pointer disabled:opacity-50"
+            >
+              <Loader2 v-if="loading" class="w-4 h-4 animate-spin text-amber-400" />
+              <KeyRound v-else class="w-4 h-4 text-amber-400" />
+              <span>{{ loading ? 'Verifying Credentials...' : 'Authenticate & Access Console' }}</span>
+              <ArrowRight v-if="!loading" class="w-4 h-4 text-slate-300" />
+            </button>
+          </form>
+
+          <!-- Back to Public Site Link -->
+          <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-500">
+            <router-link to="/" class="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-900 transition-colors">
+              <ArrowLeft class="w-3.5 h-3.5" />
+              <span>ወደ ዋናው ህዝባዊ ገጽ ተመለስ</span>
+            </router-link>
+
+            <span class="text-[11px] text-slate-400">Kombolcha v2.4</span>
           </div>
         </div>
-
-        <button 
-          type="submit" 
-          :disabled="loading"
-          class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-        >
-          <Loader2 v-if="loading" class="w-4 h-4 animate-spin" />
-          <span v-else>Sign In it </span>
-          <ArrowRight v-if="!loading" class="w-4 h-4" />
-        </button>
-      </form>
-
-      <div class="mt-6 pt-6 border-t border-slate-100 text-center">
-        <router-link to="/" class="text-xs text-blue-600 hover:underline">← Return to Public Website</router-link>
       </div>
+
+      <!-- Legal / Sovereign Notice -->
+      <p class="text-center text-[11px] text-slate-500 mt-6 font-medium">
+        © 2026 Kombolcha Metropolitan City Administration. All Rights Reserved. <br class="hidden sm:inline" />
+        Unauthorized access attempts are monitored and reported under federal law.
+      </p>
     </div>
   </div>
 </template>
