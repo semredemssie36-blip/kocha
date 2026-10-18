@@ -29,7 +29,7 @@ const langStore = useLanguageStore()
 const currentSlide = ref(0)
 let slideTimer = null
 
-const slides = ref([
+const defaultSlides = [
   {
     image: '/assets/hero_industry.jpg',
     tag_am: 'የማኑፋክቸሪንግና የወጪ ንግድ ማዕከል',
@@ -62,7 +62,10 @@ const slides = ref([
     cta_om: 'Tajaajilaalee Lammiilee',
     cta_link: '/services'
   }
-])
+]
+
+// Real Photographic Hero Slides (Empty until API brings real database data)
+const slides = ref([])
 
 // Live Data States
 const newsList = ref([])
@@ -162,10 +165,24 @@ const fetchHomeData = async () => {
         cta_om: s.button_text_om || 'Dabalataaf',
         cta_link: s.button_url || '/explore'
       }))
+    } else {
+      slides.value = defaultSlides
+    }
+
+    // Preload hero photo before lifting skeleton to ensure zero flicker
+    const firstImg = slides.value[0]?.image
+    if (firstImg) {
+      const img = new Image()
+      img.src = firstImg
+      img.onload = () => { homeLoading.value = false }
+      img.onerror = () => { homeLoading.value = false }
+      setTimeout(() => { homeLoading.value = false }, 800)
+    } else {
+      homeLoading.value = false
     }
   } catch (err) {
     console.error('Failed to load home portal bundle:', err)
-  } finally {
+    slides.value = defaultSlides
     homeLoading.value = false
   }
 }
@@ -248,7 +265,55 @@ onUnmounted(() => {
   <div class="bg-white text-slate-800">
     <!-- Full-Bleed Municipal Hero Banner Section (Edge-to-Edge Cover Photography Slider) -->
     <section class="relative w-full bg-slate-950 overflow-hidden min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] xl:min-h-[760px] flex items-center">
-      <!-- Background Photography -->
+      
+      <!-- 1. Executive Dark Loading Skeleton (Active while fetching real database slides) -->
+      <transition name="fade">
+        <div 
+          v-if="homeLoading || slides.length === 0" 
+          class="absolute inset-0 w-full h-full bg-slate-950 flex items-center z-20 pointer-events-none"
+        >
+          <!-- Shimmering background pattern -->
+          <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 animate-pulse"></div>
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_25%_35%,rgba(30,58,138,0.25),transparent_70%)]"></div>
+
+          <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12 sm:py-20 lg:py-24">
+            <div class="max-w-3xl space-y-6">
+              <!-- Pill Tag Skeleton -->
+              <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 animate-pulse">
+                <div class="w-3.5 h-3.5 rounded-full bg-blue-500/40"></div>
+                <div class="w-48 h-3.5 bg-slate-700/80 rounded"></div>
+              </div>
+
+              <!-- Big Headline Skeleton (2 lines) -->
+              <div class="space-y-3">
+                <div class="h-10 sm:h-14 lg:h-16 bg-slate-800/90 rounded-2xl w-full max-w-2xl animate-pulse"></div>
+                <div class="h-10 sm:h-14 lg:h-16 bg-slate-800/90 rounded-2xl w-4/5 max-w-xl animate-pulse"></div>
+              </div>
+
+              <!-- Description Skeleton -->
+              <div class="space-y-2 pt-2">
+                <div class="h-4 sm:h-5 bg-slate-800/60 rounded-lg w-full max-w-xl animate-pulse"></div>
+                <div class="h-4 sm:h-5 bg-slate-800/50 rounded-lg w-3/4 max-w-md animate-pulse"></div>
+              </div>
+
+              <!-- CTA Buttons Skeleton -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+                <div class="h-12 w-48 bg-blue-900/40 rounded-xl animate-pulse border border-blue-800/40"></div>
+                <div class="h-12 w-32 bg-slate-800/50 rounded-xl animate-pulse border border-slate-700/30"></div>
+              </div>
+
+              <!-- Slide Dots Skeleton -->
+              <div class="flex items-center gap-2 pt-6">
+                <div class="w-8 h-2 rounded-full bg-blue-600/60 animate-pulse"></div>
+                <div class="w-2.5 h-2 rounded-full bg-slate-800 animate-pulse"></div>
+                <div class="w-2.5 h-2 rounded-full bg-slate-800 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- 2. Real Database Photography Slides -->
       <div 
         v-for="(slide, index) in slides" 
         :key="index"
@@ -264,8 +329,8 @@ onUnmounted(() => {
         <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-transparent"></div>
       </div>
 
-      <!-- Slide Overlay Content (Aligned with standard site container) -->
-      <div class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12 sm:py-20 lg:py-24">
+      <!-- 3. Real Database Slide Overlay Content -->
+      <div v-if="slides.length > 0" class="relative z-10 w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-12 sm:py-20 lg:py-24 transition-opacity duration-500" :class="homeLoading ? 'opacity-0' : 'opacity-100'">
         <div class="max-w-3xl text-white">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/40 text-blue-200 text-xs font-bold tracking-wider uppercase mb-4 border border-blue-400/30">
             <Landmark class="w-3.5 h-3.5 text-blue-300" />
@@ -282,7 +347,7 @@ onUnmounted(() => {
 
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <router-link 
-              :to="activeSlide.cta_link" 
+              :to="activeSlide?.cta_link || '/explore'" 
               class="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-extrabold text-sm transition-colors cursor-pointer shadow-md text-center"
             >
               <span>{{ getSlideCta() }}</span>
@@ -298,7 +363,7 @@ onUnmounted(() => {
           </div>
 
           <!-- Slide Controls -->
-          <div class="flex items-center gap-3 pt-8">
+          <div v-if="slides.length > 1" class="flex items-center gap-3 pt-8">
             <button 
               @click="prevSlide" 
               class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white border border-white/30 transition-colors cursor-pointer"
