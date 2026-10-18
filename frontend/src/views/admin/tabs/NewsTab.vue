@@ -69,8 +69,16 @@ const paginatedNews = computed(() => {
   return filteredNews.value.slice(start, start + perPage)
 })
 
+const publishedCount = computed(() => {
+  return props.newsList.filter(n => n.status === 'published').length
+})
+
 const pendingCount = computed(() => {
   return props.newsList.filter(n => n.status === 'pending').length
+})
+
+const draftCount = computed(() => {
+  return props.newsList.filter(n => n.status === 'draft').length
 })
 
 function canEdit(item) {
@@ -126,26 +134,32 @@ function canDelete(item) {
       </div>
     </div>
 
-    <!-- Status Tabs -->
-    <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+    <!-- Status Tabs with Counts -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
       <button 
         @click="activeFilter = 'all'; currentPage = 1"
         :class="[
-          'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+          'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
           activeFilter === 'all' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
         ]"
       >
-        All Articles ({{ newsList.length }})
+        <span>All Articles</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold" :class="activeFilter === 'all' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'">
+          {{ newsList.length }}
+        </span>
       </button>
 
       <button 
         @click="activeFilter = 'published'; currentPage = 1"
         :class="[
-          'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+          'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
           activeFilter === 'published' ? 'bg-emerald-700 text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
         ]"
       >
-        Live Published
+        <span>Live Published</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold" :class="activeFilter === 'published' ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-100 text-emerald-800'">
+          {{ publishedCount }}
+        </span>
       </button>
 
       <button 
@@ -156,7 +170,7 @@ function canDelete(item) {
         ]"
       >
         <span>Pending Review</span>
-        <span v-if="pendingCount > 0" class="px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black">
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold" :class="activeFilter === 'pending' ? 'bg-amber-700 text-amber-100' : 'bg-amber-100 text-amber-800'">
           {{ pendingCount }}
         </span>
       </button>
@@ -164,11 +178,14 @@ function canDelete(item) {
       <button 
         @click="activeFilter = 'draft'; currentPage = 1"
         :class="[
-          'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+          'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
           activeFilter === 'draft' ? 'bg-slate-700 text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
         ]"
       >
-        Drafts
+        <span>Drafts / Unpublished</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold" :class="activeFilter === 'draft' ? 'bg-slate-800 text-slate-200' : 'bg-slate-200 text-slate-700'">
+          {{ draftCount }}
+        </span>
       </button>
     </div>
 

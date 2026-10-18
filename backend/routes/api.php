@@ -86,7 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // AUTHOR, EDITOR & SUPER_ADMIN (Content Creation & Drafting)
     // ----------------------------------------------------
     Route::middleware('role:author,editor,super_admin')->group(function () {
-        // Articles Management (Create, Edit & Delete own drafts)
+        // Articles Management (List, Create, Edit & Delete own drafts)
+        Route::get('/admin/news', [AdminContentController::class, 'getNews']);
         Route::post('/admin/news', [AdminContentController::class, 'storeNews']);
         Route::put('/admin/news/{id}', [AdminContentController::class, 'updateNews']);
         Route::delete('/admin/news/{id}', [AdminContentController::class, 'deleteNews']);

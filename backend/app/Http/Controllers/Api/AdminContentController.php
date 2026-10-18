@@ -107,6 +107,19 @@ class AdminContentController extends Controller
         ]);
     }
 
+    // News Articles Listing for Admin (All lifecycle states: Draft, Pending, Published)
+    public function getNews(Request $request, AdminContentService $service)
+    {
+        $perPage = (int) $request->input('per_page', 200);
+        $articles = $service->getFilteredNews(
+            $request->user(),
+            $request->query('status'),
+            $request->query('category'),
+            $perPage
+        );
+        return NewsResource::collection($articles);
+    }
+
     // News Article Create / Update
     public function storeNews(Request $request)
     {

@@ -779,7 +779,7 @@ async function fetchAllAdminData() {
     // 1. Base endpoints accessible to all authenticated staff (author, editor, super_admin)
     const [statsRes, newsRes, resourcesRes, galleryRes] = await Promise.all([
       api.get('/admin/stats').catch(() => ({ data: {} })),
-      api.get('/news').catch(() => ({ data: [] })),
+      api.get('/admin/news').catch(() => ({ data: [] })),
       api.get('/resources').catch(() => ({ data: [] })),
       api.get('/admin/gallery').catch(() => ({ data: [] }))
     ])
