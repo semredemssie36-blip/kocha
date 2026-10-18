@@ -27,6 +27,7 @@ const langStore = useLanguageStore()
 
 // Real Photographic Hero Slides
 const currentSlide = ref(0)
+let slideTimer = null
 // Real Photographic Hero Slides (Exclusively fetched from municipal database)
 const slides = ref([])
 

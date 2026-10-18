@@ -130,7 +130,7 @@ const router = createRouter({
 })
 
 // Navigation & Authentication Guards
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const token = localStorage.getItem('kombolcha_admin_token')
 
   // Set document title dynamically
@@ -140,15 +140,13 @@ router.beforeEach((to, from, next) => {
 
   // 1. If user is already authenticated and visits /admin/login, redirect to /admin dashboard
   if (to.path === '/admin/login' && token) {
-    return next('/admin')
+    return '/admin'
   }
 
   // 2. If route requires authentication and user is not logged in, redirect to /admin/login
   if (to.meta.requiresAuth && !token) {
-    return next('/admin/login')
+    return '/admin/login'
   }
-
-  next()
 })
 
 export default router
