@@ -125,8 +125,8 @@ onMounted(() => {
                 Zone #0{{ city.order || city.id }}
               </span>
               <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-full">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Active Metropolitan Center
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active Sub-City
               </span>
             </div>
 

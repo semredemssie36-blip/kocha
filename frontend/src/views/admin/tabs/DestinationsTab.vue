@@ -244,7 +244,7 @@ function canDelete(item) {
                     'bg-slate-100 text-slate-600 border border-slate-200'
                   ]"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="item.status === 'published' ? 'bg-emerald-500 animate-pulse' : item.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'"></span>
+                  <span class="w-1.5 h-1.5 rounded-full" :class="item.status === 'published' ? 'bg-emerald-500' : item.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'"></span>
                   {{ item.status || 'draft' }}
                 </span>
               </td>

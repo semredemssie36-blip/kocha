@@ -218,7 +218,7 @@ onMounted(() => {
               :class="statusFilter === 'open' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
               class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
               Open ({{ openCount }})
             </button>
             <button 
@@ -293,7 +293,7 @@ onMounted(() => {
                   v-else 
                   class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-black uppercase flex items-center gap-1.5"
                 >
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                   <span>Active Recruitment</span>
                 </span>
               </div>

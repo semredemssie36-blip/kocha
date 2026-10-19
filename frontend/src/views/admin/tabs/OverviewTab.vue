@@ -68,7 +68,7 @@ const emit = defineEmits(['navigate', 'openModal'])
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
         <div>
           <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-300 mb-2">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
             <span>Kombolcha Metropolitan Administration</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">

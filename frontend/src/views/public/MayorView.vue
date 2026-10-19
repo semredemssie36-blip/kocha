@@ -122,20 +122,20 @@ watch(() => route.query.tab, (newTab) => {
       <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
-          {{ langStore.currentLang === 'am' ? 'የከንቲባው ጽሕፈት ቤትና የከተማው ካቢኔ' : "Mayor's Executive Chamber & Governing Cabinet" }}
+          {{ langStore.currentLang === 'am' ? 'የከንቲባው ጽሕፈት ቤትና የከተማው ካቢኔ' : "Mayor's Office & Leadership" }}
         </h1>
         <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
           {{ langStore.currentLang === 'am'
             ? 'የኮምቦልቻ ከተማ ከንቲባ ይፋዊ የክብር መልእክት፣ የከተማዋ የልማት ስትራቴጂ፣ የስራ አስፈፃሚ ካቢኔ አባላትና የከተማው ምክር ቤት አመራር ማውጫ።'
-            : 'Official mayoral keynote dispatch, metropolitan development priorities, executive cabinet portfolios, and municipal council leadership.'
+            : 'Mayoral keynote address, metropolitan development priorities, executive cabinet portfolios, and municipal council leadership.'
           }}
         </p>
 
-        <!-- Executive Analytics Metrics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
+        <!-- Executive Metrics -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-800">
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
             <span class="text-slate-400 text-xs block font-bold mb-1">Executive Head</span>
-            <div class="text-xl sm:text-2xl font-black text-white truncate">{{ mayor ? getMayorName() : 'Hon. Mayor' }}</div>
+            <div class="text-xl sm:text-2xl font-black text-white truncate">{{ mayor ? getMayorName() : 'Mayor' }}</div>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
             <span class="text-blue-400 text-xs block font-bold mb-1">Mayoral Cabinet</span>
@@ -144,10 +144,6 @@ watch(() => route.query.tab, (newTab) => {
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30">
             <span class="text-amber-400 text-xs block font-bold mb-1">City Council</span>
             <div class="text-2xl sm:text-3xl font-black font-mono text-amber-400">{{ councilMembers.length }} Members</div>
-          </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Governance Status</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">Constitutionally Active</div>
           </div>
         </div>
       </div>

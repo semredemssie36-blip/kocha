@@ -101,27 +101,32 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/gallery/{id}', [AdminContentController::class, 'updateGalleryItem']);
         Route::delete('/admin/gallery/{id}', [AdminContentController::class, 'deleteGalleryItem']);
 
-        // Resources & Directives Management (Create, Edit, Delete)
+        // Resources & Directives Management (List, Create, Edit, Delete)
+        Route::get('/admin/resources', [AdminContentController::class, 'getResources']);
         Route::post('/admin/resources', [AdminContentController::class, 'storeResource']);
         Route::put('/admin/resources/{id}', [AdminContentController::class, 'updateResource']);
         Route::delete('/admin/resources/{id}', [AdminContentController::class, 'deleteResource']);
 
-        // Tenders Management (Draft, Edit, Delete)
+        // Tenders Management (List, Draft, Edit, Delete)
+        Route::get('/admin/tenders', [AdminContentController::class, 'getTenders']);
         Route::post('/admin/tenders', [AdminContentController::class, 'storeTender']);
         Route::put('/admin/tenders/{id}', [AdminContentController::class, 'updateTender']);
         Route::delete('/admin/tenders/{id}', [AdminContentController::class, 'deleteTender']);
 
-        // Vacancies Management (Draft, Edit, Delete)
+        // Vacancies Management (List, Draft, Edit, Delete)
+        Route::get('/admin/vacancies', [AdminContentController::class, 'getVacancies']);
         Route::post('/admin/vacancies', [AdminContentController::class, 'storeVacancy']);
         Route::put('/admin/vacancies/{id}', [AdminContentController::class, 'updateVacancy']);
         Route::delete('/admin/vacancies/{id}', [AdminContentController::class, 'deleteVacancy']);
 
-        // Services Management (Draft, Edit, Delete)
+        // Services Management (List, Draft, Edit, Delete)
+        Route::get('/admin/services', [AdminContentController::class, 'getServices']);
         Route::post('/admin/services', [AdminContentController::class, 'storeService']);
         Route::put('/admin/services/{id}', [AdminContentController::class, 'updateService']);
         Route::delete('/admin/services/{id}', [AdminContentController::class, 'deleteService']);
 
-        // Projects Management (Draft, Edit, Progress, Delete)
+        // Projects Management (List, Draft, Edit, Progress, Delete)
+        Route::get('/admin/projects', [AdminContentController::class, 'getProjects']);
         Route::post('/admin/projects', [AdminContentController::class, 'storeProject']);
         Route::put('/admin/projects/{id}', [AdminContentController::class, 'updateProject']);
         Route::patch('/admin/projects/{id}/progress', [AdminContentController::class, 'updateProjectProgress']);
@@ -151,6 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/leadership/{id}', [AdminContentController::class, 'updateLeadershipMember']);
 
         // Municipal Offices Directory
+        Route::get('/admin/offices', [AdminContentController::class, 'getOffices']);
         Route::post('/admin/offices', [AdminContentController::class, 'storeOffice']);
         Route::put('/admin/offices/{id}', [AdminContentController::class, 'updateOffice']);
 

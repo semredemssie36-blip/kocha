@@ -1252,46 +1252,56 @@ async function fetchAllAdminData() {
   loading.value = true
   try {
     // 1. Base endpoints accessible to all authenticated staff (author, editor, super_admin)
-    const [statsRes, newsRes, resourcesRes, galleryRes] = await Promise.all([
+    const [
+      statsRes,
+      newsRes,
+      resourcesRes,
+      galleryRes,
+      tendersRes,
+      vacanciesRes,
+      projectsRes,
+      servicesRes,
+      destinationsRes
+    ] = await Promise.all([
       api.get('/admin/stats').catch(() => ({ data: {} })),
       api.get('/admin/news').catch(() => ({ data: [] })),
-      api.get('/resources').catch(() => ({ data: [] })),
-      api.get('/admin/gallery').catch(() => ({ data: [] }))
+      api.get('/admin/resources').catch(() => ({ data: [] })),
+      api.get('/admin/gallery').catch(() => ({ data: [] })),
+      api.get('/admin/tenders').catch(() => ({ data: [] })),
+      api.get('/admin/vacancies').catch(() => ({ data: [] })),
+      api.get('/admin/projects').catch(() => ({ data: [] })),
+      api.get('/admin/services').catch(() => ({ data: [] })),
+      api.get('/admin/destinations').catch(() => ({ data: [] }))
     ])
 
     stats.value = { ...stats.value, ...statsRes.data }
     newsList.value = newsRes.data?.data || newsRes.data || []
     resourcesList.value = resourcesRes.data || []
     galleryList.value = galleryRes.data || []
+    tendersList.value = tendersRes.data || []
+    vacanciesList.value = vacanciesRes.data || []
+    projectsList.value = projectsRes.data || []
+    servicesList.value = servicesRes.data || []
+    destinationsList.value = destinationsRes.data || []
 
     // 2. Editorial & Operational endpoints (editor, super_admin)
     if (isEditor.value) {
-      const [tendersRes, vacanciesRes, projectsRes, officesRes, msgsRes, mayorRes, leadershipRes, slidesRes, servicesRes, destinationsRes, emergencyRes, pollsRes] = await Promise.all([
-        api.get('/tenders').catch(() => ({ data: [] })),
-        api.get('/vacancies').catch(() => ({ data: [] })),
-        api.get('/projects').catch(() => ({ data: [] })),
-        api.get('/offices').catch(() => ({ data: [] })),
+      const [officesRes, msgsRes, mayorRes, leadershipRes, slidesRes, emergencyRes, pollsRes] = await Promise.all([
+        api.get('/admin/offices').catch(() => ({ data: [] })),
         api.get('/admin/messages').catch(() => ({ data: [] })),
         api.get('/mayor').catch(() => ({ data: {} })),
         api.get('/leadership').catch(() => ({ data: [] })),
         api.get('/admin/hero-slides').catch(() => ({ data: [] })),
-        api.get('/services').catch(() => ({ data: [] })),
-        api.get('/admin/destinations').catch(() => ({ data: [] })),
         api.get('/admin/emergency-contacts').catch(() => ({ data: [] })),
         api.get('/admin/polls').catch(() => ({ data: [] }))
       ])
 
-      tendersList.value = tendersRes.data || []
-      vacanciesList.value = vacanciesRes.data || []
-      projectsList.value = projectsRes.data || []
       officesList.value = officesRes.data || []
       stats.value.offices_count = officesList.value.length
       messagesList.value = msgsRes.data?.data || msgsRes.data || []
       mayorData.value = mayorRes.data || {}
       leadershipList.value = leadershipRes.data || []
       heroSlidesList.value = slidesRes.data || []
-      servicesList.value = servicesRes.data || []
-      destinationsList.value = destinationsRes.data || []
       emergencyContactsList.value = emergencyRes.data || []
       pollsList.value = pollsRes.data || []
     }
@@ -1792,10 +1802,11 @@ async function approveAndPublishItem(moduleType, item) {
     const res = await api.patch(`/admin/content-status/${moduleType}/${item.id}`, { status: targetStatus })
     item.status = targetStatus
     if (moduleType === 'project') item.publication_status = targetStatus
+    if (moduleType === 'service' || moduleType === 'destination') item.is_active = 1
     showToast(res.data?.message || 'Item approved and published live!')
     await fetchAllAdminData()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to approve item.')
+    showToast(err.response?.data?.message || 'Failed to approve item.')
   }
 }
 
@@ -1804,10 +1815,11 @@ async function unpublishItem(moduleType, item) {
     const res = await api.patch(`/admin/content-status/${moduleType}/${item.id}`, { status: 'draft' })
     item.status = 'draft'
     if (moduleType === 'project') item.publication_status = 'draft'
+    if (moduleType === 'service' || moduleType === 'destination') item.is_active = 0
     showToast(res.data?.message || 'Item unpublished and moved back to draft.')
     await fetchAllAdminData()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to unpublish item.')
+    showToast(err.response?.data?.message || 'Failed to unpublish item.')
   }
 }
 
@@ -2221,7 +2233,7 @@ onUnmounted(() => {
             :title="adminT('notifications')"
           >
             <Bell class="w-4 h-4" />
-            <span v-if="stats.unread_messages > 0" class="absolute -top-1 -right-1 px-1 min-w-4 h-4 rounded-md bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+            <span v-if="stats.unread_messages > 0" class="absolute -top-1 -right-1 px-1 min-w-4 h-4 rounded-md bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
               {{ stats.unread_messages }}
             </span>
           </button>
@@ -2762,7 +2774,7 @@ onUnmounted(() => {
                           slide.is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
                         ]"
                       >
-                        <span class="w-1.5 h-1.5 rounded-full" :class="slide.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                        <span class="w-1.5 h-1.5 rounded-full" :class="slide.is_active ? 'bg-emerald-500' : 'bg-slate-400'"></span>
                         {{ slide.is_active ? 'Active' : 'Inactive' }}
                       </span>
                     </td>
@@ -2939,7 +2951,7 @@ onUnmounted(() => {
                           item.status === 'published' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
                         ]"
                       >
-                        <span class="w-1.5 h-1.5 rounded-full" :class="item.status === 'published' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                        <span class="w-1.5 h-1.5 rounded-full" :class="item.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'"></span>
                         {{ item.status || 'draft' }}
                       </span>
                     </td>
@@ -3940,20 +3952,31 @@ onUnmounted(() => {
               <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-blue-900"></div>
               <div>
                 <div class="flex items-center justify-between mb-3 pt-1">
-                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border" :class="srv.type === 'step' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'">
-                    {{ srv.type === 'step' ? '● Step-by-Step Walkthrough' : '■ Direct Civic Guide' }}
-                  </span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border" :class="srv.type === 'step' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'">
+                      {{ srv.type === 'step' ? '● Step-by-Step' : '■ Civic Guide' }}
+                    </span>
+                    <span 
+                      :class="[
+                        'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border',
+                        (srv.status === 'published' || srv.is_active) ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
+                      ]"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full" :class="(srv.status === 'published' || srv.is_active) ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                      {{ (srv.status === 'published' || srv.is_active) ? 'Live Published' : 'Draft' }}
+                    </span>
+                  </div>
                   <div class="flex items-center gap-1">
                     <button 
-                      v-if="isEditor && srv.status !== 'published'" 
+                      v-if="isEditor && srv.status !== 'published' && !srv.is_active" 
                       @click="approveAndPublishItem('service', srv)" 
                       class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
-                      title="Approve & publish service"
+                      title="Approve & publish service live"
                     >
                       Approve
                     </button>
                     <button 
-                      v-if="isEditor && srv.status === 'published'" 
+                      v-if="isEditor && (srv.status === 'published' || srv.is_active)" 
                       @click="unpublishItem('service', srv)" 
                       class="px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer transition shadow-2xs"
                       title="Move to draft"
@@ -4019,9 +4042,20 @@ onUnmounted(() => {
               <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-700 via-amber-400 to-emerald-600"></div>
               <div>
                 <div class="flex items-center justify-between pt-1 mb-2">
-                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border" :class="proj.progress_percent === 100 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'">
-                    {{ proj.status || (proj.progress_percent === 100 ? 'Completed' : 'Under Construction') }}
-                  </span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border" :class="proj.progress_percent === 100 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'">
+                      {{ proj.status || (proj.progress_percent === 100 ? 'Completed' : 'Under Construction') }}
+                    </span>
+                    <span 
+                      :class="[
+                        'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border',
+                        proj.publication_status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'
+                      ]"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full" :class="proj.publication_status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                      {{ proj.publication_status === 'published' ? 'Live Published' : 'Draft' }}
+                    </span>
+                  </div>
                   <div class="flex items-center gap-1">
                     <button 
                       v-if="isEditor && proj.publication_status !== 'published'" 
@@ -4650,7 +4684,7 @@ onUnmounted(() => {
               <div class="space-y-3 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     Live Active Poll on Homepage
                   </span>
                   <span v-if="pollsList.find(p => p.is_active)?.is_expired" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -4705,10 +4739,10 @@ onUnmounted(() => {
                 <button 
                   @click="resetPollVotes(pollsList.find(p => p.is_active))"
                   class="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
-                  title="Purge demo votes to start gathering 100% real verified citizen data"
+                  title="Reset votes to start gathering fresh citizen data"
                 >
                   <RefreshCw class="w-3.5 h-3.5" />
-                  <span>Reset Demo / Votes to 0</span>
+                  <span>Reset Votes to 0</span>
                 </button>
 
                 <button 

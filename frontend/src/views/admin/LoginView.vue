@@ -72,7 +72,7 @@ async function handleLogin() {
         <div class="bg-gradient-to-b from-[#0B1E36] to-[#071324] px-8 pt-10 pb-8 text-center text-white relative">
           <!-- Official Seal Halo -->
           <div class="relative inline-block mb-4">
-            <div class="absolute -inset-2 bg-gradient-to-r from-amber-500/40 via-yellow-400/20 to-amber-600/40 rounded-full blur-md animate-pulse"></div>
+            <div class="absolute -inset-2 bg-gradient-to-r from-amber-500/30 via-yellow-400/20 to-amber-600/30 rounded-full blur-md"></div>
             <div class="relative w-20 h-20 rounded-full p-1.5 bg-gradient-to-b from-amber-400 via-amber-200 to-amber-600 shadow-xl mx-auto flex items-center justify-center">
               <img 
                 src="/assets/logo.png" 

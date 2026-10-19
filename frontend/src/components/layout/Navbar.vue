@@ -164,7 +164,7 @@ onUnmounted(() => {
         <div class="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5 w-full lg:w-auto min-w-0">
           <!-- Authority Badge -->
           <div class="hidden sm:flex items-center gap-1.5 text-[11px] font-bold text-amber-400 uppercase tracking-widest shrink-0 border-r border-slate-700/80 pr-3">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             <span>FDRE • Amhara Region</span>
           </div>
 

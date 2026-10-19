@@ -138,7 +138,7 @@ onMounted(async () => {
             :class="activeStatus === 'in_progress' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
             class="px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
           >
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
             In Progress
           </button>
           <button 

@@ -301,7 +301,22 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Article deleted successfully']);
     }
 
-    // Tenders Management
+    // Tenders Management (Admin listing: All lifecycle states including Draft)
+    public function getTenders(Request $request)
+    {
+        $user = $request->user();
+        $query = DB::table('tenders')->orderBy('created_at', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhereIn('status', ['open', 'closed', 'cancelled']);
+            });
+        }
+
+        return response()->json($query->get());
+    }
+
     public function storeTender(Request $request)
     {
         $validated = $request->validate([
@@ -415,7 +430,22 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Tender deleted successfully']);
     }
 
-    // Vacancies Management
+    // Vacancies Management (Admin listing: All lifecycle states including Draft)
+    public function getVacancies(Request $request)
+    {
+        $user = $request->user();
+        $query = DB::table('vacancies')->orderBy('created_at', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhereIn('status', ['open', 'closed']);
+            });
+        }
+
+        return response()->json($query->get());
+    }
+
     public function storeVacancy(Request $request)
     {
         $validated = $request->validate([
@@ -536,7 +566,23 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Vacancy deleted successfully']);
     }
 
-    // Services Management
+    // Services Management (Admin listing: All lifecycle states including Draft)
+    public function getServices(Request $request)
+    {
+        $user = $request->user();
+        $query = DB::table('services')->orderBy('order', 'asc')->orderBy('id', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhere('status', 'published')
+                  ->orWhere('is_active', true);
+            });
+        }
+
+        return response()->json($query->get());
+    }
+
     public function storeService(Request $request)
     {
         $validated = $request->validate([
@@ -663,7 +709,22 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Service deleted successfully']);
     }
 
-    // Infrastructure Projects Management
+    // Infrastructure Projects Management (Admin listing: All lifecycle states including Draft)
+    public function getProjects(Request $request)
+    {
+        $user = $request->user();
+        $query = DB::table('projects')->orderBy('created_at', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhere('publication_status', 'published');
+            });
+        }
+
+        return response()->json($query->get());
+    }
+
     public function storeProject(Request $request)
     {
         $validated = $request->validate([
@@ -801,7 +862,22 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Project deleted successfully']);
     }
 
-    // Resources & Directives Management
+    // Resources & Directives Management (Admin listing: All lifecycle states including Draft)
+    public function getResources(Request $request)
+    {
+        $user = $request->user();
+        $query = DB::table('resources')->orderBy('created_at', 'desc');
+
+        if ($user && $user->role === 'author') {
+            $query->where(function ($q) use ($user) {
+                $q->where('author_id', $user->id)
+                  ->orWhere('status', 'published');
+            });
+        }
+
+        return response()->json($query->get());
+    }
+
     public function storeResource(Request $request)
     {
         $validated = $request->validate([
@@ -1002,7 +1078,13 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Member deleted successfully']);
     }
 
-    // Municipal Offices Management
+    // Municipal Offices Management (Admin listing: All offices)
+    public function getOffices(Request $request)
+    {
+        $query = DB::table('offices')->orderBy('order', 'asc')->orderBy('id', 'desc');
+        return response()->json($query->get());
+    }
+
     public function storeOffice(Request $request)
     {
         $validated = $request->validate([

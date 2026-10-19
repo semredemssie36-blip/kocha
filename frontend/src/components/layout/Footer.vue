@@ -48,36 +48,6 @@ const directionsUrl = computed(() => {
 
 <template>
   <footer class="bg-gradient-to-b from-slate-950 via-[#071324] to-[#040B15] text-slate-300 border-t border-amber-500/30 relative font-sans">
-    <!-- Quick Emergency Dispatch Strip -->
-    <div class="border-b border-slate-800/80 bg-slate-900/60 py-3 px-4 sm:px-8 xl:px-12">
-      <div class="w-full max-w-[1700px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <span class="font-extrabold text-amber-400 uppercase tracking-widest text-[11px]">
-            {{ langStore.currentLang === 'am' ? 'የ 24 ሰዓት የከተማ አገልግሎትና የአደጋ ጊዜ ጥሪዎች' : '24/7 Metropolitan Dispatch & Citizen Support' }}
-          </span>
-        </div>
-        <div class="flex flex-wrap items-center gap-4 text-xs font-mono font-bold text-slate-300">
-          <a href="tel:991" class="hover:text-red-400 flex items-center gap-1.5 transition-colors">
-            <PhoneCall class="w-3.5 h-3.5 text-red-500" />
-            <span>Police: 991</span>
-          </a>
-          <span class="text-slate-700">•</span>
-          <a href="tel:993" class="hover:text-amber-400 flex items-center gap-1.5 transition-colors">
-            <PhoneCall class="w-3.5 h-3.5 text-amber-500" />
-            <span>Fire & Rescue: 993</span>
-          </a>
-          <span class="text-slate-700">•</span>
-          <a href="tel:907" class="hover:text-emerald-400 flex items-center gap-1.5 transition-colors">
-            <PhoneCall class="w-3.5 h-3.5 text-emerald-500" />
-            <span>Ambulance: 907</span>
-          </a>
-          <span class="text-slate-700">•</span>
-          <span class="text-slate-400">City Hall: +251 33 551 0022</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Main Civic Directory Grid -->
     <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
       
@@ -260,7 +230,7 @@ const directionsUrl = computed(() => {
         <div>
           <p>© 2026 {{ langStore.t('common.city_name') }}. {{ langStore.t('common.all_rights_reserved') }}.</p>
           <p class="text-[11px] text-slate-400 mt-0.5">
-            Engineered & Maintained by <span class="text-white font-black tracking-wide">AWDMA Technology</span> — <span class="text-amber-400 font-semibold italic">"Technology for a Better Tomorrow"</span>
+            Engineered & Maintained by <span class="text-white font-black tracking-wide">AWUDMA Technology</span> — <span class="text-amber-400 font-semibold italic">"Technology for a Better Tomorrow"</span>
           </p>
         </div>
         <div class="flex items-center gap-6 text-[11px] font-semibold text-slate-400">

@@ -203,7 +203,7 @@ const filteredHotlines = computed(() => {
                     item.is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
                   ]"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                  <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-500' : 'bg-slate-400'"></span>
                   {{ item.is_active ? 'Active 24/7' : 'Disabled' }}
                 </span>
               </td>
@@ -252,7 +252,7 @@ const filteredHotlines = computed(() => {
                 item.is_active ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500'
               ]"
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+              <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-500' : 'bg-slate-400'"></span>
               {{ item.is_active ? 'Active 24/7' : 'Disabled' }}
             </span>
           </div>

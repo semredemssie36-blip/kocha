@@ -404,13 +404,12 @@ onUnmounted(() => {
         <!-- Action Dock Header Bar -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-2">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <h2 class="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
               <Layers class="w-4 h-4 text-blue-700" />
-              <span>{{ langStore.currentLang === 'am' ? 'የዜጎች ፈጣን አገልግሎቶችና የመረጃ በር (Citizen Action Dock)' : 'Metropolitan Citizen Action Dock' }}</span>
+              <span>{{ langStore.currentLang === 'am' ? 'የዜጎች ፈጣን አገልግሎቶች' : 'Citizen Quick Services' }}</span>
             </h2>
           </div>
-          <span class="text-[11px] font-bold text-slate-400 font-mono">Real-Time Municipal Portals</span>
+          <span class="text-[11px] font-bold text-slate-500 font-mono">{{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር' : 'City Administration Services' }}</span>
         </div>
 
         <!-- 5-Column High-Prestige Gateways Grid -->
@@ -940,7 +939,7 @@ onUnmounted(() => {
                       : 'bg-rose-50 text-rose-800 border-rose-200'
                   ]"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
+                  <span class="w-1.5 h-1.5 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500' : 'bg-rose-500'"></span>
                   {{ !isTenderClosed(tender) 
                     ? (langStore.currentLang === 'am' ? 'ክፍት ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Bantamaa' : 'Open Bid'))
                     : (langStore.currentLang === 'am' ? 'የተዘጋ ጨረታ' : (langStore.currentLang === 'om' ? 'Caalbaasii Cufame' : 'Closed')) 
@@ -1002,7 +1001,7 @@ onUnmounted(() => {
               {{ langStore.currentLang === 'am' ? 'ተጠናቋል (የመጨረሻ ውጤት)' : 'Concluded (Final Results)' }}
             </span>
             <span v-else class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
               {{ langStore.currentLang === 'am' ? 'ንቁ መስጫ' : 'Active Balloting' }}
             </span>
           </div>

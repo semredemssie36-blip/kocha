@@ -19,7 +19,8 @@ import {
   ExternalLink,
   Layers,
   Sparkles,
-  Info
+  Info,
+  X
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
@@ -29,6 +30,22 @@ const searchQuery = ref('')
 const selectedCategory = ref('all')
 const statusFilter = ref('all') // 'all' | 'open' | 'closed'
 const viewMode = ref('cards') // 'cards' | 'table'
+
+const noticeModal = ref({
+  open: false,
+  title: '',
+  message: ''
+})
+
+function showDossierNotice() {
+  noticeModal.value = {
+    open: true,
+    title: langStore.currentLang === 'am' ? 'የጨረታ ሰነድ መመሪያ' : 'Official Bid Dossier Pickup',
+    message: langStore.currentLang === 'am'
+      ? 'የጨረታው ዋና ሰነድ በኮምቦልቻ ፋይናንስ እና ግዢ መምሪያ ቢሮ (ቢሮ ቁጥር 104) በአካል በመገኘት ማግኘት ይቻላል።'
+      : 'The official bid dossier document is available in person at the Kombolcha Metropolitan Finance & Public Procurement Directorate (City Hall Headquarters, 2nd Floor, Room 204).'
+  }
+}
 
 async function fetchTenders() {
   loading.value = true
@@ -212,7 +229,7 @@ onMounted(() => {
               :class="statusFilter === 'open' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
               class="px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
               Open ({{ openTendersCount }})
             </button>
             <button 
@@ -277,7 +294,7 @@ onMounted(() => {
                     : 'bg-rose-50 text-rose-800 border-rose-200'
                 ]"
               >
-                <span class="w-2 h-2 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'"></span>
+                <span class="w-2 h-2 rounded-full" :class="!isTenderClosed(tender) ? 'bg-emerald-500' : 'bg-rose-500'"></span>
                 {{ !isTenderClosed(tender) ? 'Live Bidding' : 'Concluded' }}
               </span>
             </div>
@@ -343,7 +360,7 @@ onMounted(() => {
             </a>
             <button 
               v-else
-              @click="alert('The official bid dossier document is available in person at the Kombolcha Finance & Public Procurement Directorate.')"
+              @click="showDossierNotice()"
               class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all cursor-pointer"
             >
               <Info class="w-4 h-4 text-slate-500" />
@@ -379,6 +396,49 @@ onMounted(() => {
         </p>
         <div class="text-xs font-mono font-bold text-slate-500">
           Inquiries: procurement@kombolchacity.gov.et | Phone: +251 33 551 0022 Ext. 204
+        </div>
+      </div>
+    </div>
+
+    <!-- IN-PERSON DOSSIER NOTICE CARD MODAL -->
+    <div 
+      v-if="noticeModal.open" 
+      class="fixed inset-0 bg-[#071324]/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      @click.self="noticeModal.open = false"
+    >
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden relative">
+        <div class="h-1.5 w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900"></div>
+        <div class="p-6 sm:p-7">
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-800 border border-blue-100 flex items-center justify-center shrink-0">
+              <Building2 class="w-6 h-6" />
+            </div>
+            <button 
+              type="button" 
+              @click="noticeModal.open = false" 
+              class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer transition-colors"
+            >
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+          <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
+            {{ noticeModal.title }}
+          </h3>
+          <p class="text-xs text-slate-600 leading-relaxed mt-2.5">
+            {{ noticeModal.message }}
+          </p>
+          <div class="mt-4 p-3 bg-slate-50 rounded-2xl border border-slate-200/80 text-[11px] font-mono text-slate-600">
+            <strong>Headquarters:</strong> Kebele 02, Main Administrative Corridor, Kombolcha
+          </div>
+          <div class="flex justify-end pt-5 mt-5 border-t border-slate-100">
+            <button 
+              type="button" 
+              @click="noticeModal.open = false" 
+              class="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black text-xs shadow-md transition-all cursor-pointer"
+            >
+              Understood
+            </button>
+          </div>
         </div>
       </div>
     </div>

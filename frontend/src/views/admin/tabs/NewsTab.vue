@@ -239,7 +239,7 @@ function canDelete(item) {
                   v-else-if="item.status === 'pending'"
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                   Pending Review
                 </span>
                 <span 
