@@ -25,7 +25,15 @@ import {
   Thermometer,
   Globe,
   Waves,
-  Navigation
+  Navigation,
+  Briefcase,
+  Factory,
+  Coins,
+  Truck,
+  Plane,
+  Building,
+  Check,
+  Store
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
@@ -37,7 +45,8 @@ const tabs = [
   { id: 'about', label_en: 'About Kombolcha', label_am: 'ስለ ከተማዋ', label_om: 'Waa\'ee Magaalaa' },
   { id: 'history', label_en: 'Historical Heritage', label_am: 'ታሪክና አመጣጥ', label_om: 'Seenaa' },
   { id: 'vision', label_en: 'Mission, Vision & Values', label_am: 'ተልዕኮ፣ ርዕይና እሴቶች', label_om: 'Ergama, Mul\'ata fi Duudhaalee' },
-  { id: 'people', label_en: 'People & Culture', label_am: 'ህዝብና ባህል', label_om: 'Ummata fi Aadaa' },
+  { id: 'investment', label_en: 'Investment & Economy', label_am: 'ኢንቨስትመንትና ኢኮኖሚ', label_om: 'Invastimantii fi Diinagdee' },
+  { id: 'people', label_en: 'Demographics & Culture', label_am: 'የህዝብ ብዛትና ባህል', label_om: 'Baay\'ina Ummataa fi Aadaa' },
   { id: 'geography', label_en: 'Geography & Climate', label_am: 'መልክዓ ምድርና አየር ንብረት', label_om: 'Teessuma Lafaa' },
   { id: 'administration', label_en: 'Governance Charter', label_am: 'የአስተዳደር መዋቅር', label_om: 'Caasaa Bulchiinsaa' }
 ]
@@ -637,29 +646,371 @@ const getCoreValueTitle = (val) => {
             </div>
           </div>
 
-          <!-- TAB 4: PEOPLE & CULTURE -->
-          <div v-else-if="activeTab === 'people'" class="space-y-6">
+          <!-- TAB 4: INVESTMENT & ECONOMY (STAGE 5 OFFICIAL DATA) -->
+          <div v-else-if="activeTab === 'investment'" class="space-y-8 animate-fadeIn">
+            <!-- Header -->
             <div class="border-b border-slate-100 pb-4 mb-6">
-              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
-                {{ langStore.currentLang === 'am' ? 'ህዝብ፣ ባህልና አኗኗር' : 'People & Culture' }}
-              </h2>
-              <p class="text-xs text-slate-400 mt-1">Demographics, Wollo Hospitality, and Social Harmony</p>
-            </div>
-            <div class="text-slate-700 leading-relaxed space-y-4 text-base">
-              <p>
-                Kombolcha is renowned across Ethiopia for its deep culture of tolerance, hospitality, and peaceful interfaith coexistence. Christians and Muslims have cohabited harmoniously for generations, celebrating religious festivals and cultural traditions together.
-              </p>
-              <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
-                <h4 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <HeartHandshake class="w-5 h-5 text-rose-600" />
-                  <span>The Spirit of Wollo Hospitality</span>
-                </h4>
-                <p class="text-xs sm:text-sm text-slate-600">The people of Kombolcha welcome visitors and investors with traditional coffee ceremonies, vibrant Sunday markets, and renowned Wollo cultural melodies.</p>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-900 text-xs font-black uppercase tracking-wider mb-2">
+                <Factory class="w-3.5 h-3.5 text-blue-700" />
+                <span>{{ langStore.currentLang === 'am' ? 'ኮምቦልቻ: የኢንቨስትመንት መዳረሻዎ!' : 'Kombolcha: Your Prime Investment Destination!' }}</span>
               </div>
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'የኢንዱስትሪና ኢንቨስትመንት ምቹ ሁኔታዎች' : 'Industrial Advantages, Logistics & Investment Opportunities' }}
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">
+                {{ langStore.currentLang === 'am'
+                  ? 'ፈጣን ዕድገት እያሳየች ያለች የኢኮኖሚ ማዕከል፣ የ 425+ ፕሮጀክቶች መዳረሻ፣ 865 ሄክታር መሬትና የልዩ ኢኮኖሚ ዞን (SEZ)'
+                  : '425+ Active Investment Projects, 865 Hectares Allocated Land, Special Economic Zone & Strategic Logistics Corridor'
+                }}
+              </p>
+            </div>
+
+            <!-- Strategic Advantages Narrative Box -->
+            <div class="p-6 sm:p-8 rounded-3xl bg-blue-50/70 border border-blue-200/90 shadow-xs relative overflow-hidden">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-[#1C398E]"></div>
+              <h3 class="text-lg sm:text-xl font-black text-slate-900 mb-3">
+                {{ langStore.currentLang === 'am' ? 'ለምን ኮምቦልቻ?' : 'Why Invest in Kombolcha?' }}
+              </h3>
+              <p class="text-slate-700 text-sm sm:text-base leading-relaxed text-justify font-medium mb-6">
+                {{ langStore.currentLang === 'am'
+                  ? 'ኮምቦልቻ - በኢትዮጵያ እምብርት የምትገኝ፣ የረጅም ጊዜ የኢንዱስትሪ ታሪክ ያላት ከተማ ነች። ለኢንቨስትመንት ምቹ በሆኑ በርካታ አጋጣሚዎች የተሞላች፣ ፈጣን ዕድገት እያሳየች ያለች የኢኮኖሚ ማዕከል ናት። ከተማዋ ከ 64 በላይ የማኑፋክቸሪንግ ፋብሪካዎች በምርት ላይ ያሏት ሲሆን የኮምቦልቻ ልዩ የኢኮኖሚ ዞን (SEZ) ለአገልግሎት ዝግጁ ሆኖ አስተማማኝ የኤሌክትሪክ፣ የውሃ፣ የቴሌኮምና የፋይናንስ አገልግሎቶች ተሟልተውላታል።'
+                  : 'Situated at the geopolitical heart of Ethiopia, Kombolcha has pioneered heavy industrial development for decades. Today, with over 64 operational manufacturing plants, a world-class Special Economic Zone (SEZ), and abundant youth labor, it provides an unbeatable environment for high-yield industrial investment.'
+                }}
+              </p>
+
+              <!-- Strategic Key Distances Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4 border-t border-blue-200/80">
+                <div class="p-3.5 rounded-2xl bg-white border border-blue-200 shadow-2xs">
+                  <span class="text-[10px] font-bold text-slate-500 block uppercase">Addis Ababa</span>
+                  <div class="text-lg font-black font-mono text-blue-900 mt-0.5">376 km</div>
+                  <span class="text-[10px] text-slate-400 font-bold">35 min by Air</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-white border border-blue-200 shadow-2xs">
+                  <span class="text-[10px] font-bold text-slate-500 block uppercase">Djibouti Port</span>
+                  <div class="text-lg font-black font-mono text-emerald-800 mt-0.5">478.4 km</div>
+                  <span class="text-[10px] text-slate-400 font-bold">Direct Rail Corridor</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-white border border-blue-200 shadow-2xs">
+                  <span class="text-[10px] font-bold text-slate-500 block uppercase">Assab Port</span>
+                  <div class="text-lg font-black font-mono text-amber-700 mt-0.5">390 km</div>
+                  <span class="text-[10px] text-slate-400 font-bold">Closest Seaport Link</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-white border border-blue-200 shadow-2xs">
+                  <span class="text-[10px] font-bold text-slate-500 block uppercase">Bahir Dar</span>
+                  <div class="text-lg font-black font-mono text-blue-900 mt-0.5">494 km</div>
+                  <span class="text-[10px] text-slate-400 font-bold">49 min by Air</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-white border border-blue-200 shadow-2xs col-span-2 sm:col-span-1">
+                  <span class="text-[10px] font-bold text-slate-500 block uppercase">Dessie Hub</span>
+                  <div class="text-lg font-black font-mono text-purple-900 mt-0.5">23 km</div>
+                  <span class="text-[10px] text-slate-400 font-bold">Metropolitan Sister</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Investment Opportunities & Projections Metric Banner -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1">
+                  {{ langStore.currentLang === 'am' ? 'የኢንቨስትመንት ፕሮጀክቶች' : 'Investment Projects' }}
+                </span>
+                <div class="text-3xl font-black font-mono text-blue-900">425+</div>
+                <span class="text-[11px] text-slate-500 mt-1 block">Active licensed enterprises</span>
+              </div>
+
+              <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1">
+                  {{ langStore.currentLang === 'am' ? 'የተላለፈ መሬት' : 'Transferred Land' }}
+                </span>
+                <div class="text-3xl font-black font-mono text-emerald-700">865 Ha</div>
+                <span class="text-[11px] text-slate-500 mt-1 block">Industrial & commercial land bank</span>
+              </div>
+
+              <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1">
+                  {{ langStore.currentLang === 'am' ? 'አሁን የተፈጠረ ስራ' : 'Current Employment' }}
+                </span>
+                <div class="text-3xl font-black font-mono text-amber-600">8,018</div>
+                <span class="text-[11px] text-slate-500 mt-1 block">Direct active workforce</span>
+              </div>
+
+              <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-black uppercase tracking-wider text-slate-500 block mb-1">
+                  {{ langStore.currentLang === 'am' ? 'የስራ ዕድል የመፍጠር አቅም' : 'Projected Job Capacity' }}
+                </span>
+                <div class="text-3xl font-black font-mono text-indigo-700">121,230+</div>
+                <span class="text-[11px] text-slate-500 mt-1 block">Upon full project maturity</span>
+              </div>
+            </div>
+
+            <!-- Priority Investment Sectors (ዘርፎች) -->
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0">
+                  <Coins class="w-5 h-5" />
+                </div>
+                <div>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Focus Areas</span>
+                  <h3 class="text-lg sm:text-xl font-black text-slate-900">
+                    {{ langStore.currentLang === 'am' ? 'ቅድሚያ የሚሰጣቸው የኢንቨስትመንት ዘርፎች' : 'Priority Sectors for Capital Allocation' }}
+                  </h3>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Manufacturing & Agro-Processing -->
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div class="flex items-center gap-2 text-blue-900 font-black text-sm">
+                    <Factory class="w-4 h-4 text-blue-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'ኢንዱስትሪና ማኑፋክቸሪንግ' : 'Industry & Manufacturing' }}</span>
+                  </div>
+                  <ul class="text-xs text-slate-600 space-y-2 font-medium">
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>አግሮ-ፕሮሰሲንግ:</strong> ስጋና የወተት ውጤቶች፣ ምግብ፣ ቆዳ፣ አትክልትና ፍራፍሬ ማቀነባበር</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>ጨርቃጨርቅና አልባሳት:</strong> አለም አቀፍ ኤክስፖርት ማኑፋክቸሪንግ</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>ኬሚካልና ኮንስትራክሽን:</strong> የግንባታ ግብአቶችና የቀለም ምርቶች</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>እንጨትና ብረታብረት:</strong> የብረትና ኢንጂነሪንግ ፋብሪካዎች</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Commercial Services & Tourism -->
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div class="flex items-center gap-2 text-amber-900 font-black text-sm">
+                    <Building class="w-4 h-4 text-amber-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'አገልግሎትና ቱሪዝም' : 'Commercial Services & Tourism' }}</span>
+                  </div>
+                  <ul class="text-xs text-slate-600 space-y-2 font-medium">
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>ሆቴልና ቱሪዝም:</strong> ባለ ኮከብ ሆቴሎች፣ ሎጆች፣ ዘመናዊ የገበያ ማዕከላት (Malls)</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>ኮንስትራክሽን:</strong> ሪል-ስቴት፣ የከባድ ማሽነሪ ኪራይና ሎጅስቲክስ</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>ማህበራዊ ዘርፍ:</strong> የግል ከፍተኛ ትምህርት ኮሌጆችና ስፔሻላይዝድ ሆስፒታሎች</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Urban Agriculture & Financial Backing -->
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div class="flex items-center gap-2 text-emerald-900 font-black text-sm">
+                    <Store class="w-4 h-4 text-emerald-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'ከተማ ግብርናና ፋይናንስ' : 'Urban Agriculture & Financial Net' }}</span>
+                  </div>
+                  <ul class="text-xs text-slate-600 space-y-2 font-medium">
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>ከተማ ግብርና:</strong> የእንስሳት እርባታ፣ ማድለብና ዘመናዊ የወተት ላሞች ልማት</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>31 የንግድ ባንኮች:</strong> ጠንካራ የፋይናንስና የውጭ ምንዛሬ ብድር አቅርቦት</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <Check class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span><strong>2 ኢንሹራንስ ኩባንያዎች:</strong> የኢንቨስትመንት ዋስትናና ስጋት አስተዳደር</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Government Support & Single Window Clearances -->
+            <div class="p-6 rounded-3xl bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-1">
+                  One-Stop Government Facilitation
+                </span>
+                <h4 class="text-lg font-black text-white">
+                  {{ langStore.currentLang === 'am' ? 'የመንግስት የተቀናጀ የባለሀብቶች ድጋፍ' : 'Integrated Municipal & Federal Support Services' }}
+                </h4>
+                <p class="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  {{ langStore.currentLang === 'am'
+                    ? 'የኢትዮጵያ ገቢዎች ሚኒስቴር፣ ጉምሩክ ኮሚሽን፣ የምርት ገበያ (ECX)፣ የልዩ የኢኮኖሚ ዞን አስተዳደር እና የከተማው ኢንቨስትመንት መምሪያ ለባለሀብቶች የተቀናጀ ፈጣን አገልግሎት ይሰጣሉ።'
+                    : 'Ministry of Revenues, Ethiopian Customs Commission, Ethiopian Commodity Exchange (ECX), and SEZ Authorities provide synchronized, red-tape-free one-stop investor clearances.'
+                  }}
+                </p>
+              </div>
+
+              <router-link 
+                to="/government/offices" 
+                class="px-5 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition-colors shrink-0 flex items-center gap-2"
+              >
+                <span>{{ langStore.currentLang === 'am' ? 'የኢንቨስትመንት መምሪያን ያነጋግሩ' : 'Contact Investment Bureau' }}</span>
+                <ChevronRight class="w-4 h-4" />
+              </router-link>
             </div>
           </div>
 
-          <!-- TAB 5: GEOGRAPHY & CLIMATE -->
+          <!-- TAB 5: DEMOGRAPHICS & CULTURE (PAGE 8 OFFICIAL DATA) -->
+          <div v-else-if="activeTab === 'people'" class="space-y-8 animate-fadeIn">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-black uppercase tracking-wider mb-2">
+                <Users class="w-3.5 h-3.5 text-emerald-700" />
+                <span>{{ langStore.currentLang === 'am' ? 'ይፋዊ የስነ-ህዝብ ስታቲስቲክስ' : 'Official Municipal Demographics' }}</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                {{ langStore.currentLang === 'am' ? 'የከተማው የህዝብ ብዛትና ስነ-ህዝባዊ ስብጥር' : 'Population Demographics, Labor Workforce & Cultural Fabric' }}
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">
+                {{ langStore.currentLang === 'am'
+                  ? 'በከንቲባ ጽ/ቤት ፕላን ኮሚሽን ቡድን በ 2017 ዓ.ም የተዘጋጀ ፕሮግሬሽን ስሌት እና የስነ-ህዝብ መረጃ'
+                  : 'Official 2017 E.C. Projection from the Mayoral Planning Commission & Regional Statistics Agency'
+                }}
+              </p>
+            </div>
+
+            <!-- Population Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div class="p-6 rounded-3xl bg-blue-50/80 border border-blue-200">
+                <span class="text-xs font-bold text-blue-900 block uppercase tracking-wider mb-1">
+                  {{ langStore.currentLang === 'am' ? 'ጠቅላላ የከተማዋ ህዝብ ብዛት' : 'Total Population' }}
+                </span>
+                <div class="text-3xl sm:text-4xl font-black font-mono text-blue-950">281,407</div>
+                <div class="flex items-center justify-between text-xs text-blue-800 font-bold mt-2 pt-2 border-t border-blue-200">
+                  <span>ወንድ (M): 141,189</span>
+                  <span>ሴት (F): 140,218</span>
+                </div>
+              </div>
+
+              <div class="p-6 rounded-3xl bg-emerald-50/80 border border-emerald-200">
+                <span class="text-xs font-bold text-emerald-900 block uppercase tracking-wider mb-1">
+                  {{ langStore.currentLang === 'am' ? 'በ 14ቱ የከተማ ቀበሌዎች' : 'In 14 Urban Kebeles' }}
+                </span>
+                <div class="text-3xl sm:text-4xl font-black font-mono text-emerald-950">258,829</div>
+                <div class="flex items-center justify-between text-xs text-emerald-800 font-bold mt-2 pt-2 border-t border-emerald-200">
+                  <span>ወንድ: 130,143</span>
+                  <span>ሴት: 128,686</span>
+                </div>
+              </div>
+
+              <div class="p-6 rounded-3xl bg-amber-50/80 border border-amber-200">
+                <span class="text-xs font-bold text-amber-900 block uppercase tracking-wider mb-1">
+                  {{ langStore.currentLang === 'am' ? 'በ 6ቱ የገጠር ቀበሌዎች' : 'In 6 Rural Kebeles' }}
+                </span>
+                <div class="text-3xl sm:text-4xl font-black font-mono text-amber-950">22,578</div>
+                <div class="flex items-center justify-between text-xs text-amber-800 font-bold mt-2 pt-2 border-t border-amber-200">
+                  <span>ወንድ: 11,046</span>
+                  <span>ሴት: 11,532</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Productive Workforce & Age Pyramid (Page 8 Key Findings) -->
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Demographic Dividend</span>
+                  <h3 class="text-lg sm:text-xl font-black text-slate-900">
+                    {{ langStore.currentLang === 'am' ? 'የዕድሜ ክልልና የሰራተኛ ኃይል ስብጥር' : 'Age Distribution & Productive Workforce' }}
+                  </h3>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    4.2% Annual Growth Rate
+                  </span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Productive Age (66.6%) -->
+                <div class="p-5 rounded-2xl bg-emerald-50/50 border-2 border-emerald-400 relative overflow-hidden">
+                  <div class="text-emerald-800 font-bold text-xs uppercase tracking-wider mb-1">
+                    {{ langStore.currentLang === 'am' ? 'ከ 15 - 64 ዓመት (የሰራተኛ ኃይል)' : 'Age 15 - 64 (Productive Labor)' }}
+                  </div>
+                  <div class="text-3xl font-black font-mono text-emerald-950">187,403</div>
+                  <div class="text-sm font-black font-mono text-emerald-700 mt-1">66.6% of Total Population</div>
+                  <p class="text-xs text-slate-600 mt-2 font-medium">
+                    {{ langStore.currentLang === 'am'
+                      ? 'ወንድ 93,435 ሴት 93,968 ሲሆን ከጠቅላላ ህዝብ 66.6% መስራት የሚችል ወጣት የሰው ኃይል በከተማዋ ይገኛል።'
+                      : 'High demographic dividend with 187,403 capable working-age individuals fueling factory lines.'
+                    }}
+                  </p>
+                </div>
+
+                <!-- Children & Youth (28.0%) -->
+                <div class="p-5 rounded-2xl bg-blue-50/50 border border-blue-200">
+                  <div class="text-blue-800 font-bold text-xs uppercase tracking-wider mb-1">
+                    {{ langStore.currentLang === 'am' ? 'ከ 0 - 14 ዓመት (ህፃናትና ወጣቶች)' : 'Age 0 - 14 (Children & Early Youth)' }}
+                  </div>
+                  <div class="text-3xl font-black font-mono text-blue-950">78,691</div>
+                  <div class="text-sm font-black font-mono text-blue-700 mt-1">28.0% of Total Population</div>
+                  <p class="text-xs text-slate-600 mt-2 font-medium">
+                    ወንድ 39,439 ሴት 39,252 ሲሆን የነገው ተተኪ የከተማዋ የትምህርትና ፈጠራ ተስፋዎች ናቸው።
+                  </p>
+                </div>
+
+                <!-- Elders (5.4%) -->
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div class="text-slate-700 font-bold text-xs uppercase tracking-wider mb-1">
+                    {{ langStore.currentLang === 'am' ? 'ከ 65 ዓመት በላይ (አረጋውያን)' : 'Age 65+ (Senior Elders)' }}
+                  </div>
+                  <div class="text-3xl font-black font-mono text-slate-900">15,313</div>
+                  <div class="text-sm font-black font-mono text-slate-600 mt-1">5.4% of Total Population</div>
+                  <p class="text-xs text-slate-600 mt-2 font-medium">
+                    ወንድ 8,315 ሴት 6,998 ሲሆን የባህላዊ እሴቶችና የዕርቅ ማዕከል የሆኑ የከተማዋ የዕድሜ ባለፀጎች።
+                  </p>
+                </div>
+              </div>
+
+              <!-- Historical Population Progression (10-Year Jump) -->
+              <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h4 class="text-sm font-black text-slate-900 mb-1">
+                    {{ langStore.currentLang === 'am' ? 'የህዝብ ቁጥር ፈጣን እድገት ታሪክ' : 'Rapid Urbanization Trajectory' }}
+                  </h4>
+                  <p class="text-xs text-slate-600">
+                    {{ langStore.currentLang === 'am'
+                      ? 'በ2002 ዓ.ም 94,474 የነበረው የከተማው ህዝብ በ2012 ዓ.ም ወደ 156,140 ያደገ ሲሆን (በ10 ዓመት ውስጥ 60.5% እድገት)፣ በ2017 ዓ.ም 281,407 ደርሷል።'
+                      : 'From 94,474 in 2002 E.C. to 156,140 in 2012 E.C. (60.5% jump), reaching 281,407 in 2017 E.C. driven by industrial employment.'
+                    }}
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 font-mono text-xs font-black">
+                  <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200">2002: 94k</span>
+                  <ChevronRight class="w-3.5 h-3.5 text-slate-400" />
+                  <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200">2012: 156k</span>
+                  <ChevronRight class="w-3.5 h-3.5 text-slate-400" />
+                  <span class="px-2.5 py-1 rounded-lg bg-[#1C398E] text-white">2017: 281k</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wollo Hospitality & Social Harmony -->
+            <div class="p-6 sm:p-8 rounded-3xl bg-slate-50 border border-slate-200 space-y-4">
+              <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+                <HeartHandshake class="w-5 h-5 text-rose-600" />
+                <span>{{ langStore.currentLang === 'am' ? 'የወሎ እንግዳ ተቀባይነትና የህዝቦች አብሮነት' : 'Wollo Hospitality & Harmonious Coexistence' }}</span>
+              </h3>
+              <p class="text-xs sm:text-sm text-slate-700 leading-relaxed text-justify">
+                {{ langStore.currentLang === 'am'
+                  ? 'ኮምቦልቻ በኢትዮጵያ ውስጥ በሰላምና በእንግዳ ተቀባይነቷ የምትታወቅ የፍቅርና የመቻቻል ከተማ ነች። በከተማዋ አማራ፣ ትግሬ፣ አፋር፣ ኦሮሞ፣ ጉራጌ፣ አርጎባ እንዲሁም ከተለያዩ የዓለም ሀገራት (ቱርክ፣ ቻይና፣ ጣሊያን፣ ሶሪያ) የመጡ የውጭ ዜጎች ተከባብረው በሰላም አብረው ይኖራሉ።'
+                  : 'Celebrated nationwide as a benchmark of interfaith love and hospitality, Kombolcha embraces diverse peoples including Amhara, Tigray, Afar, Oromo, Gurage, and Argobba, alongside foreign technical experts and investors from Turkey, China, Italy, and Syria.'
+                }}
+              </p>
+            </div>
+          </div>
+
+          <!-- TAB 6: GEOGRAPHY & CLIMATE -->
           <div v-else-if="activeTab === 'geography'" class="space-y-8 animate-fadeIn">
             <!-- Header -->
             <div class="border-b border-slate-100 pb-4 mb-6">
@@ -1026,17 +1377,21 @@ const getCoreValueTitle = (val) => {
                   </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5">
-                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800">
-                    💧 {{ langStore.currentLang === 'am' ? 'ቦርከና' : 'Borkena River' }}
+                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800 flex items-center gap-2">
+                    <Waves class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>{{ langStore.currentLang === 'am' ? 'ቦርከና ወንዝ' : 'Borkena River' }}</span>
                   </div>
-                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800">
-                    💧 {{ langStore.currentLang === 'am' ? 'በርበሬ ወንዝ' : 'Berbere River' }}
+                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800 flex items-center gap-2">
+                    <Waves class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>{{ langStore.currentLang === 'am' ? 'በርበሬ ወንዝ' : 'Berbere River' }}</span>
                   </div>
-                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800">
-                    💧 {{ langStore.currentLang === 'am' ? 'አራውሌ' : 'Arawle River' }}
+                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800 flex items-center gap-2">
+                    <Waves class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>{{ langStore.currentLang === 'am' ? 'አራውሌ ወንዝ' : 'Arawle River' }}</span>
                   </div>
-                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800">
-                    💧 {{ langStore.currentLang === 'am' ? 'ወርቃ' : 'Werka River' }}
+                  <div class="p-3 rounded-xl bg-white border border-blue-200/80 font-bold text-xs text-slate-800 flex items-center gap-2">
+                    <Waves class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>{{ langStore.currentLang === 'am' ? 'ወርቃ ወንዝ' : 'Werka River' }}</span>
                   </div>
                 </div>
               </div>
@@ -1055,20 +1410,25 @@ const getCoreValueTitle = (val) => {
                   </div>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 text-center">
-                    ⛰️ {{ langStore.currentLang === 'am' ? 'የጎፍ' : 'Yegof' }}
+                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 flex items-center justify-center gap-1.5">
+                    <Mountain class="w-3 h-3 text-emerald-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'የጎፍ' : 'Yegof' }}</span>
                   </div>
-                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 text-center">
-                    ⛰️ {{ langStore.currentLang === 'am' ? 'ወበላ' : 'Webela' }}
+                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 flex items-center justify-center gap-1.5">
+                    <Mountain class="w-3 h-3 text-emerald-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'ወበላ' : 'Webela' }}</span>
                   </div>
-                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 text-center">
-                    ⛰️ {{ langStore.currentLang === 'am' ? 'ነጃውጎራ' : 'Nejawgora' }}
+                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 flex items-center justify-center gap-1.5">
+                    <Mountain class="w-3 h-3 text-emerald-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'ነጃውጎራ' : 'Nejawgora' }}</span>
                   </div>
-                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 text-center">
-                    ⛰️ {{ langStore.currentLang === 'am' ? 'አሰንአገር' : 'Asenager' }}
+                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 flex items-center justify-center gap-1.5">
+                    <Mountain class="w-3 h-3 text-emerald-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'አሰንአገር' : 'Asenager' }}</span>
                   </div>
-                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 text-center col-span-2 sm:col-span-1">
-                    ⛰️ {{ langStore.currentLang === 'am' ? 'መሰንገር' : 'Mesenger' }}
+                  <div class="p-2.5 rounded-xl bg-white border border-emerald-200/80 font-bold text-xs text-slate-800 flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1">
+                    <Mountain class="w-3 h-3 text-emerald-700" />
+                    <span>{{ langStore.currentLang === 'am' ? 'መሰንገር' : 'Mesenger' }}</span>
                   </div>
                 </div>
               </div>
@@ -1116,9 +1476,10 @@ const getCoreValueTitle = (val) => {
                     <span 
                       v-for="nat in (langStore.currentLang === 'am' ? ['ቱርክ', 'ቻይና', 'ጣሊያን', 'ሶሪያ'] : ['Turkey', 'China', 'Italy', 'Syria'])" 
                       :key="nat"
-                      class="px-2.5 py-1 rounded-lg bg-blue-50 font-bold text-xs text-blue-900 border border-blue-200/60"
+                      class="px-2.5 py-1 rounded-lg bg-blue-50 font-bold text-xs text-blue-900 border border-blue-200/60 flex items-center gap-1.5"
                     >
-                      🌍 {{ nat }}
+                      <Globe class="w-3 h-3 text-blue-600" />
+                      <span>{{ nat }}</span>
                     </span>
                   </div>
                 </div>
@@ -1132,9 +1493,10 @@ const getCoreValueTitle = (val) => {
                     <span 
                       v-for="rel in (langStore.currentLang === 'am' ? ['እስልምና', 'ክርስትና', 'ፕሮቴስታንት', 'የይሖዋ ምስክሮች', 'ካቶሊክ'] : ['Islam', 'Christianity', 'Protestant', 'Jehovah\'s Witnesses', 'Catholic'])" 
                       :key="rel"
-                      class="px-2.5 py-1 rounded-lg bg-emerald-50 font-bold text-xs text-emerald-900 border border-emerald-200/60"
+                      class="px-2.5 py-1 rounded-lg bg-emerald-50 font-bold text-xs text-emerald-900 border border-emerald-200/60 flex items-center gap-1.5"
                     >
-                      🕊️ {{ rel }}
+                      <HeartHandshake class="w-3 h-3 text-emerald-700" />
+                      <span>{{ rel }}</span>
                     </span>
                   </div>
                 </div>
