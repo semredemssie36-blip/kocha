@@ -50,9 +50,9 @@ const voting = ref(false)
 const getMayorName = () => {
   if (!mayorData.value) return 'Mayor of Kombolcha'
   const lang = langStore.currentLang
-  if (lang === 'am') return mayorData.value.name_am || 'ክቡር አቶ ከድር አህመድ'
-  if (lang === 'om') return mayorData.value.name_om || mayorData.value.name_en || 'Kabajamoo Obbo Kadiir Ahimad'
-  return mayorData.value.name_en || 'Hon. Kedir Ahmed'
+  if (lang === 'am') return mayorData.value.name_am || 'ክቡር አቶ መሀመድ አሚን የሱፍ'
+  if (lang === 'om') return mayorData.value.name_om || mayorData.value.name_en || 'Kabajamoo Obbo Mahaammad-Amiin Yusuuf'
+  return mayorData.value.name_en || 'Hon. Mohammed Amin Yesuf'
 }
 
 const getMayorKeynote = () => {
