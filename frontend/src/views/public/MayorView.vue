@@ -30,7 +30,127 @@ const router = useRouter()
 const langStore = useLanguageStore()
 const loading = ref(true)
 const mayor = ref(null)
-const historicalMayors = ref([])
+const FALLBACK_HISTORICAL_MAYORS = [
+  {
+    id: 1,
+    order: 1,
+    is_current: false,
+    name_am: 'አቶ ያሲን ሁሴን',
+    name_en: 'Ato Yasin Husen',
+    name_om: 'Obbo Yaasiin Huseen',
+    phone: null,
+    term_start: '01/01/1998 ዓ.ም',
+    term_end: '08/01/1999 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር የመጀመሪያው ከንቲባ በመሆን ከ1998 እስከ 1999 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as the first Mayor of Kombolcha City Administration from 2005 to 2006 G.C.'
+  },
+  {
+    id: 2,
+    order: 2,
+    is_current: false,
+    name_am: 'አቶ አበበ አሸቴ',
+    name_en: 'Ato Abebaw Eshetu',
+    name_om: 'Obbo Abbabaa Asheetee',
+    phone: null,
+    term_start: '08/01/1999 ዓ.ም',
+    term_end: '30/10/2000 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከ1999 እስከ 2000 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from 2006 to 2008 G.C.'
+  },
+  {
+    id: 3,
+    order: 3,
+    is_current: false,
+    name_am: 'አቶ ሰይድ ኑር',
+    name_en: 'Ato Seid Nur',
+    name_om: 'Obbo Sayid Nuur',
+    phone: null,
+    term_start: '01/11/2000 ዓ.ም',
+    term_end: '28/05/2002 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከ2000 እስከ 2002 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from 2008 to 2010 G.C.'
+  },
+  {
+    id: 4,
+    order: 4,
+    is_current: false,
+    name_am: 'አቶ ያሲን ሀሰን',
+    name_en: 'Ato Yasin Hassen',
+    name_om: 'Obbo Yaasiin Hasan',
+    phone: null,
+    term_start: '01/06/2002 ዓ.ም',
+    term_end: '13/02/2004 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከ2002 እስከ 2004 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from 2010 to 2011 G.C.'
+  },
+  {
+    id: 5,
+    order: 5,
+    is_current: false,
+    name_am: 'አቶ ከድር አህመድ',
+    name_en: 'Ato Kedir Ahmed',
+    name_om: 'Obbo Kadiir Ahimad',
+    phone: '0913214567',
+    term_start: '14/02/2004 ዓ.ም',
+    term_end: '30/02/2008 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከጥቅምት 2004 እስከ ጥቅምት 2008 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from October 2011 to October 2015 G.C.'
+  },
+  {
+    id: 6,
+    order: 6,
+    is_current: false,
+    name_am: 'አቶ ደነቀ ምትኩ',
+    name_en: 'Ato Deneke Mitiku',
+    name_om: 'Obbo Danqa Mitikkuu',
+    phone: null,
+    term_start: '01/03/2008 ዓ.ም',
+    term_end: '05/11/2010 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከህዳር 2008 እስከ ሐምሌ 2010 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from November 2015 to July 2018 G.C.'
+  },
+  {
+    id: 7,
+    order: 7,
+    is_current: false,
+    name_am: 'አቶ ከበደ ይመር',
+    name_en: 'Ato Kebede Yimer',
+    name_om: 'Obbo Kabbadaa Yimaam',
+    phone: null,
+    term_start: '07/11/2010 ዓ.ም',
+    term_end: '08/01/2011 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከሐምሌ 2010 እስከ መስከረም 2011 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from July 2018 to September 2018 G.C.'
+  },
+  {
+    id: 8,
+    order: 8,
+    is_current: false,
+    name_am: 'ኢንጅነር ዶክተር ከማል ዘይኑ',
+    name_en: 'Eng. Dr. Kemal Zeynu',
+    name_om: 'Injiinar Dr. Kamaal Zayinuu',
+    phone: null,
+    term_start: '08/01/2011 ዓ.ም',
+    term_end: '25/06/2014 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከመስከረም 2011 እስከ የካቲት 2014 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from September 2018 to February 2022 G.C.'
+  },
+  {
+    id: 9,
+    order: 9,
+    is_current: true,
+    name_am: 'አቶ መሀመድ አሚን የሱፍ',
+    name_en: 'Hon. Mohammedamin Yesuf',
+    name_om: 'Obbo Mahaammad-Amiin Yusuuf',
+    phone: '0335514062',
+    term_start: '27/06/2014 ዓ.ም',
+    term_end: 'እስከ አሁን በስራ ላይ',
+    biography_am: 'ክቡር አቶ መሀመድአሚን የሱፍ የኮምቦልቻ ከተማ አስተዳደር ዋና ከንቲባ በመሆን ከየካቲት 2014 ዓ.ም ጀምሮ ከተማዋን በከፍተኛ ቁርጠኝነት እየመሩ ይገኛሉ።',
+    biography_en: 'Hon. Mohammedamin Yesuf serves as the Executive Mayor of Kombolcha Metropolitan City Administration since February 2022.'
+  }
+]
+
+const historicalMayors = ref(FALLBACK_HISTORICAL_MAYORS)
 const activeTab = ref('history')
 const cabinetMembers = ref([])
 const councilMembers = ref([])
@@ -43,18 +163,32 @@ function setTab(tab) {
 const fetchMayorData = async () => {
   loading.value = true
   try {
-    const [mayorRes, historyRes, cabinetRes, councilRes] = await Promise.all([
+    const [mayorRes, historyRes, cabinetRes, councilRes] = await Promise.allSettled([
       api.getMayor(),
       api.getMayorsHistory(),
       api.getLeadership({ type: 'cabinet' }),
       api.getLeadership({ type: 'council' })
     ])
-    mayor.value = mayorRes.data
-    historicalMayors.value = historyRes.data || []
-    cabinetMembers.value = cabinetRes.data || []
-    councilMembers.value = councilRes.data || []
+
+    if (mayorRes.status === 'fulfilled' && mayorRes.value?.data) {
+      mayor.value = mayorRes.value.data
+    }
+    if (historyRes.status === 'fulfilled' && Array.isArray(historyRes.value?.data) && historyRes.value.data.length > 0) {
+      historicalMayors.value = historyRes.value.data
+    } else {
+      historicalMayors.value = FALLBACK_HISTORICAL_MAYORS
+    }
+    if (cabinetRes.status === 'fulfilled' && Array.isArray(cabinetRes.value?.data)) {
+      cabinetMembers.value = cabinetRes.value.data
+    }
+    if (councilRes.status === 'fulfilled' && Array.isArray(councilRes.value?.data)) {
+      councilMembers.value = councilRes.value.data
+    }
   } catch (err) {
-    console.error('Failed to load mayor & leadership data:', err)
+    console.warn('Network issue fetching mayor data, fallback in place:', err)
+    if (!historicalMayors.value || historicalMayors.value.length === 0) {
+      historicalMayors.value = FALLBACK_HISTORICAL_MAYORS
+    }
   } finally {
     loading.value = false
   }
