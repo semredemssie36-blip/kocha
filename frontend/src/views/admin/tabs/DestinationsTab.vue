@@ -305,7 +305,7 @@ function canDelete(item) {
         :key="item.id" 
         class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 hover:shadow-lg transition-all flex flex-col justify-between relative"
       >
-        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-500 z-10"></div>
+        <div class="absolute top-0 inset-x-0 h-1 bg-[#1C398E] z-10"></div>
         <div>
           <!-- Thumbnail Image -->
           <div class="h-48 bg-slate-900 relative overflow-hidden group">

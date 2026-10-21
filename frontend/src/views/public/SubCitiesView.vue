@@ -116,7 +116,7 @@ onMounted(() => {
           class="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
         >
           <!-- Top Accent Stripe -->
-          <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-700 via-emerald-500 to-amber-400"></div>
+          <div class="absolute top-0 left-0 right-0 h-1.5 bg-[#1C398E]"></div>
 
           <div>
             <!-- Zone Tag Bar -->

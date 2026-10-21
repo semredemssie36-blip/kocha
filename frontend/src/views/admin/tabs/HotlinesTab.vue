@@ -240,7 +240,7 @@ const filteredHotlines = computed(() => {
         :key="item.id"
         class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
       >
-        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-600 via-rose-500 to-amber-500"></div>
+        <div class="absolute top-0 inset-x-0 h-1 bg-[#1C398E]"></div>
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">

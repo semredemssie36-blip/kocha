@@ -146,9 +146,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Editorial Content Approval & Lifecycle Status Management (Super Admin & Editor only)
         Route::patch('/admin/content-status/{module}/{id}', [AdminContentController::class, 'updateContentLifecycleStatus']);
 
-        // Citizen Inquiries & Feedback
+        // Citizen Inquiries & Feedback (and Author Editorial Review pipeline)
         Route::get('/admin/messages', [AdminContentController::class, 'getContactMessages']);
         Route::patch('/admin/messages/{id}', [AdminContentController::class, 'updateMessageStatus']);
+        Route::get('/admin/inquiries', [AdminContentController::class, 'getContactMessages']);
+        Route::patch('/admin/inquiries/{id}/status', [AdminContentController::class, 'updateMessageStatus']);
 
         // Mayor & Leadership Management
         Route::put('/admin/mayor', [AdminContentController::class, 'updateMayorProfile']);

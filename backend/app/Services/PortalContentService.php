@@ -40,9 +40,10 @@ class PortalContentService
             ->where('closing_datetime', '<', Carbon::now())
             ->update(['status' => 'closed']);
 
-        $tenders = Tender::whereIn('status', ['open', 'closed', 'cancelled'])
+        $tenders = Tender::whereIn('status', ['open', 'closed'])
             ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
-            ->orderBy('closing_datetime', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->limit(2)
             ->get();
 
@@ -128,7 +129,8 @@ class PortalContentService
             ->update(['status' => 'closed']);
 
         $query = Tender::orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
-            ->orderBy('closing_datetime', 'asc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
 
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);

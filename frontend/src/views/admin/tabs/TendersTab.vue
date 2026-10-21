@@ -372,7 +372,7 @@ const closedCount = computed(() => props.tendersList.filter(t => isClosed(t) || 
         :key="item.id"
         class="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
       >
-        <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-blue-900 to-emerald-600"></div>
+        <div class="absolute top-0 inset-x-0 h-1 bg-[#1C398E]"></div>
         <div>
           <!-- Top Tag Strip -->
           <div class="flex items-center justify-between gap-2 mb-3 pt-1">

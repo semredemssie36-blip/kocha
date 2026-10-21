@@ -407,7 +407,7 @@ onMounted(() => {
       @click.self="noticeModal.open = false"
     >
       <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden relative">
-        <div class="h-1.5 w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900"></div>
+        <div class="h-1.5 w-full bg-[#1C398E]"></div>
         <div class="p-6 sm:p-7">
           <div class="flex items-start justify-between gap-4 mb-4">
             <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-800 border border-blue-100 flex items-center justify-center shrink-0">

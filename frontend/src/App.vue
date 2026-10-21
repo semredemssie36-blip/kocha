@@ -18,6 +18,7 @@ const isMaintenanceActive = computed(() => {
 })
 
 onMounted(async () => {
+  if (isAdminRoute.value) return
   try {
     const res = await api.get('/site-data')
     if (res.data?.settings) {
@@ -51,7 +52,7 @@ onMounted(async () => {
       </div>
       <div class="flex items-center gap-4">
         <router-link to="/admin" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-2">
-          <span>Admin CMS Login</span>
+          <span>Login</span>
           <ArrowRight class="w-4 h-4" />
         </router-link>
       </div>

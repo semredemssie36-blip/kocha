@@ -164,7 +164,6 @@ onUnmounted(() => {
         <div class="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5 w-full lg:w-auto min-w-0">
           <!-- Authority Badge -->
           <div class="hidden sm:flex items-center gap-1.5 text-[11px] font-bold text-amber-400 uppercase tracking-widest shrink-0 border-r border-slate-700/80 pr-3">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             <span>FDRE • Amhara Region</span>
           </div>
 
@@ -216,18 +215,7 @@ onUnmounted(() => {
             </a>
           </div>
 
-          <span class="text-slate-700">|</span>
 
-          <!-- Internal Staff Board Link -->
-          <router-link 
-            to="/internal-board" 
-            class="font-semibold text-slate-300 hover:text-amber-400 transition-colors flex items-center gap-1.5 whitespace-nowrap text-[11px]"
-          >
-            <ShieldCheck class="w-3.5 h-3.5 text-amber-400" />
-            <span>{{ langStore.t('nav.internal_board') }}</span>
-          </router-link>
-
-          <span class="text-slate-700">|</span>
 
           <!-- Language Selector -->
           <div class="relative lang-selector shrink-0">

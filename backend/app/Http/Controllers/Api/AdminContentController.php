@@ -27,6 +27,87 @@ use App\Services\AuditLogService;
 
 class AdminContentController extends Controller
 {
+    /**
+     * Dispatch an editorial review notification to Editors & Super Admins via the ContactMessage pipeline
+     */
+    protected function notifyEditorialReview($user, string $module, string $title, $itemId = null, ?string $refOrSub = null)
+    {
+        try {
+            $mod = strtolower(trim($module));
+            $normalizedModule = ($mod === 'news') ? 'news' : rtrim($mod, 's');
+            $moduleLabels = [
+                'news' => 'News Article',
+                'tender' => 'Procurement Tender',
+                'vacancy' => 'Job Vacancy',
+                'service' => 'Public Service',
+                'project' => 'Infrastructure Project',
+                'resource' => 'Directive & Resource',
+                'gallery' => 'Gallery Media',
+                'destination' => 'Tourism Destination',
+            ];
+
+            $label = $moduleLabels[$normalizedModule] ?? ucfirst($module);
+            $cleanTitle = trim($title ?: 'Untitled Item');
+            if (mb_strlen($cleanTitle) > 120) {
+                $cleanTitle = mb_substr($cleanTitle, 0, 117) . '...';
+            }
+
+            $authorName = $user ? ($user->name ?? 'Staff Author') : 'Staff Author';
+            $authorEmail = $user ? ($user->email ?? 'author@kombolcha.gov.et') : 'author@kombolcha.gov.et';
+            $authorPhone = ($user && !empty($user->phone)) ? $user->phone : '+251-33-551-0000';
+            $authorId = $user ? $user->id : null;
+
+            $subject = "Editorial Review: New {$label} - {$cleanTitle}";
+            $message = "Author {$authorName} ({$authorEmail}) submitted {$label} \"{$cleanTitle}\" for editorial review and approval."
+                     . ($refOrSub ? "\nReference: {$refOrSub}" : "");
+
+            $targetSubCity = "Editorial: " . ucfirst($normalizedModule);
+
+            // Check if an unread notification already exists for this exact module & item
+            if ($itemId) {
+                $existing = ContactMessage::where('status', 'unread')
+                    ->where('target_sub_city', 'like', 'Editorial:%')
+                    ->where(function ($q) use ($itemId) {
+                        $q->where('admin_notes', 'like', '%"item_id":' . $itemId . '%')
+                          ->orWhere('admin_notes', 'like', '%"item_id":"' . $itemId . '"%');
+                    })
+                    ->first();
+
+                if ($existing) {
+                    $existing->update([
+                        'subject' => $subject,
+                        'message' => $message,
+                        'created_at' => now(),
+                    ]);
+                    return;
+                }
+            }
+
+            $adminNotes = json_encode([
+                'type' => 'editorial_submission',
+                'module' => $normalizedModule,
+                'item_id' => $itemId,
+                'author_id' => $authorId,
+                'author_name' => $authorName,
+                'title' => $cleanTitle,
+                'submitted_at' => now()->toIso8601String(),
+            ]);
+
+            ContactMessage::create([
+                'sender_name' => "Author: {$authorName}",
+                'sender_phone' => $authorPhone,
+                'sender_email' => $authorEmail,
+                'subject' => $subject,
+                'message' => $message,
+                'target_sub_city' => $targetSubCity,
+                'status' => 'unread',
+                'admin_notes' => $adminNotes,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to dispatch editorial notification: " . $e->getMessage());
+        }
+    }
+
     // Dashboard Stats Overview
     public function getDashboardStats(AdminContentService $service)
     {
@@ -203,6 +284,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'news', $validated['title_en'] ?? $validated['title_am'], $id);
+        }
+
         $msg = ($user->role === 'author' && $validated['status'] === 'published')
             ? 'Article submitted for editorial approval.'
             : 'Article saved successfully';
@@ -275,6 +360,10 @@ class AdminContentController extends Controller
         }
 
         DB::table('news_articles')->where('id', $id)->update($updateData);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'news', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id);
+        }
 
         return response()->json(['message' => 'Article updated successfully', 'status' => $targetStatus]);
     }
@@ -352,6 +441,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'tenders', $validated['title_en'] ?? $validated['title_am'], $id, $validated['reference_number']);
+        }
+
         $msg = ($user->role === 'author' && $status === 'pending')
             ? 'Tender submitted for editorial review.'
             : 'Tender published successfully';
@@ -405,6 +498,10 @@ class AdminContentController extends Controller
             'document_pdf_path' => $validated['document_pdf_path'] ?? null,
             'updated_at' => now(),
         ]);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'tenders', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id, $validated['reference_number']);
+        }
 
         return response()->json(['message' => 'Tender updated successfully', 'status' => $targetStatus]);
     }
@@ -485,6 +582,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'vacancies', $validated['title_en'] ?? $validated['title_am'], $id, $validated['position_code'] ?? null);
+        }
+
         $msg = ($user->role === 'author' && $status === 'pending')
             ? 'Vacancy submitted for editorial review.'
             : 'Vacancy posted successfully';
@@ -541,6 +642,10 @@ class AdminContentController extends Controller
             'status' => $targetStatus,
             'updated_at' => now(),
         ]);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'vacancies', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id, $validated['position_code'] ?? null);
+        }
 
         return response()->json(['message' => 'Vacancy updated successfully', 'status' => $targetStatus]);
     }
@@ -626,6 +731,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'services', $validated['title_en'] ?? $validated['title_am'], $id);
+        }
+
         $msg = ($user->role === 'author' && $status === 'pending')
             ? 'Service submitted for editorial review.'
             : 'Service created successfully';
@@ -684,6 +793,10 @@ class AdminContentController extends Controller
             'is_active' => $targetStatus === 'published',
             'updated_at' => now(),
         ]);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'services', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id);
+        }
 
         return response()->json(['message' => 'Service updated successfully', 'status' => $targetStatus]);
     }
@@ -761,6 +874,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($pubStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'projects', $validated['title_en'] ?? $validated['title_am'], $id);
+        }
+
         $msg = ($user->role === 'author' && $pubStatus === 'pending')
             ? 'Project submitted for editorial review.'
             : 'Project saved successfully';
@@ -812,6 +929,10 @@ class AdminContentController extends Controller
             'publication_status' => $pubStatus,
             'updated_at' => now(),
         ]);
+
+        if ($pubStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'projects', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id);
+        }
 
         return response()->json(['message' => 'Project updated successfully', 'publication_status' => $pubStatus]);
     }
@@ -911,6 +1032,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'resources', $validated['title_en'] ?? $validated['title_am'], $id, "Year: " . $validated['year']);
+        }
+
         $msg = ($user->role === 'author' && $status === 'pending')
             ? 'Directive submitted for editorial review.'
             : 'Resource directive cataloged successfully';
@@ -966,6 +1091,10 @@ class AdminContentController extends Controller
         }
 
         DB::table('resources')->where('id', $id)->update($updateData);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'resources', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id, "Year: " . $validated['year']);
+        }
 
         return response()->json(['message' => 'Resource directive updated successfully', 'status' => $targetStatus]);
     }
@@ -1265,6 +1394,10 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'gallery', $request->caption_en ?? $request->caption_am, $id);
+        }
+
         $msg = ($user->role === 'author' && $status === 'pending')
             ? 'Media submitted for editorial review.'
             : 'Gallery media item created successfully';
@@ -1313,6 +1446,10 @@ class AdminContentController extends Controller
             'status' => $targetStatus,
             'updated_at' => now()
         ]);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'gallery', $request->caption_en ?? $request->caption_am ?? $existing->caption_am, $id);
+        }
 
         return response()->json(['message' => 'Gallery media item updated successfully', 'status' => $targetStatus]);
     }
@@ -1489,6 +1626,10 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        if ($status === 'pending') {
+            $this->notifyEditorialReview($user, 'destinations', $validated['title_en'] ?? $validated['title_am'], $id);
+        }
+
         $msg = ($user->role === 'author' && $status === 'pending')
             ? 'Destination submitted for editorial review.'
             : 'Destination created successfully';
@@ -1567,6 +1708,10 @@ class AdminContentController extends Controller
             'is_active' => $targetStatus === 'published',
             'updated_at' => now(),
         ]);
+
+        if ($targetStatus === 'pending') {
+            $this->notifyEditorialReview($user, 'destinations', $validated['title_en'] ?? $validated['title_am'] ?? $existing->title_am, $id);
+        }
 
         return response()->json(['message' => 'Destination updated successfully', 'status' => $targetStatus]);
     }
@@ -1905,6 +2050,17 @@ class AdminContentController extends Controller
 
         $update['updated_at'] = now();
         DB::table($table)->where('id', $id)->update($update);
+
+        if (in_array($status, ['published', 'open'])) {
+            // Auto-resolve any pending editorial review notification for this item
+            ContactMessage::where('target_sub_city', 'like', 'Editorial:%')
+                ->where('status', 'unread')
+                ->where(function ($q) use ($id) {
+                    $q->where('admin_notes', 'like', '%"item_id":' . $id . '%')
+                      ->orWhere('admin_notes', 'like', '%"item_id":"' . $id . '"%');
+                })
+                ->update(['status' => 'resolved']);
+        }
 
         $label = ($status === 'published' || $status === 'open') ? 'approved and published live' : 'moved to ' . $status;
 

@@ -161,13 +161,13 @@ watch(() => route.query.tab, (newTab) => {
       <!-- Mayor State Proclamation Card -->
       <div v-else-if="mayor" class="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-lg hover:border-slate-300 transition-all mb-14 relative">
         <!-- Top Sovereign Ribbon -->
-        <div class="h-1.5 w-full bg-gradient-to-r from-blue-700 via-amber-400 to-emerald-600"></div>
+        <div class="h-1.5 w-full bg-[#1C398E]"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12">
           
           <!-- Left Column: Authentic Mayor Portrait in Royal Frame (4 cols) -->
           <div class="lg:col-span-4 bg-gradient-to-b from-slate-50 to-slate-100/60 border-b lg:border-b-0 lg:border-r border-slate-200 p-8 sm:p-10 flex flex-col items-center justify-center text-center relative">
-            <div class="w-52 h-52 sm:w-60 sm:h-60 rounded-3xl overflow-hidden p-2 bg-gradient-to-tr from-blue-900 via-amber-400 to-emerald-700 shadow-xl mb-6 relative bg-white">
+            <div class="w-52 h-52 sm:w-60 sm:h-60 rounded-3xl overflow-hidden p-2 bg-[#1C398E] shadow-xl mb-6 relative bg-white">
               <div class="w-full h-full rounded-[20px] overflow-hidden bg-slate-100 relative">
                 <img 
                   v-if="mayor.portrait_path"
@@ -217,16 +217,7 @@ watch(() => route.query.tab, (newTab) => {
 
             <!-- Direct Office Inquiries Strip -->
             <div class="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold">
-              <div class="flex items-center gap-5 text-slate-700">
-                <span class="flex items-center gap-1.5">
-                  <Phone class="w-4 h-4 text-emerald-600" />
-                  <span class="font-mono font-bold">+251 33 551 0022</span>
-                </span>
-                <span class="flex items-center gap-1.5">
-                  <Mail class="w-4 h-4 text-sky-600" />
-                  <span class="font-mono">mayor@kombolchacity.gov.et</span>
-                </span>
-              </div>
+              
 
               <router-link 
                 to="/contact" 

@@ -187,17 +187,19 @@ const submitVote = async () => {
 }
 
 const getNewsTitle = (item) => {
+  if (!item) return ''
   const lang = langStore.currentLang
-  if (lang === 'am') return item.title_am
-  if (lang === 'om') return item.title_om || item.title_en
-  return item.title_en
+  if (lang === 'am') return item.title_am || item.title_en || item.title_om || ''
+  if (lang === 'om') return item.title_om || item.title_en || item.title_am || ''
+  return item.title_en || item.title_am || item.title_om || ''
 }
 
 const getTenderTitle = (item) => {
+  if (!item) return ''
   const lang = langStore.currentLang
-  if (lang === 'am') return item.title_am
-  if (lang === 'om') return item.title_om || item.title_en
-  return item.title_en
+  if (lang === 'am') return item.title_am || item.title_en || item.title_om || ''
+  if (lang === 'om') return item.title_om || item.title_en || item.title_am || ''
+  return item.title_en || item.title_am || item.title_om || ''
 }
 
 const isTenderClosed = (tender) => {
@@ -603,8 +605,8 @@ onUnmounted(() => {
     <section class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-6">
       <div class="bg-gradient-to-br from-white via-slate-50 to-amber-50/20 rounded-3xl p-8 sm:p-12 border border-slate-200/90 shadow-lg relative overflow-hidden">
         
-        <!-- Gold Trim Top Border -->
-        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-700 via-amber-400 to-emerald-600"></div>
+        <!-- Solid Prestige Top Border -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-[#1C398E]"></div>
 
         <!-- Mayor Keynote Header Bar -->
         <div class="flex items-center justify-between pb-6 border-b border-slate-200/80 mb-8 flex-wrap gap-2">
@@ -620,7 +622,7 @@ onUnmounted(() => {
           
           <!-- Authentic Mayoral Portrait in State Frame -->
           <div class="lg:col-span-4 flex flex-col items-center text-center">
-            <div class="w-52 h-52 sm:w-60 sm:h-60 rounded-3xl overflow-hidden p-2 bg-gradient-to-tr from-blue-900 via-amber-400 to-emerald-700 shadow-2xl mb-4 relative flex items-center justify-center">
+            <div class="w-52 h-52 sm:w-60 sm:h-60 rounded-3xl overflow-hidden p-2 bg-[#1C398E] shadow-2xl mb-4 relative flex items-center justify-center">
               <div class="w-full h-full rounded-[20px] overflow-hidden bg-slate-100 relative">
                 <div v-if="homeLoading && !mayorData.name_en" class="w-full h-full bg-slate-200 animate-pulse"></div>
                 <img 
@@ -964,8 +966,8 @@ onUnmounted(() => {
               </div>
 
               <a 
-                v-if="tender.document_url || tender.document_path"
-                :href="tender.document_url || tender.document_path" 
+                v-if="tender.document_pdf_path || tender.document_url || tender.document_path"
+                :href="tender.document_pdf_path || tender.document_url || tender.document_path" 
                 target="_blank"
                 download
                 class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-xs"
