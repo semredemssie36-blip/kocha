@@ -12,15 +12,21 @@ import {
   CheckCircle, 
   AlertCircle, 
   Building2, 
-  ShieldCheck,
-  PhoneCall,
-  Navigation,
-  ExternalLink,
-  Copy,
-  Check,
-  Landmark,
-  Sparkles,
-  HelpCircle
+  ShieldCheck, 
+  PhoneCall, 
+  Navigation, 
+  ExternalLink, 
+  Copy, 
+  Check, 
+  Landmark, 
+  Sparkles, 
+  HelpCircle,
+  Droplets,
+  Zap,
+  Flame,
+  Activity,
+  ShieldAlert,
+  ChevronRight
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -129,37 +135,83 @@ const submitForm = async () => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
-      <img src="/assets/hotel_2.jpg" alt="Contact Us" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
+      
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-black uppercase tracking-wider mb-4">
+          <Sparkles class="w-3.5 h-3.5 text-amber-400" />
+          <span>{{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝብ ግንኙነትና ድንገተኛ አደጋ ማዕከል' : 'Official Municipal Public Relations & Emergency Operations Center' }}</span>
+        </div>
+
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
-          {{ langStore.currentLang === 'am' ? 'የከተማው አስተዳደር ህዝብ ግንኙነትና አቤቱታ መቀበያ' : 'Citizen Feedback, Inquiries & Grievance Desk' }}
+          {{ langStore.currentLang === 'am' ? 'የከተማው አስተዳደር ህዝብ ግንኙነትና አቤቱታ መቀበያ' : 'Citizen Inquiries, Emergency Dispatch & Grievance Desk' }}
         </h1>
         <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
           {{ langStore.currentLang === 'am'
-            ? 'ምንም አይነት መለያ ሳይፈጥሩ በቀጥታ ለኮምቦልቻ ከተማ ከንቲባ፣ ለማዘጋጃ ቤቱ ወይም ለሚመለከተው ክፍለ ከተማ ጥያቄ፣ አስተያየት ወይም አቤቱታዎን ያስገቡ።'
-            : 'Reach out directly to municipal authorities or sub-city administrations. Every citizen submission receives an official tracking record under municipal transparency charter.'
+            ? 'ለኮምቦልቻ ከተማ ከንቲባ፣ ለ 4ቱ ክፍለ ከተሞች ወይም ለ 30ው ሴክተር መምሪያዎች በቀጥታ ጥያቄዎን፣ አቤቱታዎን ወይም አስተያየትዎን ያስገቡ፤ እንዲሁም የ 24 ሰዓት የውሃ፣ መብራትና ፖሊስ መስመሮችን ያግኙ።'
+            : 'Submit official petitions, citizen grievances, or municipal inquiries directly to the Mayor’s Cabinet, 4 Sub-Cities, or 30 Sector Bureaus with guaranteed official tracking numbers.'
           }}
         </p>
 
         <!-- Dispatch Hotlines Strip -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800 text-xs">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 block font-bold mb-1">Police Dispatch</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-white">991</div>
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-slate-400 block font-bold mb-1">Police Dispatch</span>
+              <div class="text-xl sm:text-2xl font-black font-mono text-white">991</div>
+            </div>
+            <ShieldAlert class="w-7 h-7 text-blue-400 opacity-60" />
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-rose-500/30">
-            <span class="text-rose-400 block font-bold mb-1">Fire & Rescue</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-rose-400">993</div>
+
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-rose-500/30 flex items-center justify-between">
+            <div>
+              <span class="text-rose-400 block font-bold mb-1">Fire & Rescue</span>
+              <div class="text-xl sm:text-2xl font-black font-mono text-rose-400">939 / 993</div>
+            </div>
+            <Flame class="w-7 h-7 text-rose-400 opacity-60" />
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
-            <span class="text-emerald-400 block font-bold mb-1">Ambulance</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">907</div>
+
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30 flex items-center justify-between">
+            <div>
+              <span class="text-emerald-400 block font-bold mb-1">Ambulance</span>
+              <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">907</div>
+            </div>
+            <Activity class="w-7 h-7 text-emerald-400 opacity-60" />
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 block font-bold mb-1">City Hall Switchboard</span>
-            <div class="text-sm sm:text-base font-black font-mono text-amber-400 truncate">+251 33 551 0022</div>
+
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30 flex items-center justify-between">
+            <div>
+              <span class="text-amber-400 block font-bold mb-1">City Hall Switchboard</span>
+              <div class="text-sm sm:text-base font-black font-mono text-amber-400 truncate">033 551 02 16</div>
+            </div>
+            <Landmark class="w-7 h-7 text-amber-400 opacity-60" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Emergency & Utility Desks Notice Strip -->
+    <div class="bg-slate-900 border-b border-slate-800 py-3.5 px-4 sm:px-8 text-xs text-slate-300">
+      <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-amber-400 font-black uppercase tracking-wider">
+          <PhoneCall class="w-4 h-4 shrink-0" />
+          <span>{{ langStore.currentLang === 'am' ? 'የ 24 ሰዓት የውሃና የመብራት ድንገተኛ ጥገና መስመሮች:' : '24/7 Utility Leaks & Grid Dispatch:' }}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
+          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+            <Droplets class="w-3.5 h-3.5 text-blue-400" />
+            <span class="text-slate-400">Water Leaks 24/7:</span>
+            <a href="tel:0912746964" class="text-white hover:text-amber-400 font-bold">09 12 74 69 64</a>
+            <span class="text-slate-600">|</span>
+            <a href="tel:0914741347" class="text-white hover:text-amber-400 font-bold">09 14 74 13 47</a>
+          </div>
+          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
+            <Zap class="w-3.5 h-3.5 text-amber-400" />
+            <span class="text-slate-400">Electric Grid Emergency:</span>
+            <a href="tel:905" class="text-white hover:text-amber-400 font-bold">905</a>
+            <span class="text-slate-600">/</span>
+            <a href="tel:0335510177" class="text-white hover:text-amber-400 font-bold">033 551 01 77</a>
           </div>
         </div>
       </div>
@@ -175,13 +227,13 @@ const submitForm = async () => {
           <div class="flex items-center justify-between pb-6 mb-6 border-b border-slate-100">
             <div>
               <h2 class="text-2xl font-black text-slate-900">
-                {{ langStore.currentLang === 'am' ? 'የመልእክት መላኪያ ይፋዊ ቅጽ' : 'Citizen Submission Form' }}
+                {{ langStore.currentLang === 'am' ? 'የመልእክትና አቤቱታ መላኪያ ይፋዊ ቅጽ' : 'Citizen Submission & Feedback Form' }}
               </h2>
               <p class="text-xs text-slate-500 mt-1">
-                {{ langStore.currentLang === 'am' ? 'መረጃዎ በከተማው የህዝብ ግንኙነት ዴስክ በሚስጥር ተይዞ ክትትል ይደረግበታል።' : 'Protected under the Kombolcha Municipal Privacy Charter.' }}
+                {{ langStore.currentLang === 'am' ? 'መረጃዎ በከተማው የህዝብ ግንኙነትና ቅሬታ ሰሚ ጽ/ቤት በሚስጥር ተይዞ ክትትል ይደረግበታል።' : 'Protected under the Kombolcha Municipal Transparency and Anti-Corruption Charter.' }}
               </p>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-[#1C398E] flex items-center justify-center font-bold">
               <Send class="w-6 h-6" />
             </div>
           </div>
@@ -194,7 +246,7 @@ const submitForm = async () => {
                 {{ langStore.currentLang === 'am' ? 'መልእክትዎ በተሳካ ሁኔታ ደርሷል!' : 'Your message has been officially registered!' }}
               </strong>
               <p class="mt-1 text-emerald-800">
-                {{ langStore.currentLang === 'am' ? 'የህዝብ ግንኙነት ዴስክ መረጃውን ገምግሞ በተጠቀሰው ስልክ ወይም ኢሜል ምላሽ ይሰጥዎታል። እናመሰግናለን።' : 'Our secretariat will review your submission and follow up via telephone or email within 48 business hours.' }}
+                {{ langStore.currentLang === 'am' ? 'የከተማው አስተዳደር ጽ/ቤት መረጃውን ገምግሞ በተጠቀሰው ስልክ ወይም ኢሜል ምላሽ ይሰጥዎታል። እናመሰግናለን።' : 'Our secretariat will review your submission and follow up via telephone or email within 48 business hours.' }}
               </p>
             </div>
           </div>
@@ -217,7 +269,7 @@ const submitForm = async () => {
                   type="text" 
                   required
                   class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-slate-50 text-xs sm:text-sm text-slate-900 transition"
-                  placeholder="e.g. Abebe Kebede"
+                  placeholder="e.g. Mohammed Ahmed"
                 />
               </div>
 
@@ -230,7 +282,7 @@ const submitForm = async () => {
                   type="tel" 
                   required
                   class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-slate-50 text-xs sm:text-sm text-slate-900 transition font-mono"
-                  placeholder="+251 9..."
+                  placeholder="09..."
                 />
               </div>
             </div>
@@ -272,30 +324,30 @@ const submitForm = async () => {
                 type="text" 
                 required
                 class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-slate-50 text-xs sm:text-sm text-slate-900 transition"
-                placeholder="e.g. Inquiry regarding Kebele 03 Road Paving"
+                placeholder="e.g. Inquiry regarding building permit / water maintenance"
               />
             </div>
 
             <div>
               <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
-                {{ langStore.currentLang === 'am' ? 'ዝርዝር መልእክት *' : 'Detailed Message / Grievance *' }}
+                {{ langStore.currentLang === 'am' ? 'ዝርዝር መልእክት ወይም አቤቱታ *' : 'Detailed Message / Grievance Context *' }}
               </label>
               <textarea 
                 v-model="form.message" 
                 rows="5" 
                 required
                 class="w-full p-4 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-slate-50 text-xs sm:text-sm text-slate-900 transition leading-relaxed"
-                placeholder="Please provide full context and room/kebele details if applicable..."
+                placeholder="Please describe your inquiry with specific kebele or house number if applicable..."
               ></textarea>
             </div>
 
             <button 
               type="submit" 
               :disabled="submitting"
-              class="w-full py-4 rounded-xl bg-blue-900 hover:bg-blue-800 text-amber-300 font-black text-xs uppercase tracking-wider transition-all shadow-md hover:scale-[1.01] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              class="w-full py-4 rounded-xl bg-[#1C398E] hover:bg-blue-900 text-amber-300 font-black text-xs uppercase tracking-wider transition-all shadow-md hover:scale-[1.01] cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Send class="w-4 h-4 text-amber-400" />
-              <span>{{ submitting ? 'Registering Submission...' : (langStore.currentLang === 'am' ? 'መልእክት ላክ' : 'Submit Official Feedback') }}</span>
+              <span>{{ submitting ? 'Registering Submission...' : (langStore.currentLang === 'am' ? 'ይፋዊ መልእክት ላክ' : 'Submit Official Feedback') }}</span>
             </button>
           </form>
         </div>
@@ -307,7 +359,7 @@ const submitForm = async () => {
           <div class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-sm space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <MapPin class="w-4 h-4 text-blue-700" />
+                <MapPin class="w-4 h-4 text-[#1C398E]" />
                 <span>City Hall Geolocation</span>
               </h3>
               <button 
@@ -321,7 +373,7 @@ const submitForm = async () => {
             </div>
 
             <!-- Physical Address -->
-            <p class="text-xs text-slate-600 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed font-medium">
               {{ getMapAddress() }}
             </p>
 
@@ -340,9 +392,9 @@ const submitForm = async () => {
               :href="directionsUrl" 
               target="_blank" 
               rel="noopener noreferrer" 
-              class="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition"
+              class="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer"
             >
-              <Navigation class="w-4 h-4 text-blue-700" />
+              <Navigation class="w-4 h-4 text-[#1C398E]" />
               <span>Get Directions in Google Maps</span>
               <ExternalLink class="w-3.5 h-3.5 text-slate-400" />
             </a>
@@ -355,18 +407,45 @@ const submitForm = async () => {
               <span>Municipal Working Hours</span>
             </div>
             <div class="flex justify-between border-b border-slate-100 pb-2">
-              <span class="text-slate-400 font-bold">Monday - Friday:</span>
-              <span class="font-black text-slate-900">8:30 AM - 5:30 PM (EAT)</span>
+              <span class="text-slate-500 font-bold">Monday - Friday:</span>
+              <span class="font-black text-slate-900 font-mono">8:00 AM - 5:30 PM (EAT)</span>
             </div>
             <div class="flex justify-between border-b border-slate-100 pb-2">
-              <span class="text-slate-400 font-bold">Lunch Break:</span>
-              <span class="font-black text-slate-900">12:30 PM - 1:30 PM</span>
+              <span class="text-slate-500 font-bold">Lunch Break:</span>
+              <span class="font-black text-slate-900 font-mono">12:30 PM - 1:30 PM</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400 font-bold">Weekends & Public Holidays:</span>
-              <span class="font-bold text-rose-600">Closed (Emergency Only)</span>
+              <span class="text-slate-500 font-bold">Weekends & Holidays:</span>
+              <span class="font-bold text-rose-600">Closed (Emergency Units 24/7)</span>
             </div>
           </div>
+
+          <!-- 4 Sub-Cities Quick Contact Card -->
+          <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-sm space-y-3 text-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <span class="font-black uppercase tracking-wider text-amber-400">4 Sub-Cities Direct Lines</span>
+              <Landmark class="w-4 h-4 text-amber-400" />
+            </div>
+            <div class="space-y-2 font-mono">
+              <div class="flex justify-between items-center bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-slate-300 font-sans font-bold">አቢሻገር (Abishager)</span>
+                <a href="tel:0335510022" class="text-amber-400 hover:underline font-bold">033 551 00 22</a>
+              </div>
+              <div class="flex justify-between items-center bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-slate-300 font-sans font-bold">ቢራሮ (Biraro)</span>
+                <a href="tel:0335511505" class="text-amber-400 hover:underline font-bold">033 551 15 05</a>
+              </div>
+              <div class="flex justify-between items-center bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-slate-300 font-sans font-bold">ቦርከና (Borkena)</span>
+                <a href="tel:0335510229" class="text-amber-400 hover:underline font-bold">033 551 02 29</a>
+              </div>
+              <div class="flex justify-between items-center bg-slate-800/80 p-2.5 rounded-xl border border-slate-700">
+                <span class="text-slate-300 font-sans font-bold">ሀሰናገር (Hassen Ager)</span>
+                <a href="tel:0335510005" class="text-amber-400 hover:underline font-bold">033 551 00 05</a>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
