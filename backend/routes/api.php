@@ -155,6 +155,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Mayor & Leadership Management
         Route::put('/admin/mayor', [AdminContentController::class, 'updateMayorProfile']);
+        Route::get('/admin/mayors', [AdminContentController::class, 'getMayors']);
+        Route::post('/admin/mayors', [AdminContentController::class, 'storeMayor']);
+        Route::put('/admin/mayors/{id}', [AdminContentController::class, 'updateMayor']);
         Route::post('/admin/leadership', [AdminContentController::class, 'storeLeadershipMember']);
         Route::put('/admin/leadership/{id}', [AdminContentController::class, 'updateLeadershipMember']);
 
@@ -205,6 +208,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Structural Entity Deletions
         Route::delete('/admin/offices/{id}', [AdminContentController::class, 'deleteOffice']);
         Route::delete('/admin/leadership/{id}', [AdminContentController::class, 'deleteLeadershipMember']);
+        Route::delete('/admin/mayors/{id}', [AdminContentController::class, 'deleteMayor']);
         Route::delete('/admin/projects/{id}', [AdminContentController::class, 'deleteProject']);
     });
 });

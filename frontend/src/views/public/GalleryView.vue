@@ -13,7 +13,9 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Download
+  Download,
+  Video,
+  Play
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
@@ -24,12 +26,20 @@ const loading = ref(true)
 const galleryItems = ref([])
 
 const categories = [
-  { key: 'all', label_en: 'All Photos', label_am: 'ሁሉንም ፎቶዎች', label_om: 'Suuraa Hundaa' },
+  { key: 'all', label_en: 'All Media', label_am: 'ሁሉንም ሚዲያ', label_om: 'Suuraa Hundaa' },
+  { key: 'video', label_en: 'Videos', label_am: 'ቪዲዮዎች', label_om: 'Viidiyoo' },
   { key: 'urban', label_en: 'City Landmarks & Aerial', label_am: 'የከተማ ገጽታና አየር ላይ እይታ', label_om: 'Magaalaa' },
   { key: 'industry', label_en: 'Industry & Logistics', label_am: 'ኢንዱስትሪና ሎጂስቲክስ', label_om: 'Indaastirii' },
   { key: 'nature', label_en: 'Mount Yegof & Nature', label_am: 'ይጎፍ ተራራና ተፈጥሮ', label_om: 'Uumama' },
   { key: 'events', label_en: 'Civic Events & Culture', label_am: 'ክስተቶችና ባህል', label_om: 'Aadaa' }
 ]
+
+const isYouTube = (url) => url && /(?:youtu\.be\/|youtube\.com)/i.test(url)
+const getYouTubeEmbed = (url) => {
+  if (!url) return ''
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)
+  return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : ''
+}
 
 const fetchGallery = async () => {
   loading.value = true
@@ -45,7 +55,9 @@ const fetchGallery = async () => {
 
 const filteredItems = computed(() => {
   return galleryItems.value.filter(item => {
-    return activeCategory.value === 'all' || item.category === activeCategory.value
+    if (activeCategory.value === 'all') return true
+    if (activeCategory.value === 'video') return item.media_type === 'video'
+    return item.category === activeCategory.value
   })
 })
 
@@ -199,26 +211,42 @@ onUnmounted(() => {
           class="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:border-amber-400 hover:shadow-2xl transition-all duration-300 group cursor-pointer flex flex-col justify-between"
           @click="activeItem = item"
         >
-          <!-- Photo Thumbnail -->
+          <!-- Photo / Video Thumbnail -->
           <div class="h-64 bg-slate-950 relative overflow-hidden flex items-center justify-center">
             <img 
               :src="item.thumbnail_url || item.media_path_or_url" 
               :alt="getTitle(item)" 
-              class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 opacity-95"
+              class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 opacity-95" 
             />
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
 
-            <!-- Hover Zoom Overlay Icon -->
-            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-slate-950/30">
+            <!-- Video Center Play Button Overlay -->
+            <div v-if="item.media_type === 'video'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div class="w-14 h-14 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-2xl pl-0.5 group-hover:scale-110 transition-transform">
+                <Play class="w-7 h-7 fill-white" />
+              </div>
+            </div>
+
+            <!-- Hover Zoom Overlay Icon for Images -->
+            <div v-else class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-slate-950/30">
               <div class="w-12 h-12 rounded-full bg-white/90 text-blue-900 flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300">
                 <ZoomIn class="w-6 h-6" />
               </div>
             </div>
 
-            <!-- Category Tag -->
-            <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-amber-300 border border-amber-400/30 text-[10px] font-black uppercase tracking-wider shadow-md">
-              {{ getCategoryLabel(item.category) }}
-            </span>
+            <!-- Category & Type Tag -->
+            <div class="absolute top-3 left-3 flex items-center gap-1.5">
+              <span class="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-amber-300 border border-amber-400/30 text-[10px] font-black uppercase tracking-wider shadow-md">
+                {{ getCategoryLabel(item.category) }}
+              </span>
+              <span 
+                v-if="item.media_type === 'video'"
+                class="px-2.5 py-1 rounded-full bg-purple-900/90 text-purple-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md"
+              >
+                <Video class="w-3 h-3 text-purple-300" />
+                <span>Video</span>
+              </span>
+            </div>
           </div>
 
           <!-- Caption Footer -->
@@ -228,11 +256,12 @@ onUnmounted(() => {
             </h3>
             <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono mt-3 pt-2 border-t border-slate-100">
               <span class="capitalize font-bold text-slate-500 flex items-center gap-1">
-                <Camera class="w-3 h-3 text-slate-400" />
-                <span>Photo</span>
+                <Video v-if="item.media_type === 'video'" class="w-3.5 h-3.5 text-purple-600" />
+                <Camera v-else class="w-3.5 h-3.5 text-slate-400" />
+                <span>{{ item.media_type === 'video' ? 'Video Document' : 'Photo' }}</span>
               </span>
               <span class="text-blue-700 font-bold group-hover:translate-x-1 transition-transform">
-                View Photo ↗
+                {{ item.media_type === 'video' ? 'Play Video ↗' : 'View Photo ↗' }}
               </span>
             </div>
           </div>
@@ -303,8 +332,31 @@ onUnmounted(() => {
           <ChevronLeft class="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
         </button>
 
-        <!-- Main Photo -->
+        <!-- Video Player Display -->
+        <div 
+          v-if="activeItem.media_type === 'video'" 
+          class="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black flex items-center justify-center animate-fadeIn"
+        >
+          <iframe 
+            v-if="isYouTube(activeItem.media_path_or_url)" 
+            :src="getYouTubeEmbed(activeItem.media_path_or_url)" 
+            class="w-full h-full" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen
+          ></iframe>
+          <video 
+            v-else 
+            :src="activeItem.media_path_or_url" 
+            controls 
+            autoplay 
+            class="w-full h-full object-contain"
+          ></video>
+        </div>
+
+        <!-- Main Photo Display -->
         <img 
+          v-else
           :src="activeItem.media_path_or_url" 
           :alt="getTitle(activeItem)" 
           class="max-h-[75vh] max-w-[92vw] object-contain rounded-2xl shadow-2xl animate-fadeIn select-none"

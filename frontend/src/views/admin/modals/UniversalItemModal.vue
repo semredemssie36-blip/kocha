@@ -7,7 +7,10 @@ import {
   ImageIcon, 
   Trash2, 
   Loader2, 
-  CheckCircle2 
+  CheckCircle2,
+  Video,
+  Film,
+  Play
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -86,6 +89,17 @@ function removeGalleryImage(index) {
       props.galleryForm.media_path_or_url = ''
     }
   }
+}
+
+function isVideoUrl(url) {
+  if (!url) return false
+  return /\.(mp4|webm|ogg|mov|mkv|avi|3gp)$/i.test(url) || /youtube\.com|youtu\.be|vimeo\.com/i.test(url)
+}
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return ''
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)
+  return match ? `https://www.youtube.com/embed/${match[1]}` : ''
 }
 </script>
 
@@ -632,8 +646,43 @@ function removeGalleryImage(index) {
             </div>
           </div>
 
-          <!-- Gallery Photo Fields (Strictly Images, 1 or More) -->
+          <!-- Gallery Media Fields (Photos & Videos) -->
           <div v-else-if="modalType === 'gallery'" class="space-y-4">
+            
+            <!-- Media Type Selector: Photo vs Video -->
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 uppercase">Media Format *</span>
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  @click="galleryForm.media_type = 'image'"
+                  :class="[
+                    'px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer',
+                    (galleryForm.media_type !== 'video') 
+                      ? 'bg-blue-600 text-white shadow-xs' 
+                      : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                  ]"
+                >
+                  <ImageIcon class="w-3.5 h-3.5" />
+                  <span>Photo (ምስል)</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  @click="galleryForm.media_type = 'video'"
+                  :class="[
+                    'px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer',
+                    (galleryForm.media_type === 'video') 
+                      ? 'bg-purple-600 text-white shadow-xs' 
+                      : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+                  ]"
+                >
+                  <Video class="w-3.5 h-3.5" />
+                  <span>Video (ቪዲዮ)</span>
+                </button>
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Gallery Category *</label>
@@ -651,8 +700,81 @@ function removeGalleryImage(index) {
               </div>
             </div>
 
-            <!-- Upload One or More Images Section -->
-            <div class="space-y-2">
+            <!-- 1. VIDEO UPLOAD & URL SECTION -->
+            <div v-if="galleryForm.media_type === 'video'" class="space-y-3">
+              <label class="block text-xs font-bold text-slate-700 uppercase">
+                Video File Upload or External Link *
+              </label>
+
+              <!-- Video File Upload Banner -->
+              <div class="p-4 border-2 border-dashed border-purple-200 hover:border-purple-500 rounded-2xl bg-purple-50/50 hover:bg-purple-50/80 transition-all text-center">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+                    <Film class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p class="text-xs font-black text-slate-800">
+                      Upload Video File from Device
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-0.5 font-medium">
+                      MP4, WebM, MOV, OGG (Max 200MB)
+                    </p>
+                  </div>
+                  
+                  <label class="mt-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm transition-colors">
+                    <Upload class="w-4 h-4" />
+                    <span>{{ uploadingFile ? 'Uploading Video...' : 'Choose Video File' }}</span>
+                    <input 
+                      type="file" 
+                      accept="video/*" 
+                      @change="uploadFileFor($event, galleryForm, 'media_path_or_url')" 
+                      class="hidden" 
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <!-- Direct Video Link / YouTube URL -->
+              <div class="space-y-1">
+                <label class="block text-[11px] font-bold text-slate-600 uppercase">Or Enter Video URL / YouTube Link</label>
+                <input 
+                  v-model="galleryForm.media_path_or_url" 
+                  type="text" 
+                  placeholder="https://www.youtube.com/watch?v=... or /uploads/video.mp4" 
+                  class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:border-purple-600 outline-none" 
+                />
+              </div>
+
+              <!-- Video Live Preview -->
+              <div v-if="galleryForm.media_path_or_url" class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-950 p-2">
+                <div class="text-[11px] font-mono text-purple-300 font-bold mb-2 flex items-center gap-1.5">
+                  <Play class="w-3.5 h-3.5 text-purple-400" />
+                  <span>Video Preview</span>
+                </div>
+
+                <!-- YouTube Embed Preview -->
+                <div v-if="getYouTubeEmbedUrl(galleryForm.media_path_or_url)" class="aspect-video w-full rounded-xl overflow-hidden">
+                  <iframe 
+                    :src="getYouTubeEmbedUrl(galleryForm.media_path_or_url)" 
+                    class="w-full h-full" 
+                    frameborder="0" 
+                    allowfullscreen
+                  ></iframe>
+                </div>
+
+                <!-- HTML5 Video Preview -->
+                <div v-else class="max-h-56 flex items-center justify-center">
+                  <video 
+                    :src="galleryForm.media_path_or_url" 
+                    controls 
+                    class="max-h-52 rounded-xl w-full object-contain"
+                  ></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. PHOTO UPLOAD SECTION (MULTIPLE OR SINGLE) -->
+            <div v-else class="space-y-2">
               <label class="block text-xs font-bold text-slate-700 uppercase">
                 {{ editingId ? 'Photo Asset *' : 'Upload One or More Photos *' }}
               </label>
@@ -695,47 +817,47 @@ function removeGalleryImage(index) {
                   class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:border-blue-600 outline-none" 
                 />
               </div>
-            </div>
 
-            <!-- Previews of selected photos (Multiple or Single) -->
-            <div v-if="(galleryForm.media_paths && galleryForm.media_paths.length > 0) || galleryForm.media_path_or_url" class="space-y-2">
-              <div class="flex items-center justify-between text-xs font-bold text-slate-700">
-                <span class="flex items-center gap-1.5">
-                  <CheckCircle2 class="w-4 h-4 text-emerald-600" />
-                  <span>
-                    {{ (galleryForm.media_paths && galleryForm.media_paths.length > 0) ? `${galleryForm.media_paths.length} Photo${galleryForm.media_paths.length > 1 ? 's' : ''} Attached` : 'Photo Preview' }}
+              <!-- Previews of selected photos (Multiple or Single) -->
+              <div v-if="(galleryForm.media_paths && galleryForm.media_paths.length > 0) || galleryForm.media_path_or_url" class="space-y-2">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span class="flex items-center gap-1.5">
+                    <CheckCircle2 class="w-4 h-4 text-emerald-600" />
+                    <span>
+                      {{ (galleryForm.media_paths && galleryForm.media_paths.length > 0) ? `${galleryForm.media_paths.length} Photo${galleryForm.media_paths.length > 1 ? 's' : ''} Attached` : 'Photo Preview' }}
+                    </span>
                   </span>
-                </span>
-                <span v-if="galleryForm.media_paths && galleryForm.media_paths.length > 1" class="text-[11px] font-normal text-slate-500">
-                  Batch creation: each photo will be published into this gallery category
-                </span>
-              </div>
-
-              <!-- Thumbnail grid for multiple photos -->
-              <div v-if="galleryForm.media_paths && galleryForm.media_paths.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto p-1.5 bg-slate-50 rounded-2xl border border-slate-200">
-                <div 
-                  v-for="(photoUrl, idx) in galleryForm.media_paths" 
-                  :key="idx" 
-                  class="group relative h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-200 shadow-2xs"
-                >
-                  <img :src="photoUrl" alt="Gallery Preview" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                  <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/70 text-white font-mono text-[9px] font-bold">
-                    #{{ idx + 1 }}
+                  <span v-if="galleryForm.media_paths && galleryForm.media_paths.length > 1" class="text-[11px] font-normal text-slate-500">
+                    Batch creation: each photo will be published into this gallery category
                   </span>
-                  <button 
-                    type="button" 
-                    @click.stop="removeGalleryImage(idx)" 
-                    class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
-                    title="Remove Photo"
-                  >
-                    <X class="w-3 h-3" />
-                  </button>
                 </div>
-              </div>
 
-              <!-- Single image preview fallback if media_paths is empty -->
-              <div v-else-if="galleryForm.media_path_or_url" class="rounded-xl overflow-hidden border border-slate-200 shadow-sm max-w-xs h-32 bg-slate-900">
-                <img :src="galleryForm.media_path_or_url" alt="Gallery Preview" class="w-full h-full object-cover" />
+                <!-- Thumbnail grid for multiple photos -->
+                <div v-if="galleryForm.media_paths && galleryForm.media_paths.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto p-1.5 bg-slate-50 rounded-2xl border border-slate-200">
+                  <div 
+                    v-for="(photoUrl, idx) in galleryForm.media_paths" 
+                    :key="idx" 
+                    class="group relative h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-200 shadow-2xs"
+                  >
+                    <img :src="photoUrl" alt="Gallery Preview" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/70 text-white font-mono text-[9px] font-bold">
+                      #{{ idx + 1 }}
+                    </span>
+                    <button 
+                      type="button" 
+                      @click.stop="removeGalleryImage(idx)" 
+                      class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
+                      title="Remove Photo"
+                    >
+                      <X class="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Single image preview fallback if media_paths is empty -->
+                <div v-else-if="galleryForm.media_path_or_url" class="rounded-xl overflow-hidden border border-slate-200 shadow-sm max-w-xs h-32 bg-slate-900">
+                  <img :src="galleryForm.media_path_or_url" alt="Gallery Preview" class="w-full h-full object-cover" />
+                </div>
               </div>
             </div>
 

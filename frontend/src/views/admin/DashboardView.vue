@@ -1111,13 +1111,17 @@ async function uploadFileFor(event, targetObj, fieldName) {
       })
       const path = res.data.path || res.data.url
       targetObj[fieldName] = path
+      const isVideo = res.data.media_type === 'video' || /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(path)
+      if (isVideo && 'media_type' in targetObj) {
+        targetObj.media_type = 'video'
+      }
       if (fieldName === 'media_path_or_url' || fieldName === 'media_paths') {
         if (!Array.isArray(targetObj.media_paths)) targetObj.media_paths = []
         if (!targetObj.media_paths.includes(path)) {
           targetObj.media_paths.push(path)
         }
       }
-      showToast('File uploaded successfully!')
+      showToast(isVideo ? 'Video file uploaded successfully!' : 'File uploaded successfully!')
     }
   } catch (err) {
     alert(err.response?.data?.message || 'File upload failed.')
@@ -1939,7 +1943,11 @@ async function submitActiveModal() {
       else await api.post('/admin/hero-slides', heroSlideForm)
       showToast(isEdit ? 'Hero slide updated successfully!' : 'Hero slide added successfully!')
     } else if (modalType.value === 'gallery') {
-      galleryForm.media_type = 'image'
+      if (!galleryForm.media_type) {
+        const isVid = /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(galleryForm.media_path_or_url || '') ||
+                      /youtube\.com|youtu\.be|vimeo\.com/i.test(galleryForm.media_path_or_url || '')
+        galleryForm.media_type = isVid ? 'video' : 'image'
+      }
       if (isAuthor.value && !isEditor.value) {
         galleryForm.status = 'pending'
       }
@@ -1951,13 +1959,13 @@ async function submitActiveModal() {
       }
       if (isEdit) {
         await api.put(`/admin/gallery/${id}`, galleryForm)
-        showToast('Gallery photo updated successfully!')
+        showToast('Gallery item updated successfully!')
       } else {
         const res = await api.post('/admin/gallery', galleryForm)
         const count = res.data?.count || 1
         showToast(isAuthor.value 
-          ? (count > 1 ? `${count} photos submitted for editorial review!` : 'Photo submitted for editorial review!') 
-          : (count > 1 ? `${count} photos added to gallery successfully!` : 'Photo added to gallery successfully!'))
+          ? (count > 1 ? `${count} items submitted for editorial review!` : 'Item submitted for editorial review!') 
+          : (count > 1 ? `${count} items added to gallery successfully!` : 'Gallery item added successfully!'))
       }
       await fetchGallery()
     } else if (modalType.value === 'destination') {
@@ -2849,6 +2857,7 @@ onUnmounted(() => {
           v-else-if="activeSection === 'mayor'"
           :mayorData="mayorData"
           :uploadingFile="uploadingFile"
+          :isSuperAdmin="isSuperAdmin"
           @updateProfile="updateMayorProfile"
           @uploadPhoto="(event) => uploadFileFor(event, mayorData, 'portrait_path')"
         />

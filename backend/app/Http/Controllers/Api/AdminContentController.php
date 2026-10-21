@@ -1145,6 +1145,94 @@ class AdminContentController extends Controller
         return response()->json(['message' => 'Mayor profile and keynote updated successfully']);
     }
 
+    // Historical & Incumbent Mayors Management (Admin Registry)
+    public function getMayors(Request $request)
+    {
+        $mayors = DB::table('mayors')
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+        return response()->json($mayors);
+    }
+
+    public function storeMayor(Request $request)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'portrait_path' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'term_start' => 'nullable|string',
+            'term_end' => 'nullable|string',
+            'is_current' => 'nullable|boolean',
+            'order' => 'nullable|integer',
+            'welcome_message_am' => 'nullable|string',
+            'welcome_message_en' => 'nullable|string',
+            'welcome_message_om' => 'nullable|string',
+            'biography_am' => 'nullable|string',
+            'biography_en' => 'nullable|string',
+            'biography_om' => 'nullable|string',
+        ]);
+
+        $validated['name_en'] = !empty($validated['name_en']) ? $validated['name_en'] : $validated['name_am'];
+        $validated['name_om'] = !empty($validated['name_om']) ? $validated['name_om'] : $validated['name_en'];
+        $validated['is_current'] = !empty($validated['is_current']) ? 1 : 0;
+        $validated['order'] = $validated['order'] ?? ((DB::table('mayors')->max('order') ?? 0) + 1);
+
+        $id = DB::table('mayors')->insertGetId(array_merge($validated, [
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]));
+
+        return response()->json(['message' => 'Mayor added to registry successfully', 'id' => $id], 201);
+    }
+
+    public function updateMayor(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name_am' => 'required|string',
+            'name_en' => 'nullable|string',
+            'name_om' => 'nullable|string',
+            'portrait_path' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'term_start' => 'nullable|string',
+            'term_end' => 'nullable|string',
+            'is_current' => 'nullable|boolean',
+            'order' => 'nullable|integer',
+            'welcome_message_am' => 'nullable|string',
+            'welcome_message_en' => 'nullable|string',
+            'welcome_message_om' => 'nullable|string',
+            'biography_am' => 'nullable|string',
+            'biography_en' => 'nullable|string',
+            'biography_om' => 'nullable|string',
+        ]);
+
+        $validated['name_en'] = !empty($validated['name_en']) ? $validated['name_en'] : $validated['name_am'];
+        $validated['name_om'] = !empty($validated['name_om']) ? $validated['name_om'] : $validated['name_en'];
+        $validated['is_current'] = !empty($validated['is_current']) ? 1 : 0;
+
+        DB::table('mayors')->where('id', $id)->update(array_merge($validated, [
+            'updated_at' => now()
+        ]));
+
+        return response()->json(['message' => 'Mayor record updated successfully']);
+    }
+
+    public function deleteMayor(Request $request, $id)
+    {
+        $mayor = DB::table('mayors')->where('id', $id)->first();
+        if (!$mayor) {
+            return response()->json(['message' => 'Mayor record not found'], 404);
+        }
+        if ($mayor->is_current) {
+            return response()->json(['message' => 'Cannot delete the incumbent Mayor profile.'], 422);
+        }
+
+        DB::table('mayors')->where('id', $id)->delete();
+        return response()->json(['message' => 'Historical Mayor removed from registry']);
+    }
+
     // Leadership Members Management
     public function storeLeadershipMember(Request $request)
     {
@@ -1314,13 +1402,15 @@ class AdminContentController extends Controller
         ]);
     }
 
-    // Media File & Image Upload Handler (Supports Single or Multiple Files)
+    // Media File, Video & Image Upload Handler (Supports Single or Multiple Files)
     public function uploadMedia(Request $request)
     {
+        $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp'];
+
         if ($request->hasFile('files')) {
             $request->validate([
                 'files' => 'required|array',
-                'files.*' => 'file|image|max:51200'
+                'files.*' => 'file|max:204800'
             ]);
 
             $uploadDir = public_path('uploads');
@@ -1330,28 +1420,32 @@ class AdminContentController extends Controller
 
             $uploaded = [];
             foreach ($request->file('files') as $file) {
-                $extension = $file->getClientOriginalExtension();
+                $extension = strtolower($file->getClientOriginalExtension());
                 $filename = time() . '_' . Str::random(10) . '.' . $extension;
                 $file->move($uploadDir, $filename);
                 $path = '/uploads/' . $filename;
+                $mediaType = in_array($extension, $videoExtensions) ? 'video' : 'image';
+
                 $uploaded[] = [
                     'filename' => $filename,
                     'path' => $path,
                     'url' => url($path),
+                    'media_type' => $mediaType,
                     'original_name' => $file->getClientOriginalName()
                 ];
             }
 
             return response()->json([
-                'message' => count($uploaded) . ' photos uploaded successfully',
+                'message' => count($uploaded) . ' media files uploaded successfully',
                 'files' => $uploaded,
                 'path' => $uploaded[0]['path'] ?? '',
-                'url' => $uploaded[0]['url'] ?? ''
+                'url' => $uploaded[0]['url'] ?? '',
+                'media_type' => $uploaded[0]['media_type'] ?? 'image'
             ], 201);
         }
 
         $request->validate([
-            'file' => 'required|file|max:51200'
+            'file' => 'required|file|max:204800'
         ]);
 
         $file = $request->file('file');
@@ -1360,33 +1454,35 @@ class AdminContentController extends Controller
             mkdir($uploadDir, 0755, true);
         }
 
-        $extension = $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension());
         $filename = time() . '_' . Str::random(10) . '.' . $extension;
         $file->move($uploadDir, $filename);
 
         $path = '/uploads/' . $filename;
         $url = url($path);
+        $mediaType = in_array($extension, $videoExtensions) ? 'video' : 'image';
 
         return response()->json([
-            'message' => 'File uploaded successfully',
+            'message' => 'Media file uploaded successfully',
             'filename' => $filename,
             'path' => $path,
             'url' => $url,
+            'media_type' => $mediaType,
             'original_name' => $file->getClientOriginalName()
         ], 201);
     }
 
-    // Gallery Items Management (Photo Gallery Archive Only)
+    // Gallery Items Management (Photos & Videos Archive)
     public function getGallery(Request $request)
     {
         $user = $request->user();
         $query = DB::table('gallery_items')
-            ->where(function ($q) {
-                $q->where('media_type', 'image')
-                  ->orWhereNull('media_type');
-            })
             ->orderBy('order', 'asc')
             ->orderBy('created_at', 'desc');
+
+        if ($request->has('media_type') && in_array($request->media_type, ['image', 'video'])) {
+            $query->where('media_type', $request->media_type);
+        }
 
         if ($user && $user->role === 'author') {
             $query->where(function ($q) use ($user) {
@@ -1402,7 +1498,9 @@ class AdminContentController extends Controller
     public function storeGalleryItem(Request $request)
     {
         $request->validate([
+            'media_type' => 'nullable|in:image,video',
             'media_path_or_url' => 'nullable|string',
+            'thumbnail_url' => 'nullable|string',
             'media_paths' => 'nullable|array',
             'media_paths.*' => 'string',
             'caption_am' => 'required|string|max:255',
@@ -1418,7 +1516,7 @@ class AdminContentController extends Controller
             $status = ($status === 'draft') ? 'draft' : 'pending';
         }
 
-        // Collect all image paths (either media_paths array or single media_path_or_url)
+        // Collect all media paths (either media_paths array or single media_path_or_url)
         $paths = [];
         if ($request->has('media_paths') && is_array($request->media_paths) && count($request->media_paths) > 0) {
             $paths = array_values(array_filter($request->media_paths));
@@ -1427,18 +1525,38 @@ class AdminContentController extends Controller
         }
 
         if (empty($paths)) {
-            return response()->json(['message' => 'At least one photo must be provided'], 422);
+            return response()->json(['message' => 'At least one photo or video must be provided'], 422);
         }
 
+        $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp'];
         $createdIds = [];
         $baseOrder = (int)($request->order ?: 0);
-        foreach ($paths as $idx => $photoPath) {
+
+        foreach ($paths as $idx => $mediaPath) {
+            $ext = strtolower(pathinfo($mediaPath, PATHINFO_EXTENSION));
+            $isVidUrl = in_array($ext, $videoExtensions) || 
+                        str_contains($mediaPath, 'youtube.com') || 
+                        str_contains($mediaPath, 'youtu.be') || 
+                        str_contains($mediaPath, 'vimeo.com');
+
+            $mediaType = $request->input('media_type') ?: ($isVidUrl ? 'video' : 'image');
+
+            // Generate thumbnail if YouTube
+            $thumbnail = $request->thumbnail_url ?: $mediaPath;
+            if ($mediaType === 'video') {
+                if (preg_match('/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/', $mediaPath, $matches)) {
+                    $thumbnail = "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
+                } elseif (!$request->thumbnail_url) {
+                    $thumbnail = '/assets/Green_Legacy.jpg';
+                }
+            }
+
             $id = DB::table('gallery_items')->insertGetId([
                 'author_id' => $user->id,
-                'media_type' => 'image', // Gallery strictly supports images
-                'media_path_or_url' => $photoPath,
-                'thumbnail_url' => $photoPath,
-                'category' => $request->category ?: 'urban',
+                'media_type' => $mediaType,
+                'media_path_or_url' => $mediaPath,
+                'thumbnail_url' => $thumbnail,
+                'category' => $request->category ?: ($mediaType === 'video' ? 'events' : 'urban'),
                 'caption_am' => $request->caption_am,
                 'caption_en' => $request->caption_en,
                 'caption_om' => $request->caption_om,
@@ -1457,8 +1575,8 @@ class AdminContentController extends Controller
 
         $count = count($createdIds);
         $msg = ($user->role === 'author' && $status === 'pending')
-            ? ($count > 1 ? "$count photos submitted for editorial review." : 'Photo submitted for editorial review.')
-            : ($count > 1 ? "$count gallery photos added successfully" : 'Gallery photo added successfully');
+            ? ($count > 1 ? "$count media items submitted for editorial review." : 'Media item submitted for editorial review.')
+            : ($count > 1 ? "$count gallery items added successfully" : 'Gallery media item added successfully');
 
         return response()->json([
             'message' => $msg, 
@@ -1472,7 +1590,9 @@ class AdminContentController extends Controller
     public function updateGalleryItem(Request $request, $id)
     {
         $request->validate([
+            'media_type' => 'nullable|in:image,video',
             'media_path_or_url' => 'required|string',
+            'thumbnail_url' => 'nullable|string',
             'caption_am' => 'required|string|max:255',
             'status' => 'nullable|in:draft,pending,published',
         ]);
@@ -1480,7 +1600,7 @@ class AdminContentController extends Controller
         $user = $request->user();
         $existing = DB::table('gallery_items')->where('id', $id)->first();
         if (!$existing) {
-            return response()->json(['message' => 'Photo item not found'], 404);
+            return response()->json(['message' => 'Media item not found'], 404);
         }
 
         $targetStatus = $request->input('status', $existing->status ?? 'published');
@@ -1497,15 +1617,30 @@ class AdminContentController extends Controller
             }
         }
 
+        $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp'];
+        $mediaPath = $request->media_path_or_url;
+        $ext = strtolower(pathinfo($mediaPath, PATHINFO_EXTENSION));
+        $isVidUrl = in_array($ext, $videoExtensions) || 
+                    str_contains($mediaPath, 'youtube.com') || 
+                    str_contains($mediaPath, 'youtu.be') || 
+                    str_contains($mediaPath, 'vimeo.com');
+
+        $mediaType = $request->input('media_type') ?: ($isVidUrl ? 'video' : ($existing->media_type ?? 'image'));
+
+        $thumbnail = $request->thumbnail_url ?: $existing->thumbnail_url ?: $mediaPath;
+        if ($mediaType === 'video' && preg_match('/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/', $mediaPath, $matches)) {
+            $thumbnail = "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg";
+        }
+
         DB::table('gallery_items')->where('id', $id)->update([
-            'media_type' => 'image', // Only image is supported
-            'media_path_or_url' => $request->media_path_or_url,
-            'thumbnail_url' => $request->media_path_or_url,
-            'category' => $request->category ?: 'urban',
+            'media_type' => $mediaType,
+            'media_path_or_url' => $mediaPath,
+            'thumbnail_url' => $thumbnail,
+            'category' => $request->category ?: $existing->category ?: 'urban',
             'caption_am' => $request->caption_am,
             'caption_en' => $request->caption_en,
             'caption_om' => $request->caption_om,
-            'order' => $request->order ?: 0,
+            'order' => $request->order ?? $existing->order ?? 0,
             'status' => $targetStatus,
             'updated_at' => now()
         ]);

@@ -7,7 +7,8 @@ import {
   Search, 
   Edit, 
   Trash2, 
-  Image as ImageIcon 
+  Image as ImageIcon,
+  Video
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -158,8 +159,11 @@ const paginatedGallery = computed(() => {
                 <div class="flex items-center gap-3">
                   <div class="w-16 h-12 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 shadow-2xs relative">
                     <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover" />
-                    <span class="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-bold uppercase bg-blue-900/90 text-white">
-                      Photo
+                    <span 
+                      class="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-bold uppercase text-white"
+                      :class="item.media_type === 'video' ? 'bg-purple-900/90' : 'bg-blue-900/90'"
+                    >
+                      {{ item.media_type === 'video' ? 'Video' : 'Photo' }}
                     </span>
                   </div>
                   <span class="text-[11px] font-mono text-slate-500 truncate max-w-[140px]">{{ item.media_path_or_url }}</span>
@@ -226,9 +230,13 @@ const paginatedGallery = computed(() => {
           <div>
             <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center group">
               <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              <span class="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1 bg-slate-900/80 text-white">
-                <ImageIcon class="w-3 h-3 text-amber-400" />
-                <span>Photo</span>
+              <span 
+                class="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1 text-white shadow-xs"
+                :class="item.media_type === 'video' ? 'bg-purple-900/90' : 'bg-slate-900/80'"
+              >
+                <Video v-if="item.media_type === 'video'" class="w-3 h-3 text-purple-300" />
+                <ImageIcon v-else class="w-3 h-3 text-amber-400" />
+                <span>{{ item.media_type === 'video' ? 'Video' : 'Photo' }}</span>
               </span>
               <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-white/90 text-slate-800 text-[10px] font-bold uppercase">
                 {{ item.category }}

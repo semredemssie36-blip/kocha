@@ -502,11 +502,11 @@ class PublicApiController extends Controller
             ->where(function ($q) {
                 $q->where('status', 'published')
                   ->orWhereNull('status');
-            })
-            ->where(function ($q) {
-                $q->where('media_type', 'image')
-                  ->orWhereNull('media_type');
             });
+
+        if ($request->has('media_type') && in_array($request->media_type, ['image', 'video'])) {
+            $query->where('media_type', $request->media_type);
+        }
 
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
