@@ -18,7 +18,11 @@ import {
   ChevronRight,
   Sparkles,
   MapPin,
-  Clock
+  Clock,
+  Briefcase,
+  History,
+  PhoneCall,
+  UserCheck
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -26,7 +30,8 @@ const router = useRouter()
 const langStore = useLanguageStore()
 const loading = ref(true)
 const mayor = ref(null)
-const activeTab = ref('cabinet')
+const historicalMayors = ref([])
+const activeTab = ref('history')
 const cabinetMembers = ref([])
 const councilMembers = ref([])
 
@@ -38,12 +43,14 @@ function setTab(tab) {
 const fetchMayorData = async () => {
   loading.value = true
   try {
-    const [mayorRes, cabinetRes, councilRes] = await Promise.all([
+    const [mayorRes, historyRes, cabinetRes, councilRes] = await Promise.all([
       api.getMayor(),
+      api.getMayorsHistory(),
       api.getLeadership({ type: 'cabinet' }),
       api.getLeadership({ type: 'council' })
     ])
     mayor.value = mayorRes.data
+    historicalMayors.value = historyRes.data || []
     cabinetMembers.value = cabinetRes.data || []
     councilMembers.value = councilRes.data || []
   } catch (err) {
@@ -77,6 +84,20 @@ const getBiography = () => {
   return mayor.value.biography_en || mayor.value.biography_am
 }
 
+const getHistoryMayorName = (m) => {
+  const lang = langStore.currentLang
+  if (lang === 'am') return m.name_am || m.name_en
+  if (lang === 'om') return m.name_om || m.name_en
+  return m.name_en || m.name_am
+}
+
+const getHistoryBiography = (m) => {
+  const lang = langStore.currentLang
+  if (lang === 'am') return m.biography_am || m.biography_en
+  if (lang === 'om') return m.biography_om || m.biography_en
+  return m.biography_en || m.biography_am
+}
+
 const getMemberName = (m) => {
   const lang = langStore.currentLang
   if (lang === 'am') return m.name_am || m.name_en
@@ -92,7 +113,7 @@ const getMemberPosition = (m) => {
 }
 
 onMounted(() => {
-  if (route.query.tab && ['cabinet', 'council'].includes(route.query.tab)) {
+  if (route.query.tab && ['history', 'cabinet', 'council'].includes(route.query.tab)) {
     activeTab.value = route.query.tab
     setTimeout(() => {
       const el = document.getElementById('leadership-section')
@@ -103,7 +124,7 @@ onMounted(() => {
 })
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['cabinet', 'council'].includes(newTab)) {
+  if (newTab && ['history', 'cabinet', 'council'].includes(newTab)) {
     activeTab.value = newTab
     setTimeout(() => {
       const el = document.getElementById('leadership-section')
@@ -121,29 +142,38 @@ watch(() => route.query.tab, (newTab) => {
       <img src="/assets/earport2.webp" alt="Mayor Executive Office" class="absolute inset-0 w-full h-full object-cover object-center" />
       <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
+       
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
-          {{ langStore.currentLang === 'am' ? 'የከንቲባው ጽሕፈት ቤትና የከተማው ካቢኔ' : "Mayor's Office & Leadership" }}
+          {{ langStore.currentLang === 'am' ? 'የከንቲባው ጽሕፈት ቤትና የከተማው አመራር' : "Mayor's Office & Civic Governance" }}
         </h1>
         <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
           {{ langStore.currentLang === 'am'
-            ? 'የኮምቦልቻ ከተማ ከንቲባ ይፋዊ የክብር መልእክት፣ የከተማዋ የልማት ስትራቴጂ፣ የስራ አስፈፃሚ ካቢኔ አባላትና የከተማው ምክር ቤት አመራር ማውጫ።'
-            : 'Mayoral keynote address, metropolitan development priorities, executive cabinet portfolios, and municipal council leadership.'
+            ? 'የኮምቦልቻ ከተማ ከንቲባ ይፋዊ የክብር መልእክት፣ የቀድሞ ከንቲባዎች ታሪካዊ ሰነድ፣ የስራ አስፈፃሚ ካቢኔ አባላትና የከተማው ምክር ቤት አመራር ማውጫ።'
+            : 'Mayoral keynote address, chronological history of municipal mayors, executive cabinet portfolios, and city council leadership.'
           }}
         </p>
 
         <!-- Executive Metrics -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-800">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Executive Head</span>
-            <div class="text-xl sm:text-2xl font-black text-white truncate">{{ mayor ? getMayorName() : 'Mayor' }}</div>
+            <span class="text-slate-400 text-xs block font-bold mb-1">Executive Mayor</span>
+            <div class="text-base sm:text-lg font-black text-white truncate">{{ mayor ? getMayorName() : 'Mayor' }}</div>
+            <span class="text-[10px] text-amber-400 font-bold block mt-0.5">Incumbent Leader</span>
+          </div>
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30">
+            <span class="text-amber-400 text-xs block font-bold mb-1">Mayoral Lineage</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-white">{{ historicalMayors.length || 9 }} Mayors</div>
+            <span class="text-[10px] text-slate-400 block mt-0.5">1998 E.C. - Present</span>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
             <span class="text-blue-400 text-xs block font-bold mb-1">Mayoral Cabinet</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-blue-300">{{ cabinetMembers.length }} Members</div>
+            <div class="text-xl sm:text-2xl font-black font-mono text-blue-300">{{ cabinetMembers.length }} Members</div>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Executive Portfolios</span>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30">
-            <span class="text-amber-400 text-xs block font-bold mb-1">City Council</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-amber-400">{{ councilMembers.length }} Members</div>
+          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+            <span class="text-emerald-400 text-xs block font-bold mb-1">City Council</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-emerald-300">{{ councilMembers.length }} Members</div>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Elected Representation</span>
           </div>
         </div>
       </div>
@@ -158,14 +188,13 @@ watch(() => route.query.tab, (newTab) => {
         <div class="h-40 bg-slate-100 rounded"></div>
       </div>
 
-      <!-- Mayor State Proclamation Card -->
-      <div v-else-if="mayor" class="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-lg hover:border-slate-300 transition-all mb-14 relative">
-        <!-- Top Sovereign Ribbon -->
+      <!-- SECTION 1: Incumbent Mayor State Keynote Card -->
+      <div v-else-if="mayor" class="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-lg hover:border-slate-300 transition-all mb-10 relative">
         <div class="h-1.5 w-full bg-[#1C398E]"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12">
           
-          <!-- Left Column: Authentic Mayor Portrait in Royal Frame (4 cols) -->
+          <!-- Left Column: Mayor Portrait in Royal Frame (4 cols) -->
           <div class="lg:col-span-4 bg-gradient-to-b from-slate-50 to-slate-100/60 border-b lg:border-b-0 lg:border-r border-slate-200 p-8 sm:p-10 flex flex-col items-center justify-center text-center relative">
             <div class="w-52 h-52 sm:w-60 sm:h-60 rounded-3xl overflow-hidden p-2 bg-[#1C398E] shadow-xl mb-6 relative bg-white">
               <div class="w-full h-full rounded-[20px] overflow-hidden bg-slate-100 relative">
@@ -177,23 +206,45 @@ watch(() => route.query.tab, (newTab) => {
                 />
                 <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-100">
                   <Award class="w-14 h-14 opacity-30 text-blue-700" />
-                  <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-2">Mayoral Office</span>
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mt-2">Executive Mayor</span>
                 </div>
               </div>
             </div>
 
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-black uppercase tracking-wider mb-2">
+              <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+              <span>{{ langStore.currentLang === 'am' ? 'የወቅቱ ከንቲባ' : 'Incumbent Mayor' }}</span>
+            </div>
+
             <h2 class="text-2xl font-black text-slate-900 mb-1 tracking-tight">{{ getMayorName() }}</h2>
-            <p class="text-xs font-black text-amber-700 tracking-widest uppercase mb-4">
-              {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Mayor of Kombolcha Metropolitan') }}
+            <p class="text-xs font-black text-blue-900 tracking-wider uppercase mb-4">
+              {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ዋና ከንቲባ' : (langStore.currentLang === 'om' ? 'Kantiibaa Magaalaa Kombolchaa' : 'Executive Mayor of Kombolcha City') }}
             </p>
 
-            <div v-if="mayor.term_start" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-mono font-bold shadow-2xs">
+            <div v-if="mayor.term_start" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-mono font-bold shadow-2xs mb-4">
               <Calendar class="w-3.5 h-3.5 text-blue-700" />
-              <span>Term: {{ mayor.term_start }} - {{ mayor.term_end || 'Present' }}</span>
+              <span>{{ mayor.term_start }} - {{ mayor.term_end || 'Present' }}</span>
+            </div>
+
+            <div class="w-full pt-4 border-t border-slate-200/80 space-y-2 text-xs">
+              <a 
+                href="tel:0335514062" 
+                class="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-blue-50 text-blue-900 font-mono font-bold hover:bg-blue-100 transition-colors"
+              >
+                <Phone class="w-3.5 h-3.5 text-blue-700" />
+                <span>033 551 40 62 (Direct Desk)</span>
+              </a>
+              <a 
+                href="mailto:kochamayoroffice@gmail.com" 
+                class="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 text-slate-700 font-mono text-[11px] hover:bg-slate-200 transition-colors"
+              >
+                <Mail class="w-3.5 h-3.5 text-slate-500" />
+                <span>kochamayoroffice@gmail.com</span>
+              </a>
             </div>
           </div>
 
-          <!-- Right Column: Mayoral Keynote Address & Priorities (8 cols) -->
+          <!-- Right Column: Mayoral Keynote Address (8 cols) -->
           <div class="lg:col-span-8 p-8 sm:p-12 flex flex-col justify-between space-y-6">
             <div>
               <div class="inline-flex items-center gap-2 text-xs font-black text-blue-900 uppercase tracking-widest mb-4 px-3 py-1 bg-blue-50 rounded-full border border-blue-200">
@@ -202,119 +253,388 @@ watch(() => route.query.tab, (newTab) => {
               </div>
 
               <!-- Keynote Blockquote -->
-              <blockquote class="text-lg sm:text-xl font-medium text-slate-800 italic leading-relaxed mb-6 border-l-4 border-amber-500 pl-6 py-2 relative">
-                <span class="text-6xl font-serif text-amber-200 absolute -top-7 -left-1 select-none pointer-events-none">“</span>
-                <p class="relative z-10">{{ getWelcomeMessage() }}</p>
+              <blockquote class="text-base sm:text-lg font-medium text-slate-800 leading-relaxed mb-6 border-l-4 border-amber-500 pl-6 py-2 relative bg-amber-50/30 rounded-r-2xl">
+                <p class="relative z-10 text-justify">{{ getWelcomeMessage() }}</p>
               </blockquote>
 
-              <h3 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
-                {{ langStore.currentLang === 'am' ? 'የህይወት ታሪክና የልማት ራዕይ' : 'Executive Biography & Municipal Priorities' }}
+              <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <Award class="w-4 h-4 text-blue-700" />
+                <span>{{ langStore.currentLang === 'am' ? 'የህይወት ታሪክና የልማት ራዕይ' : 'Executive Biography & Municipal Priorities' }}</span>
               </h3>
-              <p class="text-sm text-slate-600 leading-relaxed font-normal">
+              <p class="text-sm text-slate-600 leading-relaxed font-normal text-justify">
                 {{ getBiography() }}
               </p>
             </div>
 
             <!-- Direct Office Inquiries Strip -->
             <div class="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs font-semibold">
-              
-
+              <span class="text-slate-500">
+                {{ langStore.currentLang === 'am' ? 'የከንቲባ ጽሕፈት ቤት ቀጥታ መስመሮች ክፍት ናቸው' : 'Direct desk inquiries and official secretariat communications' }}
+              </span>
               <router-link 
                 to="/contact" 
-                class="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black uppercase tracking-wider transition-all shadow-md hover:scale-105"
+                class="px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
               >
-                {{ langStore.currentLang === 'am' ? 'ለከንቲባው ጽ/ቤት መልእክት ላክ' : 'Send Inquiry to Mayor Office' }}
+                <Mail class="w-4 h-4" />
+                <span>{{ langStore.currentLang === 'am' ? 'ለከንቲባው ጽ/ቤት መልእክት ላክ' : 'Send Inquiry to Mayor Office' }}</span>
               </router-link>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Leadership Section: Cabinet & Council Tabs -->
+      <!-- SECTION 2: Official Mayoral Office Desk Extensions (Document Page 24) -->
+      <div class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm mb-12">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+          <div class="w-10 h-10 rounded-2xl bg-blue-900 text-amber-300 flex items-center justify-center shrink-0">
+            <PhoneCall class="w-5 h-5" />
+          </div>
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-wider text-blue-700 block">
+              {{ langStore.currentLang === 'am' ? 'ይፋዊ የስልክ ማውጫ' : 'Official Telephone Directory' }}
+            </span>
+            <h3 class="text-lg sm:text-xl font-black text-slate-900">
+              {{ langStore.currentLang === 'am' ? 'የከንቲባ ጽሕፈት ቤት ቀጥታ የዴስክ ስልኮች' : "Mayor's Office Internal Desk Extensions" }}
+            </h3>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <!-- Main Mayor -->
+          <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-blue-900 block">
+                {{ langStore.currentLang === 'am' ? 'ዋና ከንቲባ' : 'Executive Mayor Desk' }}
+              </span>
+              <a href="tel:0335514062" class="text-sm font-black font-mono text-slate-900 hover:text-blue-700 transition-colors">
+                033 551 40 62
+              </a>
+            </div>
+            <a href="tel:0335514062" class="w-8 h-8 rounded-xl bg-blue-900 text-white flex items-center justify-center hover:bg-blue-800 transition-colors">
+              <Phone class="w-4 h-4" />
+            </a>
+          </div>
+
+          <!-- Deputy Mayor -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-slate-600 block">
+                {{ langStore.currentLang === 'am' ? 'ምክትል ከንቲባ' : 'Deputy Mayor Desk' }}
+              </span>
+              <a href="tel:0335512397" class="text-sm font-black font-mono text-slate-900 hover:text-blue-700 transition-colors">
+                033 551 23 97
+              </a>
+            </div>
+            <a href="tel:0335512397" class="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors">
+              <Phone class="w-4 h-4" />
+            </a>
+          </div>
+
+          <!-- Planning & Development -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-slate-600 block">
+                {{ langStore.currentLang === 'am' ? 'ፕላንና ልማት' : 'Planning & Development' }}
+              </span>
+              <a href="tel:0335512424" class="text-sm font-black font-mono text-slate-900 hover:text-blue-700 transition-colors">
+                033 551 24 24
+              </a>
+            </div>
+            <a href="tel:0335512424" class="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors">
+              <Phone class="w-4 h-4" />
+            </a>
+          </div>
+
+          <!-- Science & Technology -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-slate-600 block">
+                {{ langStore.currentLang === 'am' ? 'ሳይንስና ቴክኖሎጂ' : 'Science & Technology' }}
+              </span>
+              <a href="tel:0335514413" class="text-sm font-black font-mono text-slate-900 hover:text-blue-700 transition-colors">
+                033 551 44 13
+              </a>
+            </div>
+            <a href="tel:0335514413" class="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors">
+              <Phone class="w-4 h-4" />
+            </a>
+          </div>
+
+          <!-- Vital Events -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-slate-600 block">
+                {{ langStore.currentLang === 'am' ? 'ወሳኝ ኩነቶች' : 'Civil Status & Vital Events' }}
+              </span>
+              <a href="tel:0333510028" class="text-sm font-black font-mono text-slate-900 hover:text-blue-700 transition-colors">
+                033 351 00 28
+              </a>
+            </div>
+            <a href="tel:0333510028" class="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors">
+              <Phone class="w-4 h-4" />
+            </a>
+          </div>
+
+          <!-- Reception / Central Line -->
+          <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-bold text-emerald-900 block">
+                {{ langStore.currentLang === 'am' ? 'ዋና መቀበያ / ሪሴፕሽን' : 'Central Secretariat Reception' }}
+              </span>
+              <a href="tel:0335510216" class="text-sm font-black font-mono text-slate-900 hover:text-emerald-700 transition-colors">
+                033 551 02 16
+              </a>
+            </div>
+            <a href="tel:0335510216" class="w-8 h-8 rounded-xl bg-emerald-800 text-white flex items-center justify-center hover:bg-emerald-700 transition-colors">
+              <Phone class="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Leadership & Historical Mayors Tabs -->
       <div id="leadership-section" class="scroll-mt-24">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-5 mb-8 gap-4">
           <div>
             <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              {{ langStore.currentLang === 'am' ? 'የከተማው አመራር አካላት' : (langStore.currentLang === 'om' ? 'Qaamolee Hoggana Magaalaa' : 'City Governance Leadership') }}
+              {{ langStore.currentLang === 'am' ? 'የከተማው አመራር አካላትና የታሪክ ሰነድ' : 'Civic Leadership & Mayoral Heritage' }}
             </h2>
             <p class="text-xs text-slate-500 mt-1">
-              {{ langStore.currentLang === 'am' ? 'የከተማው ስራ አስፈፃሚ ካቢኔ እና የምክር ቤት አባላት' : 'Executive Cabinet Council and City Council Representatives' }}
+              {{ langStore.currentLang === 'am' 
+                ? 'የቀድሞ ከንቲባዎች ታሪክ፣ የስራ አስፈፃሚ ካቢኔ እና የምክር ቤት አባላት' 
+                : 'Chronological timeline of municipal mayors, executive cabinet portfolios, and city council' 
+              }}
             </p>
           </div>
 
-          <!-- Tab Switcher -->
-          <div class="flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-black">
+          <!-- 3-Way Tab Switcher -->
+          <div class="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-black">
+            <button 
+              @click="setTab('history')"
+              :class="[
+                'px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2',
+                activeTab === 'history' ? 'bg-blue-900 text-amber-300 shadow-md font-black' : 'text-slate-600 hover:text-slate-900'
+              ]"
+            >
+              <History class="w-3.5 h-3.5" />
+              <span>{{ langStore.currentLang === 'am' ? 'የከንቲባዎች ታሪክ' : 'Hall of Mayors' }} ({{ historicalMayors.length || 9 }})</span>
+            </button>
+
             <button 
               @click="setTab('cabinet')"
               :class="[
-                'px-5 py-2.5 rounded-xl transition-all cursor-pointer',
-                activeTab === 'cabinet' ? 'bg-blue-900 text-amber-300 shadow-md' : 'text-slate-600 hover:text-slate-900'
+                'px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2',
+                activeTab === 'cabinet' ? 'bg-blue-900 text-amber-300 shadow-md font-black' : 'text-slate-600 hover:text-slate-900'
               ]"
             >
-              {{ langStore.currentLang === 'am' ? 'የከተማው ካቢኔ' : 'Cabinet Council' }} ({{ cabinetMembers.length }})
+              <Briefcase class="w-3.5 h-3.5" />
+              <span>{{ langStore.currentLang === 'am' ? 'የከተማው ካቢኔ' : 'Cabinet' }} ({{ cabinetMembers.length }})</span>
             </button>
+
             <button 
               @click="setTab('council')"
               :class="[
-                'px-5 py-2.5 rounded-xl transition-all cursor-pointer',
-                activeTab === 'council' ? 'bg-blue-900 text-amber-300 shadow-md' : 'text-slate-600 hover:text-slate-900'
+                'px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2',
+                activeTab === 'council' ? 'bg-blue-900 text-amber-300 shadow-md font-black' : 'text-slate-600 hover:text-slate-900'
               ]"
             >
-              {{ langStore.currentLang === 'am' ? 'የከተማው ምክር ቤት' : 'City Council' }} ({{ councilMembers.length }})
+              <Users class="w-3.5 h-3.5" />
+              <span>{{ langStore.currentLang === 'am' ? 'ምክር ቤት' : 'Council' }} ({{ councilMembers.length }})</span>
             </button>
           </div>
         </div>
 
-        <!-- Real Database Members Grid -->
-        <div 
-          v-if="(activeTab === 'cabinet' ? cabinetMembers : councilMembers).length > 0"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          <div 
-            v-for="member in (activeTab === 'cabinet' ? cabinetMembers : councilMembers)"
-            :key="member.id"
-            class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs hover:border-blue-500 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
-          >
+        <!-- TAB 1: Historical Mayors Timeline (Document Pages 4-5) -->
+        <div v-if="activeTab === 'history'" class="space-y-6 animate-fadeIn">
+          <div class="p-6 rounded-3xl bg-slate-900 text-white mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-5 bg-slate-100 relative shrink-0">
-                <img 
-                  v-if="member.photo_path" 
-                  :src="member.photo_path" 
-                  :alt="getMemberName(member)" 
-                  class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" 
-                />
-                <div v-else class="w-full h-full flex flex-col items-center justify-center bg-blue-50 text-blue-700">
-                  <Users class="w-10 h-10 opacity-40" />
-                </div>
-              </div>
-
-              <h3 class="text-lg font-black text-slate-900 mb-1 group-hover:text-blue-900 transition-colors">
-                {{ getMemberName(member) }}
+              <span class="text-[10px] font-black uppercase tracking-wider text-amber-400 block mb-1">
+                {{ langStore.currentLang === 'am' ? 'ይፋዊ የከንቲባዎች ማውጫ' : 'Official Mayoral Registry' }}
+              </span>
+              <h3 class="text-xl font-black text-white">
+                {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ የቀድሞና የወቅቱ ከንቲባዎች ታሪክ' : 'Historical Mayors of Kombolcha City' }}
               </h3>
-              <p class="text-xs font-bold text-blue-700 leading-snug mb-4">
-                {{ getMemberPosition(member) }}
+              <p class="text-xs text-slate-400 mt-1">
+                {{ langStore.currentLang === 'am' 
+                  ? 'ከ1998 ዓ.ም ጀምሮ ከተማዋን የመሩ 9 ከንቲባዎች የስራ ዘመንና ማዕረግ' 
+                  : 'Documented civic leadership lineage spanning nine administrations since 1998 E.C.' 
+                }}
               </p>
             </div>
+            <div class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-amber-400 font-mono font-black text-sm shrink-0">
+              9 Mayoral Terms
+            </div>
+          </div>
 
-            <div class="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-500">
-              <div v-if="member.phone" class="flex items-center gap-2">
-                <Phone class="w-3.5 h-3.5 text-slate-400" />
-                <span class="font-mono text-slate-700 font-bold">{{ member.phone }}</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div 
+              v-for="hm in historicalMayors" 
+              :key="hm.id"
+              :class="[
+                'rounded-3xl border p-6 transition-all duration-300 flex flex-col justify-between group',
+                hm.is_current 
+                  ? 'bg-blue-50/50 border-blue-400 shadow-md hover:shadow-xl' 
+                  : 'bg-white border-slate-200/90 shadow-2xs hover:border-slate-300 hover:shadow-md'
+              ]"
+            >
+              <div>
+                <!-- Top Order Badge & Status -->
+                <div class="flex items-center justify-between mb-4">
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 text-slate-800 font-mono text-xs font-black">
+                    <Award class="w-3.5 h-3.5 text-blue-700" />
+                    <span>#{{ hm.order }} {{ langStore.currentLang === 'am' ? 'ከንቲባ' : 'Mayor' }}</span>
+                  </div>
+
+                  <span 
+                    v-if="hm.is_current" 
+                    class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-black text-[10px] uppercase tracking-wider"
+                  >
+                    {{ langStore.currentLang === 'am' ? 'የወቅቱ ከንቲባ' : 'Incumbent' }}
+                  </span>
+                  <span 
+                    v-else 
+                    class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider"
+                  >
+                    {{ langStore.currentLang === 'am' ? 'የቀድሞ ከንቲባ' : 'Former Mayor' }}
+                  </span>
+                </div>
+
+                <!-- Mayor Name -->
+                <h4 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors mb-2">
+                  {{ getHistoryMayorName(hm) }}
+                </h4>
+
+                <!-- Service Term -->
+                <div class="flex items-center gap-2 text-xs font-mono font-bold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-3">
+                  <Calendar class="w-4 h-4 text-blue-700 shrink-0" />
+                  <span>{{ hm.term_start }} - {{ hm.term_end || 'Present' }}</span>
+                </div>
+
+                <!-- Biography Snippet -->
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  {{ getHistoryBiography(hm) }}
+                </p>
               </div>
-              <div v-if="member.email" class="flex items-center gap-2">
-                <Mail class="w-3.5 h-3.5 text-slate-400" />
-                <span class="font-mono text-slate-700">{{ member.email }}</span>
+
+              <!-- Phone Contact (If documented in PDF) -->
+              <div v-if="hm.phone" class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500 font-medium">Official Contact:</span>
+                <a 
+                  :href="`tel:${hm.phone}`" 
+                  class="inline-flex items-center gap-1.5 text-xs font-mono font-black text-blue-700 hover:text-blue-900 transition-colors"
+                >
+                  <Phone class="w-3.5 h-3.5" />
+                  <span>{{ hm.phone }}</span>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Empty State -->
-        <div v-else class="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
-          <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 class="text-lg font-black text-slate-800">No leadership records found in this category</h3>
-          <p class="text-xs text-slate-500 mt-1">Official appointments will appear here once gazetted by the municipal secretariat.</p>
+        <!-- TAB 2: Cabinet Members Grid -->
+        <div v-else-if="activeTab === 'cabinet'" class="space-y-6 animate-fadeIn">
+          <div 
+            v-if="cabinetMembers.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <div 
+              v-for="member in cabinetMembers"
+              :key="member.id"
+              class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs hover:border-blue-500 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+            >
+              <div>
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-5 bg-slate-100 relative shrink-0">
+                  <img 
+                    v-if="member.photo_path" 
+                    :src="member.photo_path" 
+                    :alt="getMemberName(member)" 
+                    class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" 
+                  />
+                  <div v-else class="w-full h-full flex flex-col items-center justify-center bg-blue-50 text-blue-700">
+                    <UserCheck class="w-10 h-10 opacity-40" />
+                  </div>
+                </div>
+
+                <h3 class="text-lg font-black text-slate-900 mb-1 group-hover:text-blue-900 transition-colors">
+                  {{ getMemberName(member) }}
+                </h3>
+                <p class="text-xs font-bold text-blue-700 leading-snug mb-4">
+                  {{ getMemberPosition(member) }}
+                </p>
+              </div>
+
+              <div class="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-500">
+                <div v-if="member.phone" class="flex items-center gap-2">
+                  <Phone class="w-3.5 h-3.5 text-slate-400" />
+                  <span class="font-mono text-slate-700 font-bold">{{ member.phone }}</span>
+                </div>
+                <div v-if="member.email" class="flex items-center gap-2">
+                  <Mail class="w-3.5 h-3.5 text-slate-400" />
+                  <span class="font-mono text-slate-700">{{ member.email }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+            <Briefcase class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h3 class="text-lg font-black text-slate-800">No cabinet portfolios found</h3>
+            <p class="text-xs text-slate-500 mt-1">Official cabinet appointments will appear here once gazetted by the municipal secretariat.</p>
+          </div>
         </div>
+
+        <!-- TAB 3: City Council Members Grid -->
+        <div v-else-if="activeTab === 'council'" class="space-y-6 animate-fadeIn">
+          <div 
+            v-if="councilMembers.length > 0"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <div 
+              v-for="member in councilMembers"
+              :key="member.id"
+              class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs hover:border-blue-500 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+            >
+              <div>
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-sm mb-5 bg-slate-100 relative shrink-0">
+                  <img 
+                    v-if="member.photo_path" 
+                    :src="member.photo_path" 
+                    :alt="getMemberName(member)" 
+                    class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" 
+                  />
+                  <div v-else class="w-full h-full flex flex-col items-center justify-center bg-amber-50 text-amber-700">
+                    <Users class="w-10 h-10 opacity-40" />
+                  </div>
+                </div>
+
+                <h3 class="text-lg font-black text-slate-900 mb-1 group-hover:text-blue-900 transition-colors">
+                  {{ getMemberName(member) }}
+                </h3>
+                <p class="text-xs font-bold text-amber-800 leading-snug mb-4">
+                  {{ getMemberPosition(member) }}
+                </p>
+              </div>
+
+              <div class="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-500">
+                <div v-if="member.phone" class="flex items-center gap-2">
+                  <Phone class="w-3.5 h-3.5 text-slate-400" />
+                  <span class="font-mono text-slate-700 font-bold">{{ member.phone }}</span>
+                </div>
+                <div v-if="member.email" class="flex items-center gap-2">
+                  <Mail class="w-3.5 h-3.5 text-slate-400" />
+                  <span class="font-mono text-slate-700">{{ member.email }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+            <Users class="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h3 class="text-lg font-black text-slate-800">No city council records found</h3>
+            <p class="text-xs text-slate-500 mt-1">Elected council representatives will appear here once registered.</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

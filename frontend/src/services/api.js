@@ -38,6 +38,7 @@ api.interceptors.response.use((response) => {
 api.getResources = (params) => api.get('/resources', { params })
 api.submitContact = (data) => api.post('/contact/submit', data)
 api.getMayor = () => api.get('/mayor')
+api.getMayorsHistory = () => api.get('/mayors/history')
 api.getLeadership = (params) => api.get('/leadership', { params })
 api.getVacancies = () => api.get('/vacancies')
 api.getInternalBoard = () => api.get('/internal-board')

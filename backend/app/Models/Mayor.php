@@ -19,15 +19,20 @@ class Mayor extends Model
         'title_en',
         'title_om',
         'portrait_path',
+        'phone',
         'bio_am',
         'bio_en',
         'bio_om',
+        'biography_am',
+        'biography_en',
+        'biography_om',
         'welcome_message_am',
         'welcome_message_en',
         'welcome_message_om',
         'term_start',
         'term_end',
         'is_current',
+        'order',
     ];
 
     protected $casts = [

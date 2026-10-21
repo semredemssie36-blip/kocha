@@ -45,6 +45,7 @@ Route::post('/contact/submit', [PublicApiController::class, 'submitContact']);
 
 // Governance: Mayor & Leadership
 Route::get('/mayor', [PublicApiController::class, 'getMayor']);
+Route::get('/mayors/history', [PublicApiController::class, 'getMayorsHistory']);
 Route::get('/leadership', [PublicApiController::class, 'getLeadership']);
 
 // Staff Internal Bulletin Board (Read-only view)

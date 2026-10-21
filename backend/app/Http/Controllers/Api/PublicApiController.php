@@ -453,6 +453,16 @@ class PublicApiController extends Controller
         return response()->json($mayor);
     }
 
+    // Historical Mayors Timeline (Chronological Mayoral Hall of History)
+    public function getMayorsHistory()
+    {
+        $mayors = DB::table('mayors')
+            ->orderBy('order', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+        return response()->json($mayors);
+    }
+
     // Cabinet & City Council Leadership
     public function getLeadership(Request $request)
     {
