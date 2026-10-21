@@ -482,20 +482,21 @@ class PublicApiController extends Controller
         ]);
     }
 
-    // Gallery Items (Images & Videos)
+    // Gallery Items (Photo Gallery Archive Only)
     public function getGallery(Request $request)
     {
         $query = DB::table('gallery_items')
             ->where(function ($q) {
                 $q->where('status', 'published')
                   ->orWhereNull('status');
+            })
+            ->where(function ($q) {
+                $q->where('media_type', 'image')
+                  ->orWhereNull('media_type');
             });
 
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
-        }
-        if ($request->has('media_type') && in_array($request->media_type, ['image', 'video'])) {
-            $query->where('media_type', $request->media_type);
         }
         $items = $query->orderBy('order', 'asc')->orderBy('created_at', 'desc')->get();
         return response()->json($items);

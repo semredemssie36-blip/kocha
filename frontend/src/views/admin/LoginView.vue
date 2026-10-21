@@ -115,7 +115,7 @@ async function handleLogin() {
                   v-model="email" 
                   type="email" 
                   required 
-                  placeholder="officer@kombolchacity.gov.et" 
+                  placeholder="example@gmail.com" 
                   class="w-full pl-14 pr-4 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all shadow-xs" 
                 />
               </div>
@@ -134,7 +134,7 @@ async function handleLogin() {
                   v-model="password" 
                   :type="showPassword ? 'text' : 'password'" 
                   required 
-                  placeholder="••••••••••••" 
+                  placeholder="*********" 
                   class="w-full pl-14 pr-12 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-900 bg-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 outline-none transition-all shadow-xs" 
                 />
                 <button 
@@ -169,7 +169,6 @@ async function handleLogin() {
               <span>ወደ ዋናው ህዝባዊ ገጽ ተመለስ</span>
             </router-link>
 
-            <span class="text-[11px] text-slate-400">Kombolcha v2.4</span>
           </div>
         </div>
       </div>

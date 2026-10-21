@@ -356,7 +356,7 @@ onMounted(() => {
               class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black text-xs uppercase tracking-wider shadow-md hover:scale-105 transition-all cursor-pointer"
             >
               <Download class="w-4 h-4 text-amber-400" />
-              <span>Download Bid Dossier (PDF)</span>
+              <span>Download Bid Dossier</span>
             </a>
             <button 
               v-else

@@ -5,8 +5,6 @@ import {
   X, 
   Upload, 
   ImageIcon, 
-  Video, 
-  Play, 
   Trash2, 
   Loader2, 
   CheckCircle2 
@@ -76,6 +74,17 @@ function removePollOption(index) {
       return
     }
     props.pollForm.options.splice(index, 1)
+  }
+}
+
+function removeGalleryImage(index) {
+  if (props.galleryForm && Array.isArray(props.galleryForm.media_paths)) {
+    props.galleryForm.media_paths.splice(index, 1)
+    if (props.galleryForm.media_paths.length > 0) {
+      props.galleryForm.media_path_or_url = props.galleryForm.media_paths[0]
+    } else {
+      props.galleryForm.media_path_or_url = ''
+    }
   }
 }
 </script>
@@ -623,109 +632,125 @@ function removePollOption(index) {
             </div>
           </div>
 
-          <!-- Gallery Media Fields -->
+          <!-- Gallery Photo Fields (Strictly Images, 1 or More) -->
           <div v-else-if="modalType === 'gallery'" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Media Format</label>
-                <div class="flex items-center gap-2">
-                  <button 
-                    type="button" 
-                    @click="galleryForm.media_type = 'image'"
-                    :class="['flex-1 py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors', galleryForm.media_type === 'image' ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-600 border-slate-200']"
-                  >
-                    <ImageIcon class="w-4 h-4" />
-                    <span>Image (ፎቶ)</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    @click="galleryForm.media_type = 'video'"
-                    :class="['flex-1 py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors', galleryForm.media_type === 'video' ? 'bg-red-600 text-white border-red-600' : 'bg-slate-50 text-slate-600 border-slate-200']"
-                  >
-                    <Video class="w-4 h-4" />
-                    <span>Video (ቪዲዮ)</span>
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Gallery Category</label>
-                <select v-model="galleryForm.category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Gallery Category *</label>
+                <select v-model="galleryForm.category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:border-blue-600 outline-none">
                   <option value="urban">City Landmarks & Aerial (የከተማ ገጽታ)</option>
                   <option value="industry">Industry & Logistics (ኢንዱስትሪና ሎጂስቲክስ)</option>
                   <option value="nature">Mount Yegof & Nature (ይጎፍ ተራራና ተፈጥሮ)</option>
                   <option value="events">Civic Events & Culture (ክስተቶችና ባህል)</option>
                 </select>
               </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Display Order</label>
+                <input v-model.number="galleryForm.order" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-blue-600 outline-none font-mono" />
+              </div>
             </div>
 
-            <!-- Media Source / File Upload -->
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                {{ galleryForm.media_type === 'video' ? 'Video File or YouTube URL *' : 'High-Res Photo File or URL *' }}
+            <!-- Upload One or More Images Section -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase">
+                {{ editingId ? 'Photo Asset *' : 'Upload One or More Photos *' }}
               </label>
-              <div class="flex items-center gap-3">
+              
+              <!-- Multi-Image Drop / Upload Banner -->
+              <div class="p-4 border-2 border-dashed border-blue-200 hover:border-blue-500 rounded-2xl bg-blue-50/50 hover:bg-blue-50/80 transition-all text-center">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <ImageIcon class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p class="text-xs font-black text-slate-800">
+                      {{ editingId ? 'Select replacement photo' : 'Select one or multiple photos from your device' }}
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-0.5 font-medium">
+                      PNG, JPG, JPEG, WEBP (Max 50MB per photo)
+                    </p>
+                  </div>
+                  
+                  <label class="mt-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm transition-colors">
+                    <Upload class="w-4 h-4" />
+                    <span>{{ uploadingFile ? 'Uploading Photos...' : (editingId ? 'Choose Photo' : 'Choose One or More Photos') }}</span>
+                    <input 
+                      type="file" 
+                      :multiple="!editingId" 
+                      accept="image/*" 
+                      @change="uploadFileFor($event, galleryForm, 'media_paths')" 
+                      class="hidden" 
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <!-- Manual Photo URL fallback -->
+              <div class="flex items-center gap-2 pt-1">
                 <input 
                   v-model="galleryForm.media_path_or_url" 
                   type="text" 
-                  required 
-                  :placeholder="galleryForm.media_type === 'video' ? 'https://www.youtube.com/watch?v=... or upload mp4' : '/assets/... or upload image'" 
-                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" 
+                  placeholder="Or enter direct photo path or URL (e.g. /assets/hero.jpg)" 
+                  class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:border-blue-600 outline-none" 
                 />
-                <label class="px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
-                  <Upload class="w-4 h-4" />
-                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload File' }}</span>
-                  <input 
-                    type="file" 
-                    @change="uploadFileFor($event, galleryForm, 'media_path_or_url')" 
-                    class="hidden" 
-                    :accept="galleryForm.media_type === 'video' ? 'video/mp4,video/*' : 'image/*'" 
-                  />
-                </label>
               </div>
             </div>
 
-            <!-- Video Thumbnail Upload (if video) -->
-            <div v-if="galleryForm.media_type === 'video'">
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Video Thumbnail / Poster Image</label>
-              <div class="flex items-center gap-3">
-                <input v-model="galleryForm.thumbnail_url" type="text" placeholder="/assets/hero_industry.jpg or upload thumbnail" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono" />
-                <label class="px-4 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
-                  <Upload class="w-4 h-4" />
-                  <span>{{ uploadingFile ? 'Uploading...' : 'Upload Poster' }}</span>
-                  <input type="file" @change="uploadFileFor($event, galleryForm, 'thumbnail_url')" class="hidden" accept="image/*" />
-                </label>
+            <!-- Previews of selected photos (Multiple or Single) -->
+            <div v-if="(galleryForm.media_paths && galleryForm.media_paths.length > 0) || galleryForm.media_path_or_url" class="space-y-2">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span class="flex items-center gap-1.5">
+                  <CheckCircle2 class="w-4 h-4 text-emerald-600" />
+                  <span>
+                    {{ (galleryForm.media_paths && galleryForm.media_paths.length > 0) ? `${galleryForm.media_paths.length} Photo${galleryForm.media_paths.length > 1 ? 's' : ''} Attached` : 'Photo Preview' }}
+                  </span>
+                </span>
+                <span v-if="galleryForm.media_paths && galleryForm.media_paths.length > 1" class="text-[11px] font-normal text-slate-500">
+                  Batch creation: each photo will be published into this gallery category
+                </span>
               </div>
-            </div>
 
-            <!-- Preview box -->
-            <div v-if="galleryForm.media_path_or_url || galleryForm.thumbnail_url" class="rounded-xl overflow-hidden border border-slate-200 shadow-sm max-w-sm">
-              <div v-if="galleryForm.media_type === 'image'" class="h-36 bg-slate-900">
+              <!-- Thumbnail grid for multiple photos -->
+              <div v-if="galleryForm.media_paths && galleryForm.media_paths.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto p-1.5 bg-slate-50 rounded-2xl border border-slate-200">
+                <div 
+                  v-for="(photoUrl, idx) in galleryForm.media_paths" 
+                  :key="idx" 
+                  class="group relative h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-200 shadow-2xs"
+                >
+                  <img :src="photoUrl" alt="Gallery Preview" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/70 text-white font-mono text-[9px] font-bold">
+                    #{{ idx + 1 }}
+                  </span>
+                  <button 
+                    type="button" 
+                    @click.stop="removeGalleryImage(idx)" 
+                    class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
+                    title="Remove Photo"
+                  >
+                    <X class="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Single image preview fallback if media_paths is empty -->
+              <div v-else-if="galleryForm.media_path_or_url" class="rounded-xl overflow-hidden border border-slate-200 shadow-sm max-w-xs h-32 bg-slate-900">
                 <img :src="galleryForm.media_path_or_url" alt="Gallery Preview" class="w-full h-full object-cover" />
-              </div>
-              <div v-else class="h-36 bg-slate-900 relative flex items-center justify-center">
-                <img v-if="galleryForm.thumbnail_url" :src="galleryForm.thumbnail_url" alt="Video Poster" class="w-full h-full object-cover opacity-70" />
-                <Play class="w-10 h-10 text-white drop-shadow-md z-10" />
               </div>
             </div>
 
             <!-- Captions in 3 languages -->
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Caption (መግለጫ) *</label>
-              <input v-model="galleryForm.caption_am" type="text" required placeholder="ለምሳሌ፡ የኮምቦልቻ ኢንዱስትሪ ፓርክ የመሠረተ ልማት ዝርጋታ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium" />
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Amharic Caption (የፎቶ መግለጫ በአማርኛ) *</label>
+              <input v-model="galleryForm.caption_am" type="text" required placeholder="ለምሳሌ፡ የኮምቦልቻ ኢንዱስትሪ ፓርክ የመሠረተ ልማት ዝርጋታ" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:border-blue-600 outline-none" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Caption</label>
-              <input v-model="galleryForm.caption_en" type="text" placeholder="e.g. Modern Logistics Hub and Freight Terminal" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">English Caption (Photo Description)</label>
+              <input v-model="galleryForm.caption_en" type="text" placeholder="e.g. Modern Logistics Hub and Freight Terminal" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-blue-600 outline-none" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Caption</label>
-              <input v-model="galleryForm.caption_om" type="text" placeholder="Ibsa Afaan Oromootiin" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Display Order</label>
-              <input v-model.number="galleryForm.order" type="number" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs" />
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Afaan Oromoo Caption (Ibsa Suuraa)</label>
+              <input v-model="galleryForm.caption_om" type="text" placeholder="Ibsa Afaan Oromootiin" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-blue-600 outline-none" />
             </div>
           </div>
 

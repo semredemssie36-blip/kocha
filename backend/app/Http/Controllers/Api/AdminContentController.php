@@ -1314,11 +1314,44 @@ class AdminContentController extends Controller
         ]);
     }
 
-    // Media File & Image/Video Upload Handler
+    // Media File & Image Upload Handler (Supports Single or Multiple Files)
     public function uploadMedia(Request $request)
     {
+        if ($request->hasFile('files')) {
+            $request->validate([
+                'files' => 'required|array',
+                'files.*' => 'file|image|max:51200'
+            ]);
+
+            $uploadDir = public_path('uploads');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $uploaded = [];
+            foreach ($request->file('files') as $file) {
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '_' . Str::random(10) . '.' . $extension;
+                $file->move($uploadDir, $filename);
+                $path = '/uploads/' . $filename;
+                $uploaded[] = [
+                    'filename' => $filename,
+                    'path' => $path,
+                    'url' => url($path),
+                    'original_name' => $file->getClientOriginalName()
+                ];
+            }
+
+            return response()->json([
+                'message' => count($uploaded) . ' photos uploaded successfully',
+                'files' => $uploaded,
+                'path' => $uploaded[0]['path'] ?? '',
+                'url' => $uploaded[0]['url'] ?? ''
+            ], 201);
+        }
+
         $request->validate([
-            'file' => 'required|file|max:51200' // 50MB max for video & high-res photos
+            'file' => 'required|file|max:51200'
         ]);
 
         $file = $request->file('file');
@@ -1343,11 +1376,15 @@ class AdminContentController extends Controller
         ], 201);
     }
 
-    // Gallery Items Management (Images & Videos)
+    // Gallery Items Management (Photo Gallery Archive Only)
     public function getGallery(Request $request)
     {
         $user = $request->user();
         $query = DB::table('gallery_items')
+            ->where(function ($q) {
+                $q->where('media_type', 'image')
+                  ->orWhereNull('media_type');
+            })
             ->orderBy('order', 'asc')
             ->orderBy('created_at', 'desc');
 
@@ -1365,12 +1402,14 @@ class AdminContentController extends Controller
     public function storeGalleryItem(Request $request)
     {
         $request->validate([
-            'media_path_or_url' => 'required|string',
-            'media_type' => 'required|in:image,video',
+            'media_path_or_url' => 'nullable|string',
+            'media_paths' => 'nullable|array',
+            'media_paths.*' => 'string',
             'caption_am' => 'required|string|max:255',
             'caption_en' => 'nullable|string|max:255',
             'caption_om' => 'nullable|string|max:255',
             'status' => 'nullable|in:draft,pending,published',
+            'order' => 'nullable|integer',
         ]);
 
         $user = $request->user();
@@ -1379,37 +1418,61 @@ class AdminContentController extends Controller
             $status = ($status === 'draft') ? 'draft' : 'pending';
         }
 
-        $id = DB::table('gallery_items')->insertGetId([
-            'author_id' => $user->id,
-            'media_type' => $request->media_type,
-            'media_path_or_url' => $request->media_path_or_url,
-            'thumbnail_url' => $request->thumbnail_url ?: ($request->media_type === 'image' ? $request->media_path_or_url : '/assets/hero_industry.jpg'),
-            'category' => $request->category ?: 'urban',
-            'caption_am' => $request->caption_am,
-            'caption_en' => $request->caption_en,
-            'caption_om' => $request->caption_om,
-            'order' => $request->order ?: 0,
-            'status' => $status,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        if ($status === 'pending') {
-            $this->notifyEditorialReview($user, 'gallery', $request->caption_en ?? $request->caption_am, $id);
+        // Collect all image paths (either media_paths array or single media_path_or_url)
+        $paths = [];
+        if ($request->has('media_paths') && is_array($request->media_paths) && count($request->media_paths) > 0) {
+            $paths = array_values(array_filter($request->media_paths));
+        } elseif ($request->filled('media_path_or_url')) {
+            $paths = [$request->media_path_or_url];
         }
 
-        $msg = ($user->role === 'author' && $status === 'pending')
-            ? 'Media submitted for editorial review.'
-            : 'Gallery media item created successfully';
+        if (empty($paths)) {
+            return response()->json(['message' => 'At least one photo must be provided'], 422);
+        }
 
-        return response()->json(['message' => $msg, 'id' => $id, 'status' => $status], 201);
+        $createdIds = [];
+        $baseOrder = (int)($request->order ?: 0);
+        foreach ($paths as $idx => $photoPath) {
+            $id = DB::table('gallery_items')->insertGetId([
+                'author_id' => $user->id,
+                'media_type' => 'image', // Gallery strictly supports images
+                'media_path_or_url' => $photoPath,
+                'thumbnail_url' => $photoPath,
+                'category' => $request->category ?: 'urban',
+                'caption_am' => $request->caption_am,
+                'caption_en' => $request->caption_en,
+                'caption_om' => $request->caption_om,
+                'order' => $baseOrder + $idx,
+                'status' => $status,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            $createdIds[] = $id;
+
+            if ($status === 'pending') {
+                $caption = ($request->caption_en ?? $request->caption_am) . (count($paths) > 1 ? " (#" . ($idx + 1) . ")" : "");
+                $this->notifyEditorialReview($user, 'gallery', $caption, $id);
+            }
+        }
+
+        $count = count($createdIds);
+        $msg = ($user->role === 'author' && $status === 'pending')
+            ? ($count > 1 ? "$count photos submitted for editorial review." : 'Photo submitted for editorial review.')
+            : ($count > 1 ? "$count gallery photos added successfully" : 'Gallery photo added successfully');
+
+        return response()->json([
+            'message' => $msg, 
+            'id' => $createdIds[0], 
+            'ids' => $createdIds, 
+            'count' => $count, 
+            'status' => $status
+        ], 201);
     }
 
     public function updateGalleryItem(Request $request, $id)
     {
         $request->validate([
             'media_path_or_url' => 'required|string',
-            'media_type' => 'required|in:image,video',
             'caption_am' => 'required|string|max:255',
             'status' => 'nullable|in:draft,pending,published',
         ]);
@@ -1417,7 +1480,7 @@ class AdminContentController extends Controller
         $user = $request->user();
         $existing = DB::table('gallery_items')->where('id', $id)->first();
         if (!$existing) {
-            return response()->json(['message' => 'Media item not found'], 404);
+            return response()->json(['message' => 'Photo item not found'], 404);
         }
 
         $targetStatus = $request->input('status', $existing->status ?? 'published');
@@ -1435,9 +1498,9 @@ class AdminContentController extends Controller
         }
 
         DB::table('gallery_items')->where('id', $id)->update([
-            'media_type' => $request->media_type,
+            'media_type' => 'image', // Only image is supported
             'media_path_or_url' => $request->media_path_or_url,
-            'thumbnail_url' => $request->thumbnail_url ?: ($request->media_type === 'image' ? $request->media_path_or_url : '/assets/hero_industry.jpg'),
+            'thumbnail_url' => $request->media_path_or_url,
             'category' => $request->category ?: 'urban',
             'caption_am' => $request->caption_am,
             'caption_en' => $request->caption_en,
@@ -1451,7 +1514,7 @@ class AdminContentController extends Controller
             $this->notifyEditorialReview($user, 'gallery', $request->caption_en ?? $request->caption_am ?? $existing->caption_am, $id);
         }
 
-        return response()->json(['message' => 'Gallery media item updated successfully', 'status' => $targetStatus]);
+        return response()->json(['message' => 'Gallery photo updated successfully', 'status' => $targetStatus]);
     }
 
     public function deleteGalleryItem(Request $request, $id)

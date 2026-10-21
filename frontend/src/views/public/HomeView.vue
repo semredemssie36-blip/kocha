@@ -970,18 +970,18 @@ onUnmounted(() => {
                 :href="tender.document_pdf_path || tender.document_url || tender.document_path" 
                 target="_blank"
                 download
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-xs"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black text-xs uppercase tracking-wider shadow-md hover:scale-105 transition-all cursor-pointer"
               >
-                <Download class="w-3.5 h-3.5" />
-                {{ langStore.t('common.download_pdf') }}
+                <Download class="w-4 h-4 text-amber-400" />
+                <span>{{ langStore.currentLang === 'am' ? 'የጨረታ ሰነድ አውርድ' : (langStore.currentLang === 'om' ? 'SANADA CAALBAASII' : 'DOWNLOAD BID DOSSIER') }}</span>
               </a>
               <router-link 
                 v-else
                 to="/media/tenders" 
-                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black transition-colors"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black text-xs uppercase tracking-wider shadow-md hover:scale-105 transition-all cursor-pointer"
               >
-                <Download class="w-3.5 h-3.5" />
-                {{ langStore.t('common.download_pdf') }}
+                <Download class="w-4 h-4 text-amber-400" />
+                <span>{{ langStore.currentLang === 'am' ? 'የጨረታ ሰነድ አውርድ ' : (langStore.currentLang === 'om' ? 'SANADA CAALBAASII' : 'DOWNLOAD BID DOSSIER') }}</span>
               </router-link>
             </div>
           </div>

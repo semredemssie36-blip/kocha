@@ -412,15 +412,7 @@ onMounted(() => {
             </div>
 
             <!-- Citizen Charter Public Commitment Box -->
-            <div class="mt-10 p-6 rounded-3xl bg-blue-50/60 border border-blue-200/80 space-y-2">
-              <div class="flex items-center gap-2 text-xs font-black uppercase text-blue-900">
-                <ShieldCheck class="w-4 h-4 text-blue-700" />
-                <span>Municipal Anti-Corruption & Ethics Hotline</span>
-              </div>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                If you encounter unwarranted delays, requests for unofficial payments, or misconduct during service delivery at any Sub-City or City Hall office, report directly to the Municipal Ethics & Anti-Corruption Directorate at hotline <strong>991</strong> or email <strong>ethics@kombolchacity.gov.et</strong>.
-              </p>
-            </div>
+           
           </div>
 
           <!-- Empty Fallback -->

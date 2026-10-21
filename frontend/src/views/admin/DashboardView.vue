@@ -1072,6 +1072,7 @@ const galleryForm = reactive({
   media_type: 'image',
   category: 'urban',
   media_path_or_url: '',
+  media_paths: [],
   thumbnail_url: '',
   caption_am: '',
   caption_en: '',
@@ -1080,21 +1081,49 @@ const galleryForm = reactive({
 })
 
 async function uploadFileFor(event, targetObj, fieldName) {
-  const file = event.target.files[0]
-  if (!file) return
+  const files = event.target.files
+  if (!files || files.length === 0) return
   uploadingFile.value = true
   try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await api.post('/admin/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    targetObj[fieldName] = res.data.path || res.data.url
-    showToast('Media file uploaded successfully!')
+    if (files.length > 1 || fieldName === 'media_paths') {
+      const formData = new FormData()
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files[]', files[i])
+      }
+      const res = await api.post('/admin/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      const uploadedPaths = (res.data.files || []).map(f => f.path)
+      if (!Array.isArray(targetObj.media_paths)) {
+        targetObj.media_paths = []
+      }
+      targetObj.media_paths.push(...uploadedPaths)
+      if (!targetObj.media_path_or_url && uploadedPaths.length > 0) {
+        targetObj.media_path_or_url = uploadedPaths[0]
+      }
+      showToast(`${uploadedPaths.length} photo(s) uploaded successfully!`)
+    } else {
+      const file = files[0]
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await api.post('/admin/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      const path = res.data.path || res.data.url
+      targetObj[fieldName] = path
+      if (fieldName === 'media_path_or_url' || fieldName === 'media_paths') {
+        if (!Array.isArray(targetObj.media_paths)) targetObj.media_paths = []
+        if (!targetObj.media_paths.includes(path)) {
+          targetObj.media_paths.push(path)
+        }
+      }
+      showToast('File uploaded successfully!')
+    }
   } catch (err) {
     alert(err.response?.data?.message || 'File upload failed.')
   } finally {
     uploadingFile.value = false
+    try { event.target.value = '' } catch (e) {}
   }
 }
 
@@ -1627,6 +1656,16 @@ function openNewModal(type) {
     leadershipForm.photo_path = ''
     leadershipForm.phone = ''
     leadershipForm.email = ''
+  } else if (type === 'gallery') {
+    galleryForm.media_type = 'image'
+    galleryForm.category = 'urban'
+    galleryForm.media_path_or_url = ''
+    galleryForm.media_paths = []
+    galleryForm.thumbnail_url = ''
+    galleryForm.caption_am = ''
+    galleryForm.caption_en = ''
+    galleryForm.caption_om = ''
+    galleryForm.order = 0
   } else if (type === 'destination') {
     destinationForm.category = 'nature'
     destinationForm.title_am = ''
@@ -1767,10 +1806,11 @@ function editItem(type, item) {
     heroSlideForm.order = item.order || 0
     heroSlideForm.is_active = item.is_active !== undefined ? item.is_active : 1
   } else if (type === 'gallery') {
-    galleryForm.media_type = item.media_type || 'image'
+    galleryForm.media_type = 'image'
     galleryForm.category = item.category || 'urban'
     galleryForm.media_path_or_url = item.media_path_or_url || ''
-    galleryForm.thumbnail_url = item.thumbnail_url || ''
+    galleryForm.media_paths = item.media_path_or_url ? [item.media_path_or_url] : []
+    galleryForm.thumbnail_url = item.thumbnail_url || item.media_path_or_url || ''
     galleryForm.caption_am = item.caption_am || ''
     galleryForm.caption_en = item.caption_en || ''
     galleryForm.caption_om = item.caption_om || ''
@@ -1899,12 +1939,27 @@ async function submitActiveModal() {
       else await api.post('/admin/hero-slides', heroSlideForm)
       showToast(isEdit ? 'Hero slide updated successfully!' : 'Hero slide added successfully!')
     } else if (modalType.value === 'gallery') {
+      galleryForm.media_type = 'image'
       if (isAuthor.value && !isEditor.value) {
         galleryForm.status = 'pending'
       }
-      if (isEdit) await api.put(`/admin/gallery/${id}`, galleryForm)
-      else await api.post('/admin/gallery', galleryForm)
-      showToast(isEdit ? 'Gallery media updated successfully!' : (isAuthor.value ? 'Media submitted for editorial review!' : 'Gallery media added successfully!'))
+      if (!isEdit && (!galleryForm.media_paths || galleryForm.media_paths.length === 0) && galleryForm.media_path_or_url) {
+        galleryForm.media_paths = [galleryForm.media_path_or_url]
+      }
+      if (galleryForm.media_paths && galleryForm.media_paths.length > 0 && !galleryForm.media_path_or_url) {
+        galleryForm.media_path_or_url = galleryForm.media_paths[0]
+      }
+      if (isEdit) {
+        await api.put(`/admin/gallery/${id}`, galleryForm)
+        showToast('Gallery photo updated successfully!')
+      } else {
+        const res = await api.post('/admin/gallery', galleryForm)
+        const count = res.data?.count || 1
+        showToast(isAuthor.value 
+          ? (count > 1 ? `${count} photos submitted for editorial review!` : 'Photo submitted for editorial review!') 
+          : (count > 1 ? `${count} photos added to gallery successfully!` : 'Photo added to gallery successfully!'))
+      }
+      await fetchGallery()
     } else if (modalType.value === 'destination') {
       if (isAuthor.value && !isEditor.value) {
         destinationForm.status = 'pending'
@@ -2071,7 +2126,7 @@ const detectLiveLocation = () => {
       siteSettings.value.latitude = Number(pos.coords.latitude.toFixed(7))
       siteSettings.value.longitude = Number(pos.coords.longitude.toFixed(7))
       detectingLocation.value = false
-      showToast(`📍 GPS Coordinates Detected: Lat ${siteSettings.value.latitude}, Lng ${siteSettings.value.longitude}`)
+      showToast(`GPS Coordinates Detected: Lat ${siteSettings.value.latitude}, Lng ${siteSettings.value.longitude}`)
     },
     (err) => {
       detectingLocation.value = false

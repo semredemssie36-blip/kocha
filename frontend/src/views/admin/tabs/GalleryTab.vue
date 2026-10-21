@@ -7,7 +7,6 @@ import {
   Search, 
   Edit, 
   Trash2, 
-  Video, 
   Image as ImageIcon 
 } from 'lucide-vue-next'
 
@@ -71,9 +70,9 @@ const paginatedGallery = computed(() => {
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
       <div>
         <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-          <span>Media Gallery Manager</span>
+          <span>Photo Gallery Archive</span>
           <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-mono font-bold text-slate-600">
-            {{ filteredGallery.length }} items
+            {{ filteredGallery.length }} photos
           </span>
         </h2>
       </div>
@@ -103,7 +102,7 @@ const paginatedGallery = computed(() => {
 
         <button @click="emit('openCreate')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 transition-all">
           <Plus class="w-4 h-4" />
-          <span>Add Media</span>
+          <span>Add Photos</span>
         </button>
       </div>
     </div>
@@ -159,8 +158,8 @@ const paginatedGallery = computed(() => {
                 <div class="flex items-center gap-3">
                   <div class="w-16 h-12 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 shadow-2xs relative">
                     <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover" />
-                    <span :class="['absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-bold uppercase', item.media_type === 'video' ? 'bg-red-600 text-white' : 'bg-black/70 text-white']">
-                      {{ item.media_type }}
+                    <span class="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded text-[8px] font-bold uppercase bg-blue-900/90 text-white">
+                      Photo
                     </span>
                   </div>
                   <span class="text-[11px] font-mono text-slate-500 truncate max-w-[140px]">{{ item.media_path_or_url }}</span>
@@ -227,10 +226,9 @@ const paginatedGallery = computed(() => {
           <div>
             <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center group">
               <img :src="item.thumbnail_url || item.media_path_or_url" :alt="item.caption_en || item.caption_am" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              <span :class="['absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1', item.media_type === 'video' ? 'bg-red-600 text-white' : 'bg-slate-900/80 text-white']">
-                <Video v-if="item.media_type === 'video'" class="w-3 h-3" />
-                <ImageIcon v-else class="w-3 h-3" />
-                <span>{{ item.media_type }}</span>
+              <span class="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1 bg-slate-900/80 text-white">
+                <ImageIcon class="w-3 h-3 text-amber-400" />
+                <span>Photo</span>
               </span>
               <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-white/90 text-slate-800 text-[10px] font-bold uppercase">
                 {{ item.category }}
