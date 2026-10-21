@@ -20,7 +20,7 @@ export default {
     about: 'Waa\'ee',
     about_city: 'Waa\'ee Magaalaa',
     about_history: 'Seenaa',
-    about_vision: 'Mul\'ata fi Ergama',
+    about_vision: 'Ergama, Mul\'ata fi Duudhaalee',
     about_demographics: 'Ummata fi Aadaa',
     about_geography: 'Qilleensa fi Teessuma',
     about_administration: 'Caasaa Magaalaa',

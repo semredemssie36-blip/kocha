@@ -73,8 +73,8 @@ onMounted(() => {
         </h1>
         <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
           {{ langStore.currentLang === 'am'
-            ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝባዊ አገልግሎቶችን ለነዋሪዎች በቅርበት ለማድረስ በ 4 ራስ ገዝ ክፍለ ከተሞች (አቢሻገር፣ ቦርከና፣ ሀሰናገር፣ ቢራሮ) እና በ 12 ቀበሌዎች የተዋቀረ ነው።'
-            : 'Kombolcha is decentralized into 4 metropolitan sub-cities (Abishager, Borkena, Hasenager, Biraro) delivering localized civil registrations, business licensing, community policing, and infrastructure maintenance.'
+            ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝባዊ አገልግሎቶችን ለነዋሪዎች በቅርበት ለማድረስ በ 4 ራስ ገዝ ክፍለ ከተሞች (አቢሻገር፣ ቢራሮ፣ ሀሰን አገር፣ ቦርከና) እና በ 20 ቀበሌዎች (14 የከተማ እና 6 የገጠር ቀበሌዎች) የተዋቀረ ነው።'
+            : 'Kombolcha is decentralized into 4 metropolitan sub-cities (Abishager, Biraro, Hassen Ager, Borkena) across 20 Kebeles (14 Urban & 6 Rural) delivering localized civil registrations, business licensing, community policing, and municipal services.'
           }}
         </p>
 
@@ -82,11 +82,11 @@ onMounted(() => {
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
             <span class="text-slate-400 text-xs block font-bold mb-1">Autonomous Sub-Cities</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ subCities.length }} Zones</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ subCities.length || 4 }} Zones</div>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Subordinate Kebeles</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">12 Kebeles</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">20 Kebeles</div>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
             <span class="text-blue-400 text-xs block font-bold mb-1">Decentralized Services</span>

@@ -20,7 +20,7 @@ export default {
     about: 'ስለ እኛ',
     about_city: 'ስለ ከተማዋ',
     about_history: 'ታሪክ',
-    about_vision: 'ራዕይ እና ተልዕኮ',
+    about_vision: 'ተልዕኮ፣ ርእይና እሴቶች',
     about_demographics: 'ባህልና ማህበረሰብ',
     about_geography: 'መልክዓ ምድርና አየር ንብረት',
     about_administration: 'የከተማው መዋቅር',

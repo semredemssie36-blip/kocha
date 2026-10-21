@@ -20,7 +20,7 @@ export default {
     about: 'About',
     about_city: 'About',
     about_history: 'History',
-    about_vision: 'Vision and Mission',
+    about_vision: 'Mission, Vision & Values',
     about_demographics: 'People & Culture',
     about_geography: 'Geography & Climate',
     about_administration: 'City Structure',
