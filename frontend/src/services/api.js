@@ -6,7 +6,7 @@ const api = axios.create({
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 60000,
 })
 
 // Attach Bearer token for admin requests

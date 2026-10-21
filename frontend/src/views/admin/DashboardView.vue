@@ -1083,6 +1083,18 @@ const galleryForm = reactive({
 async function uploadFileFor(event, targetObj, fieldName) {
   const files = event.target.files
   if (!files || files.length === 0) return
+
+  // Client-side guard: maximum 500MB per file
+  const maxSizeBytes = 500 * 1024 * 1024
+  for (let i = 0; i < files.length; i++) {
+    if (files[i].size > maxSizeBytes) {
+      const mb = (files[i].size / (1024 * 1024)).toFixed(1)
+      alert(`File "${files[i].name}" (${mb}MB) exceeds the 500MB upload limit. Please compress your video or enter a YouTube/external link instead.`)
+      try { event.target.value = '' } catch (e) {}
+      return
+    }
+  }
+
   uploadingFile.value = true
   try {
     if (files.length > 1 || fieldName === 'media_paths') {
@@ -1091,7 +1103,8 @@ async function uploadFileFor(event, targetObj, fieldName) {
         formData.append('files[]', files[i])
       }
       const res = await api.post('/admin/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 600000 // 10 minutes for multi-file/video transfers
       })
       const uploadedPaths = (res.data.files || []).map(f => f.path)
       if (!Array.isArray(targetObj.media_paths)) {
@@ -1101,17 +1114,18 @@ async function uploadFileFor(event, targetObj, fieldName) {
       if (!targetObj.media_path_or_url && uploadedPaths.length > 0) {
         targetObj.media_path_or_url = uploadedPaths[0]
       }
-      showToast(`${uploadedPaths.length} photo(s) uploaded successfully!`)
+      showToast(`${uploadedPaths.length} file(s) uploaded successfully!`)
     } else {
       const file = files[0]
       const formData = new FormData()
       formData.append('file', file)
       const res = await api.post('/admin/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 600000 // 10 minutes for single video/large file
       })
       const path = res.data.path || res.data.url
       targetObj[fieldName] = path
-      const isVideo = res.data.media_type === 'video' || /\.(mp4|webm|ogg|mov|mkv|avi)$/i.test(path)
+      const isVideo = res.data.media_type === 'video' || /\.(mp4|webm|ogg|mov|mkv|avi|flv|wmv|3gp)$/i.test(path)
       if (isVideo && 'media_type' in targetObj) {
         targetObj.media_type = 'video'
       }
@@ -1124,7 +1138,21 @@ async function uploadFileFor(event, targetObj, fieldName) {
       showToast(isVideo ? 'Video file uploaded successfully!' : 'File uploaded successfully!')
     }
   } catch (err) {
-    alert(err.response?.data?.message || 'File upload failed.')
+    let errorMsg = err.response?.data?.errors?.file?.[0] || 
+                   err.response?.data?.message
+    if (!errorMsg && typeof err.response?.data === 'string') {
+      if (err.response.data.includes('POST data is too large') || err.response.data.includes('exceeds the limit')) {
+        errorMsg = 'File exceeds the server upload limit (500MB). Please compress the video or enter an external video link.'
+      }
+    }
+    if (!errorMsg) {
+      if (err.code === 'ECONNABORTED') {
+        errorMsg = 'The upload timed out. The file may be very large or your connection is slow. Please try a smaller video or enter a YouTube link.'
+      } else {
+        errorMsg = err.message || 'File upload failed. Please verify the file format and size.'
+      }
+    }
+    alert(errorMsg)
   } finally {
     uploadingFile.value = false
     try { event.target.value = '' } catch (e) {}

@@ -35,66 +35,71 @@ const FALLBACK_HISTORICAL_MAYORS = [
     id: 1,
     order: 1,
     is_current: false,
-    name_am: 'አቶ ያሲን ሁሴን',
-    name_en: 'Ato Yasin Husen',
-    name_om: 'Obbo Yaasiin Huseen',
+    name_am: 'አቶ ታዲዮስ ኢሮ',
+    name_en: 'Ato Tadios Iro',
+    name_om: 'Obbo Taaddiyoos Iroo',
+    portrait_path: '/uploads/1792625725_rpVATEmvKz.png',
     phone: null,
-    term_start: '01/01/1998 ዓ.ም',
-    term_end: '08/01/1999 ዓ.ም',
-    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር የመጀመሪያው ከንቲባ በመሆን ከ1998 እስከ 1999 ዓ.ም አገልግለዋል።',
-    biography_en: 'Served as the first Mayor of Kombolcha City Administration from 2005 to 2006 G.C.'
+    term_start: '1995 ዓ.ም',
+    term_end: '1998 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር የመጀመሪያው ፈር ቀዳጅ ከንቲባ በመሆን ከ1995 እስከ 1998 ዓ.ም አገልግለዋል።',
+    biography_en: 'Pioneer First Mayor of Kombolcha City Administration, serving from 2003 to 2005 G.C.'
   },
   {
     id: 2,
     order: 2,
     is_current: false,
-    name_am: 'አቶ አበበ አሸቴ',
-    name_en: 'Ato Abebaw Eshetu',
-    name_om: 'Obbo Abbabaa Asheetee',
+    name_am: 'አቶ አመደ ይማም',
+    name_en: 'Ato Amede Yimam',
+    name_om: 'Obbo Ahimad Yimaam',
+    portrait_path: null,
     phone: null,
-    term_start: '08/01/1999 ዓ.ም',
-    term_end: '30/10/2000 ዓ.ም',
-    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከ1999 እስከ 2000 ዓ.ም አገልግለዋል።',
-    biography_en: 'Served as Mayor of Kombolcha City Administration from 2006 to 2008 G.C.'
+    term_start: 'ጥቅምት 1998 ዓ.ም',
+    term_end: 'መጋቢት 1999 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከጥቅምት 1998 እስከ መጋቢት 1999 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from October 2005 to March 2007 G.C.'
   },
   {
     id: 3,
     order: 3,
     is_current: false,
-    name_am: 'አቶ ሰይድ ኑር',
-    name_en: 'Ato Seid Nur',
-    name_om: 'Obbo Sayid Nuur',
-    phone: null,
-    term_start: '01/11/2000 ዓ.ም',
-    term_end: '28/05/2002 ዓ.ም',
-    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከ2000 እስከ 2002 ዓ.ም አገልግለዋል።',
-    biography_en: 'Served as Mayor of Kombolcha City Administration from 2008 to 2010 G.C.'
+    name_am: 'አቶ ጌታውየ ይርጋ',
+    name_en: 'Ato Getawye Yirga',
+    name_om: 'Obbo Geetaawiyee Yirgaa',
+    portrait_path: null,
+    phone: '0914716627',
+    term_start: 'ሚያዝያ 1999 ዓ.ም',
+    term_end: '08/02/2003 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከሚያዝያ 1999 እስከ ጥቅምት 2003 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from April 2007 to October 2010 G.C.'
   },
   {
     id: 4,
     order: 4,
     is_current: false,
-    name_am: 'አቶ ያሲን ሀሰን',
-    name_en: 'Ato Yasin Hassen',
-    name_om: 'Obbo Yaasiin Hasan',
+    name_am: 'አቶ አበራ አበራ ኃይሉ',
+    name_en: 'Ato Abere Abera Haylu',
+    name_om: 'Obbo Abbarraa Abbarraa Hayluu',
+    portrait_path: null,
     phone: null,
-    term_start: '01/06/2002 ዓ.ም',
-    term_end: '13/02/2004 ዓ.ም',
-    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከ2002 እስከ 2004 ዓ.ም አገልግለዋል።',
-    biography_en: 'Served as Mayor of Kombolcha City Administration from 2010 to 2011 G.C.'
+    term_start: '17/03/2007 ዓ.ም',
+    term_end: '11/05/2007 ዓ.ም',
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን በ2007 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration during 2014/2015 G.C.'
   },
   {
     id: 5,
     order: 5,
     is_current: false,
-    name_am: 'አቶ ከድር አህመድ',
-    name_en: 'Ato Kedir Ahmed',
-    name_om: 'Obbo Kadiir Ahimad',
-    phone: '0913214567',
-    term_start: '14/02/2004 ዓ.ም',
+    name_am: 'አቶ ኃይለልዑል ተስፋ',
+    name_en: 'Ato Haileleul Tesfa',
+    name_om: 'Obbo Hayilaluul Tasfaa',
+    portrait_path: null,
+    phone: null,
+    term_start: '12/05/2007 ዓ.ም',
     term_end: '30/02/2008 ዓ.ም',
-    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከጥቅምት 2004 እስከ ጥቅምት 2008 ዓ.ም አገልግለዋል።',
-    biography_en: 'Served as Mayor of Kombolcha City Administration from October 2011 to October 2015 G.C.'
+    biography_am: 'የኮምቦልቻ ከተማ አስተዳደር ከንቲባ በመሆን ከጥር 2007 እስከ ጥቅምት 2008 ዓ.ም አገልግለዋል።',
+    biography_en: 'Served as Mayor of Kombolcha City Administration from January 2015 to October 2015 G.C.'
   },
   {
     id: 6,
@@ -103,6 +108,7 @@ const FALLBACK_HISTORICAL_MAYORS = [
     name_am: 'አቶ ደነቀ ምትኩ',
     name_en: 'Ato Deneke Mitiku',
     name_om: 'Obbo Danqa Mitikkuu',
+    portrait_path: null,
     phone: null,
     term_start: '01/03/2008 ዓ.ም',
     term_end: '05/11/2010 ዓ.ም',
@@ -116,6 +122,7 @@ const FALLBACK_HISTORICAL_MAYORS = [
     name_am: 'አቶ ከበደ ይመር',
     name_en: 'Ato Kebede Yimer',
     name_om: 'Obbo Kabbadaa Yimaam',
+    portrait_path: null,
     phone: null,
     term_start: '07/11/2010 ዓ.ም',
     term_end: '08/01/2011 ዓ.ም',
@@ -129,6 +136,7 @@ const FALLBACK_HISTORICAL_MAYORS = [
     name_am: 'ኢንጅነር ዶክተር ከማል ዘይኑ',
     name_en: 'Eng. Dr. Kemal Zeynu',
     name_om: 'Injiinar Dr. Kamaal Zayinuu',
+    portrait_path: null,
     phone: null,
     term_start: '08/01/2011 ዓ.ም',
     term_end: '25/06/2014 ዓ.ም',
@@ -139,9 +147,10 @@ const FALLBACK_HISTORICAL_MAYORS = [
     id: 9,
     order: 9,
     is_current: true,
-    name_am: 'አቶ መሀመድ አሚን የሱፍ',
+    name_am: 'ክቡር አቶ መሀመድአሚን የሱፍ',
     name_en: 'Hon. Mohammedamin Yesuf',
-    name_om: 'Obbo Mahaammad-Amiin Yusuuf',
+    name_om: 'Kabajamaa Obbo Mahaammad-Amiin Yusuuf',
+    portrait_path: '/uploads/1792481427_BcMRwzpBHb.jpg',
     phone: '0335514062',
     term_start: '27/06/2014 ዓ.ም',
     term_end: 'እስከ አሁን በስራ ላይ',
@@ -633,15 +642,33 @@ watch(() => route.query.tab, (newTab) => {
                   </span>
                 </div>
 
-                <!-- Mayor Name -->
-                <h4 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors mb-2">
-                  {{ getHistoryMayorName(hm) }}
-                </h4>
+                <!-- Portrait Avatar & Identification Header -->
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-slate-200 group-hover:border-blue-500 shadow-sm bg-slate-100 relative shrink-0 transition-all duration-300">
+                    <img 
+                      v-if="hm.portrait_path" 
+                      :src="hm.portrait_path" 
+                      :alt="getHistoryMayorName(hm)" 
+                      class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" 
+                    />
+                    <div v-else class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-blue-50 text-blue-700">
+                      <UserCheck class="w-8 h-8 opacity-40 mb-1" />
+                      <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400">Archival</span>
+                    </div>
+                  </div>
 
-                <!-- Service Term -->
-                <div class="flex items-center gap-2 text-xs font-mono font-bold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-3">
-                  <Calendar class="w-4 h-4 text-blue-700 shrink-0" />
-                  <span>{{ hm.term_start }} - {{ hm.term_end || 'Present' }}</span>
+                  <div class="flex-1 min-w-0">
+                    <!-- Mayor Name -->
+                    <h4 class="text-base sm:text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors leading-snug mb-2">
+                      {{ getHistoryMayorName(hm) }}
+                    </h4>
+
+                    <!-- Service Term -->
+                    <div class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 max-w-full">
+                      <Calendar class="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                      <span class="truncate">{{ hm.term_start }} - {{ hm.term_end || 'Present' }}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Biography Snippet -->

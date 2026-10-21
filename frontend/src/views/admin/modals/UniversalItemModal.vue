@@ -717,16 +717,18 @@ function getYouTubeEmbedUrl(url) {
                       Upload Video File from Device
                     </p>
                     <p class="text-[11px] text-slate-500 mt-0.5 font-medium">
-                      MP4, WebM, MOV, OGG (Max 200MB)
+                      MP4, WebM, MOV, OGG (Max 500MB)
                     </p>
                   </div>
                   
-                  <label class="mt-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm transition-colors">
-                    <Upload class="w-4 h-4" />
-                    <span>{{ uploadingFile ? 'Uploading Video...' : 'Choose Video File' }}</span>
+                  <label :class="['mt-1 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm transition-colors', uploadingFile ? 'bg-purple-400 text-white cursor-wait' : 'bg-purple-600 hover:bg-purple-700 text-white']">
+                    <Loader2 v-if="uploadingFile" class="w-4 h-4 animate-spin" />
+                    <Upload v-else class="w-4 h-4" />
+                    <span>{{ uploadingFile ? 'Uploading Video File (Please wait)...' : 'Choose Video File' }}</span>
                     <input 
                       type="file" 
                       accept="video/*" 
+                      :disabled="uploadingFile"
                       @change="uploadFileFor($event, galleryForm, 'media_path_or_url')" 
                       class="hidden" 
                     />

@@ -1407,10 +1407,21 @@ class AdminContentController extends Controller
     {
         $videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv', '3gp'];
 
+        // Guard against requests that exceeded PHP post limits before hitting Laravel
+        if (!$request->hasFile('file') && !$request->hasFile('files')) {
+            $contentLength = (int) ($request->server('CONTENT_LENGTH') ?? 0);
+            if ($contentLength > 0) {
+                return response()->json([
+                    'message' => 'The uploaded file exceeds the server post limit (500MB). Please compress the video or provide an external video link.',
+                    'errors' => ['file' => ['File exceeds server upload size limit.']]
+                ], 422);
+            }
+        }
+
         if ($request->hasFile('files')) {
             $request->validate([
                 'files' => 'required|array',
-                'files.*' => 'file|max:204800'
+                'files.*' => 'file|max:512000'
             ]);
 
             $uploadDir = public_path('uploads');
@@ -1445,7 +1456,7 @@ class AdminContentController extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|max:204800'
+            'file' => 'required|file|max:512000'
         ]);
 
         $file = $request->file('file');
