@@ -1,26 +1,29 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import api from '@/services/api'
 import { 
   MapPin, 
   Phone, 
   Mail, 
-  UserCheck, 
-  ArrowRight, 
   Building2, 
   Landmark, 
   ShieldCheck, 
   Users, 
-  ChevronRight,
-  ExternalLink,
-  Layers,
-  Sparkles
+  ChevronRight, 
+  ArrowRight,
+  Layers, 
+  Sparkles,
+  CheckCircle2,
+  Compass,
+  FileText,
+  Award
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
 const subCities = ref([])
 const loading = ref(true)
+const selectedFilter = ref('all')
 
 async function fetchSubCities() {
   loading.value = true
@@ -34,6 +37,11 @@ async function fetchSubCities() {
   }
 }
 
+const filteredSubCities = computed(() => {
+  if (selectedFilter.value === 'all') return subCities.value
+  return subCities.value.filter(sc => sc.slug === selectedFilter.value)
+})
+
 function getSubCityName(city) {
   const lang = langStore.currentLang
   if (lang === 'am') return city.name_am || city.name_en
@@ -41,11 +49,18 @@ function getSubCityName(city) {
   return city.name_en || city.name_am
 }
 
-function getChiefExecutive(city) {
+function getSlogan(city) {
   const lang = langStore.currentLang
-  if (lang === 'am') return city.chief_executive_am || city.chief_executive_en || 'የክፍለ ከተማው ዋና ስራ አስፈፃሚ'
-  if (lang === 'om') return city.chief_executive_om || city.chief_executive_en || 'Hoogganaa Olaanaa'
-  return city.chief_executive_en || city.chief_executive_am || 'Chief Executive Officer'
+  if (lang === 'am') return city.slogan_am || city.slogan_en
+  if (lang === 'om') return city.slogan_om || city.slogan_en
+  return city.slogan_en || city.slogan_am
+}
+
+function getDescription(city) {
+  const lang = langStore.currentLang
+  if (lang === 'am') return city.description_am || city.description_en
+  if (lang === 'om') return city.description_om || city.description_en
+  return city.description_en || city.description_am
 }
 
 function getAddress(city) {
@@ -53,6 +68,30 @@ function getAddress(city) {
   if (lang === 'am') return city.office_address_am || city.office_address_en || 'ኮምቦልቻ፣ ኢትዮጵያ'
   if (lang === 'om') return city.office_address_om || city.office_address_en || 'Kombolcha, Itoophiyaa'
   return city.office_address_en || city.office_address_am || 'Kombolcha, Ethiopia'
+}
+
+function getKebeles(city) {
+  if (Array.isArray(city.kebeles)) return city.kebeles
+  if (typeof city.kebeles === 'string') {
+    try {
+      return JSON.parse(city.kebeles)
+    } catch (e) {
+      return []
+    }
+  }
+  return []
+}
+
+function getHighlights(city) {
+  if (Array.isArray(city.highlights)) return city.highlights
+  if (typeof city.highlights === 'string') {
+    try {
+      return JSON.parse(city.highlights)
+    } catch (e) {
+      return []
+    }
+  }
+  return []
 }
 
 onMounted(() => {
@@ -68,13 +107,17 @@ onMounted(() => {
       <img src="/assets/city_image_2.jpg" alt="Sub-Cities" class="absolute inset-0 w-full h-full object-cover object-center" />
       <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-wider mb-3">
+          <Layers class="w-3.5 h-3.5 text-blue-400" />
+          <span>{{ langStore.currentLang === 'am' ? 'የከተማው መዋቅራዊ አስተዳደር' : 'Metropolitan Governance Framework' }}</span>
+        </div>
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
           {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ክፍለ ከተሞች አስተዳደር' : 'Metropolitan Sub-City Administrations' }}
         </h1>
         <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
           {{ langStore.currentLang === 'am'
             ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝባዊ አገልግሎቶችን ለነዋሪዎች በቅርበት ለማድረስ በ 4 ራስ ገዝ ክፍለ ከተሞች (አቢሻገር፣ ቢራሮ፣ ሀሰን አገር፣ ቦርከና) እና በ 20 ቀበሌዎች (14 የከተማ እና 6 የገጠር ቀበሌዎች) የተዋቀረ ነው።'
-            : 'Kombolcha is decentralized into 4 metropolitan sub-cities (Abishager, Biraro, Hassen Ager, Borkena) across 20 Kebeles (14 Urban & 6 Rural) delivering localized civil registrations, business licensing, community policing, and municipal services.'
+            : 'Kombolcha is decentralized into 4 metropolitan sub-cities (Abishager, Biraro, Hassen Ager, Borkena) spanning 20 Kebeles (14 Urban & 6 Rural) delivering localized municipal services, licensing, civil status registrations, and local infrastructure.'
           }}
         </p>
 
@@ -83,18 +126,22 @@ onMounted(() => {
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
             <span class="text-slate-400 text-xs block font-bold mb-1">Autonomous Sub-Cities</span>
             <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ subCities.length || 4 }} Zones</div>
+            <span class="text-[10px] text-amber-400 font-bold block mt-0.5">Regiopolitan Charter</span>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
-            <span class="text-emerald-400 text-xs block font-bold mb-1">Subordinate Kebeles</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">20 Kebeles</div>
+            <span class="text-emerald-400 text-xs block font-bold mb-1">Total Constituent Kebeles</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-300">20 Kebeles</div>
+            <span class="text-[10px] text-slate-400 block mt-0.5">14 Urban • 6 Rural</span>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
             <span class="text-blue-400 text-xs block font-bold mb-1">Decentralized Services</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-blue-300">IDs • Vital • Permits</div>
+            <div class="text-lg sm:text-xl font-black font-mono text-blue-300">IDs • Permits • Vital</div>
+            <span class="text-[10px] text-slate-400 block mt-0.5">Localized Citizen Access</span>
           </div>
           <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Administration Model</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-slate-300">Chartered Metro</div>
+            <span class="text-slate-400 text-xs block font-bold mb-1">Municipal Land Area</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-200">124.5 km²</div>
+            <span class="text-[10px] text-slate-400 block mt-0.5">15,550.25 Hectares</span>
           </div>
         </div>
       </div>
@@ -103,84 +150,183 @@ onMounted(() => {
     <!-- Main Content Container -->
     <div class="w-full max-w-[1700px] mx-auto px-4 sm:px-8 xl:px-12 py-10">
       
-      <!-- Loading Skeletons -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div v-for="n in 4" :key="n" class="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs animate-pulse h-64"></div>
+      <!-- Interactive Sub-City Zone Switcher -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 text-xs font-bold scrollbar-none">
+        <button
+          @click="selectedFilter = 'all'"
+          :class="[
+            'px-5 py-3 rounded-2xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 shrink-0',
+            selectedFilter === 'all'
+              ? 'bg-blue-900 text-amber-300 shadow-md font-black'
+              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+          ]"
+        >
+          <Layers class="w-4 h-4" />
+          <span>{{ langStore.currentLang === 'am' ? 'ሁሉም ክፍለ ከተሞች (4)' : 'All Sub-Cities (4)' }}</span>
+        </button>
+
+        <button
+          v-for="city in subCities"
+          :key="city.id"
+          @click="selectedFilter = city.slug"
+          :class="[
+            'px-5 py-3 rounded-2xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 shrink-0',
+            selectedFilter === city.slug
+              ? 'bg-blue-900 text-amber-300 shadow-md font-black'
+              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+          ]"
+        >
+          <Building2 class="w-4 h-4" />
+          <span>{{ getSubCityName(city) }}</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
+            {{ getKebeles(city).length }}
+          </span>
+        </button>
       </div>
 
-      <!-- Sub-Cities Grid -->
-      <div v-else-if="subCities.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div 
-          v-for="city in subCities" 
-          :key="city.id" 
-          class="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs hover:border-emerald-500 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
-        >
-          <!-- Top Accent Stripe -->
-          <div class="absolute top-0 left-0 right-0 h-1.5 bg-[#1C398E]"></div>
+      <!-- Loading Skeletons -->
+      <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div v-for="n in 4" :key="n" class="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs animate-pulse h-96"></div>
+      </div>
 
+      <!-- Sub-Cities Rich Cards Grid -->
+      <div v-else-if="filteredSubCities.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div 
+          v-for="city in filteredSubCities" 
+          :key="city.id" 
+          class="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:border-blue-400 hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+        >
           <div>
-            <!-- Zone Tag Bar -->
-            <div class="flex items-center justify-between mb-4 pt-1">
-              <span class="px-3 py-1 rounded-full bg-slate-900 text-amber-300 text-xs font-mono font-black uppercase tracking-wider shadow-2xs">
-                Zone #0{{ city.order || city.id }}
-              </span>
-              <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-0.5 rounded-full">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Active Sub-City
-              </span>
+            <!-- Image Header Strip with Zone Badge -->
+            <div class="h-44 sm:h-52 w-full relative overflow-hidden bg-slate-900">
+              <img 
+                :src="city.photo_path || '/assets/city_image_2.jpg'" 
+                :alt="getSubCityName(city)" 
+                class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent"></div>
+              
+              <div class="absolute bottom-4 left-6 right-6 flex items-end justify-between">
+                <div>
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-mono text-xs font-black uppercase tracking-wider mb-2 shadow-sm">
+                    Zone #0{{ city.order || city.id }}
+                  </span>
+                  <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    {{ getSubCityName(city) }}
+                  </h2>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="px-3 py-1 rounded-xl bg-white/20 backdrop-blur-md text-white font-mono font-black text-xs">
+                    {{ getKebeles(city).length }} {{ langStore.currentLang === 'am' ? 'ቀበሌዎች' : 'Kebeles' }}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <!-- Sub-City Title -->
-            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 group-hover:text-blue-900 transition-colors mb-4">
-              {{ getSubCityName(city) }}
-            </h2>
-
-            <!-- Contact & Executive Dossier -->
-            <div class="space-y-3.5 pt-4 border-t border-slate-100 text-xs sm:text-sm text-slate-600">
+            <!-- Card Body Content -->
+            <div class="p-6 sm:p-8 space-y-6">
               
-              <!-- Chief Executive -->
-              <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
-                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 font-bold">
-                  <UserCheck class="w-5 h-5 text-emerald-700" />
+              <!-- Official Slogan Banner -->
+              <div v-if="getSlogan(city)" class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/90 text-amber-950 font-bold text-xs sm:text-sm flex items-start gap-3">
+                <Sparkles class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <p class="leading-relaxed">{{ getSlogan(city) }}</p>
+              </div>
+
+              <!-- Official Narrative Description -->
+              <p class="text-sm text-slate-700 leading-relaxed text-justify font-normal">
+                {{ getDescription(city) }}
+              </p>
+
+              <!-- Constituent Kebeles Grid -->
+              <div>
+                <h4 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                  <Building2 class="w-4 h-4 text-blue-700" />
+                  <span>
+                    {{ langStore.currentLang === 'am' ? 'በክፍለ ከተማው ስር ያሉ ቀበሌዎች' : 'Constituent Kebele Jurisdictions' }}
+                    ({{ getKebeles(city).length }})
+                  </span>
+                </h4>
+                
+                <div class="flex flex-wrap gap-2">
+                  <span 
+                    v-for="(k, idx) in getKebeles(city)" 
+                    :key="idx"
+                    :class="[
+                      'px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all',
+                      k.type === 'rural' 
+                        ? 'bg-emerald-50 text-emerald-900 border-emerald-200' 
+                        : 'bg-blue-50 text-blue-900 border-blue-200'
+                    ]"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" :class="k.type === 'rural' ? 'bg-emerald-500' : 'bg-blue-600'"></span>
+                    <span>{{ langStore.currentLang === 'am' ? k.am : k.en }}</span>
+                    <span class="text-[10px] font-mono opacity-60">({{ k.type === 'rural' ? 'Rural' : 'Urban' }})</span>
+                  </span>
                 </div>
-                <div>
-                  <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Chief Executive Officer</span>
-                  <strong class="text-slate-900 font-black">{{ getChiefExecutive(city) }}</strong>
+              </div>
+
+              <!-- Key Strategic Highlights / Infrastructure -->
+              <div v-if="getHighlights(city).length > 0" class="pt-2">
+                <h4 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                  <Award class="w-4 h-4 text-emerald-600" />
+                  <span>{{ langStore.currentLang === 'am' ? 'ቁልፍ የልማትና የመሰረተ ልማት ጥቅሞች' : 'Strategic Infrastructure & Advantages' }}</span>
+                </h4>
+                
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-slate-700">
+                  <li 
+                    v-for="(hl, hIdx) in getHighlights(city)" 
+                    :key="hIdx"
+                    class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2"
+                  >
+                    <CheckCircle2 class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{{ hl }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Contact & Address Dossier -->
+              <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                <div class="flex items-start gap-2.5">
+                  <MapPin class="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+                  <span class="font-medium text-slate-800">{{ getAddress(city) }}</span>
                 </div>
-              </div>
 
-              <!-- Address -->
-              <div class="flex items-start gap-3 px-1">
-                <MapPin class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <span>{{ getAddress(city) }}</span>
-              </div>
+                <div class="flex flex-wrap items-center gap-4 pt-1">
+                  <a 
+                    v-if="city.phone" 
+                    :href="'tel:' + city.phone" 
+                    class="inline-flex items-center gap-1.5 font-mono font-bold text-blue-700 hover:text-blue-900"
+                  >
+                    <Phone class="w-3.5 h-3.5" />
+                    <span>{{ city.phone }}</span>
+                  </a>
 
-              <!-- Phone Hotline -->
-              <div class="flex items-center gap-3 px-1">
-                <Phone class="w-4 h-4 text-emerald-600 shrink-0" />
-                <a :href="'tel:' + city.phone" class="font-mono font-bold text-blue-700 hover:underline">
-                  {{ city.phone || '+251 33 551 0022' }}
-                </a>
-              </div>
-
-              <!-- Email -->
-              <div class="flex items-center gap-3 px-1">
-                <Mail class="w-4 h-4 text-sky-600 shrink-0" />
-                <span class="font-mono text-slate-600">{{ city.email || `${city.slug || 'subcity'}@kombolchacity.gov.et` }}</span>
+                  <a 
+                    v-if="city.email" 
+                    :href="'mailto:' + city.email" 
+                    class="inline-flex items-center gap-1.5 font-mono text-slate-600 hover:text-blue-700"
+                  >
+                    <Mail class="w-3.5 h-3.5" />
+                    <span>{{ city.email }}</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Bottom Action: Sector Offices within this Sub-City -->
-          <div class="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between">
+          <!-- Bottom Action Footer -->
+          <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <router-link 
               :to="'/government/offices?sub_city_id=' + city.id" 
-              class="inline-flex items-center gap-2 text-xs font-black text-blue-900 hover:text-emerald-700 transition-colors uppercase tracking-wider"
+              class="inline-flex items-center gap-2 text-xs font-black text-blue-900 hover:text-blue-700 transition-colors uppercase tracking-wider"
             >
-              <span>View Departmental Bureaus in {{ getSubCityName(city) }}</span>
-              <ArrowRight class="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
+              <span>{{ langStore.currentLang === 'am' ? 'በክፍለ ከተማው ያሉ መምሪያዎችን ተመልከት' : 'View Sector Bureaus in this Sub-City' }}</span>
+              <ArrowRight class="w-4 h-4 text-amber-600 group-hover:translate-x-1 transition-transform" />
             </router-link>
-            <span class="text-xs text-slate-400 font-mono">Directory</span>
+            
+            <span class="text-[10px] font-mono font-bold text-slate-400 uppercase">
+              Chartered Zone
+            </span>
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\PortalContentService;
+use App\Models\SubCity;
 
 class PublicApiController extends Controller
 {
@@ -52,13 +53,13 @@ class PublicApiController extends Controller
     // 4 Sub-Cities (ክፍለ ከተሞች)
     public function getSubCities()
     {
-        $subCities = DB::table('sub_cities')->orderBy('order')->get();
+        $subCities = SubCity::orderBy('order')->get();
         return response()->json($subCities);
     }
 
     public function getSubCityDetail($slug)
     {
-        $subCity = DB::table('sub_cities')->where('slug', $slug)->first();
+        $subCity = SubCity::where('slug', $slug)->first();
         if (!$subCity) {
             return response()->json(['message' => 'Sub-city not found'], 404);
         }
