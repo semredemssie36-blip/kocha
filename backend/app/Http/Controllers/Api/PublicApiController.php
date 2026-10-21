@@ -79,7 +79,7 @@ class PublicApiController extends Controller
     // Municipal Offices with Search Filter and optional Pagination
     public function getOffices(Request $request)
     {
-        $query = DB::table('offices')->where('is_active', true);
+        $query = \App\Models\Office::with('subCity')->where('is_active', true);
 
         if ($request->has('search') && !empty($request->search)) {
             $search = '%' . $request->search . '%';
@@ -89,7 +89,9 @@ class PublicApiController extends Controller
                   ->orWhere('name_om', 'like', $search)
                   ->orWhere('phone', 'like', $search)
                   ->orWhere('room_number', 'like', $search)
-                  ->orWhere('building_location_am', 'like', $search);
+                  ->orWhere('building_location_am', 'like', $search)
+                  ->orWhere('head_name_am', 'like', $search)
+                  ->orWhere('head_name_en', 'like', $search);
             });
         }
 
