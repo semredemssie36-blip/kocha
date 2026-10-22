@@ -229,25 +229,29 @@ onMounted(() => {
           <PhoneCall class="w-4 h-4 shrink-0" />
           <span>{{ langStore.currentLang === 'am' ? 'የአደጋና ድንገተኛ መስመሮች:' : 'Official Emergency & Leak Desks:' }}</span>
         </div>
-        <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
-          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
-            <Droplets class="w-3.5 h-3.5 text-blue-400" />
-            <span class="text-slate-400">Water Leaks 24/7:</span>
+        <div class="flex flex-wrap items-center gap-3 text-xs font-mono">
+          <div class="flex flex-wrap items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+            <Droplets class="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <span class="text-slate-400 font-sans font-bold">Water Leaks 24/7:</span>
             <a href="tel:0912746964" class="text-white hover:text-amber-400 font-bold">09 12 74 69 64</a>
             <span class="text-slate-600">|</span>
-            <a href="tel:0914741347" class="text-white hover:text-amber-400 font-bold">09 14 74 13 47</a>
+            <a href="tel:0910539584" class="text-white hover:text-amber-400 font-bold">09 10 53 95 84</a>
+            <span class="text-slate-600">|</span>
+            <a href="tel:0932029686" class="text-white hover:text-amber-400 font-bold">09 32 02 96 86</a>
+            <span class="text-slate-600">|</span>
+            <a href="tel:0925894557" class="text-white hover:text-amber-400 font-bold">09 25 89 45 57</a>
           </div>
-          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
-            <Zap class="w-3.5 h-3.5 text-amber-400" />
-            <span class="text-slate-400">Electric Emergency:</span>
+          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+            <Zap class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span class="text-slate-400 font-sans font-bold">Grid:</span>
             <a href="tel:905" class="text-white hover:text-amber-400 font-bold">905</a>
             <span class="text-slate-600">/</span>
             <a href="tel:0335510177" class="text-white hover:text-amber-400 font-bold">033 551 01 77</a>
           </div>
-          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700">
-            <ShieldCheck class="w-3.5 h-3.5 text-emerald-400" />
-            <span class="text-slate-400">Code Enforcement:</span>
-            <a href="tel:0335510216" class="text-white hover:text-amber-400 font-bold">033 551 02 16</a>
+          <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+            <ShieldCheck class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span class="text-slate-400 font-sans font-bold">Code Enforcement:</span>
+            <a href="tel:0333516342" class="text-white hover:text-amber-400 font-bold">033 351 63 42</a>
           </div>
         </div>
       </div>

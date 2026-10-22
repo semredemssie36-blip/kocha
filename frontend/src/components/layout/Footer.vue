@@ -213,12 +213,12 @@ const directionsUrl = computed(() => {
 
           <div class="flex items-center gap-2.5 px-2">
             <Phone class="w-4 h-4 text-emerald-400 shrink-0" />
-            <span class="font-mono text-slate-300 font-bold">+251 33 551 0022</span>
+            <a href="tel:0335510216" class="font-mono text-slate-300 font-bold hover:text-amber-400 transition-colors">033 551 02 16</a>
           </div>
 
           <div class="flex items-center gap-2.5 px-2">
             <Mail class="w-4 h-4 text-sky-400 shrink-0" />
-            <span class="text-slate-300 font-mono">info@kombolchacity.gov.et</span>
+            <a href="mailto:kochamayoroffice@gmail.com" class="text-slate-300 font-mono text-[11px] hover:text-amber-400 transition-colors">kochamayoroffice@gmail.com</a>
           </div>
         </div>
       </div>
