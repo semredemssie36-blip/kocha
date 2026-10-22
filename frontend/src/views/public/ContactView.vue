@@ -139,10 +139,7 @@ const submitForm = async () => {
       <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
       
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-black uppercase tracking-wider mb-4">
-          <Sparkles class="w-3.5 h-3.5 text-amber-400" />
-          <span>{{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝብ ግንኙነትና ድንገተኛ አደጋ ማዕከል' : 'Official Municipal Public Relations & Emergency Operations Center' }}</span>
-        </div>
+       
 
         <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
           {{ langStore.currentLang === 'am' ? 'የከተማው አስተዳደር ህዝብ ግንኙነትና አቤቱታ መቀበያ' : 'Citizen Inquiries, Emergency Dispatch & Grievance Desk' }}
