@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLanguageStore } from '@/stores/language'
+import { useSiteStore } from '@/stores/site'
 import { api } from '@/services/api'
 import { 
   Send, 
@@ -20,38 +21,30 @@ import {
   Check, 
   Landmark, 
   Sparkles, 
-  HelpCircle,
-  Droplets,
-  Zap,
-  Flame,
-  Activity,
-  ShieldAlert,
-  ChevronRight,
-  Search,
-  User,
-  GraduationCap,
-  Share2,
-  FileText
+  HelpCircle, 
+  Droplets, 
+  Zap, 
+  Flame, 
+  Activity, 
+  ShieldAlert, 
+  ChevronRight, 
+  Search, 
+  User, 
+  GraduationCap, 
+  Share2, 
+  FileText 
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const langStore = useLanguageStore()
+const siteStore = useSiteStore()
 
-const settings = ref(null)
+const settings = computed(() => siteStore.siteSettings)
 const copiedCoords = ref(false)
 
 const offices = ref([])
 const officesLoading = ref(true)
 const officeSearchQuery = ref('')
-
-const fetchSettings = async () => {
-  try {
-    const res = await api.getSettings()
-    settings.value = res.data || null
-  } catch (err) {
-    console.error('Failed to load municipal settings & map coordinates:', err)
-  }
-}
 
 const fetchOffices = async () => {
   officesLoading.value = true
@@ -144,7 +137,7 @@ const subCities = [
 ]
 
 onMounted(() => {
-  fetchSettings()
+  siteStore.fetchSiteData()
   fetchOffices()
   if (route.query.inquiry_target) {
     const target = route.query.inquiry_target

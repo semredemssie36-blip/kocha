@@ -21,12 +21,39 @@ use App\Http\Resources\EmergencyContactResource;
 use App\Http\Resources\ContactMessageResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Services\AuditLogService;
 
 class AdminContentController extends Controller
 {
+    /**
+     * Invalidate cached public API responses so edits appear instantly on the portal
+     */
+    protected function clearPublicCaches(?array $keys = null): void
+    {
+        $allKeys = [
+            'public_site_data',
+            'public_site_settings',
+            'public_emergency_contacts',
+            'public_sub_cities',
+            'public_offices_all',
+            'public_hero_slides',
+            'public_mayor',
+            'public_mayors_history',
+            'public_leadership_all',
+            'public_leadership_cabinet',
+            'public_leadership_council',
+            'portal_home_bundle_base'
+        ];
+
+        $targetKeys = $keys ?? $allKeys;
+        foreach ($targetKeys as $key) {
+            Cache::forget($key);
+        }
+    }
+
     /**
      * Dispatch an editorial review notification to Editors & Super Admins via the ContactMessage pipeline
      */
@@ -1142,6 +1169,8 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]));
 
+        $this->clearPublicCaches(['public_mayor', 'public_mayors_history', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Mayor profile and keynote updated successfully']);
     }
 
@@ -1185,6 +1214,8 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]));
 
+        $this->clearPublicCaches(['public_mayor', 'public_mayors_history', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Mayor added to registry successfully', 'id' => $id], 201);
     }
 
@@ -1216,6 +1247,8 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]));
 
+        $this->clearPublicCaches(['public_mayor', 'public_mayors_history', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Mayor record updated successfully']);
     }
 
@@ -1230,6 +1263,9 @@ class AdminContentController extends Controller
         }
 
         DB::table('mayors')->where('id', $id)->delete();
+
+        $this->clearPublicCaches(['public_mayor', 'public_mayors_history', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Historical Mayor removed from registry']);
     }
 
@@ -1259,6 +1295,8 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]));
 
+        $this->clearPublicCaches(['public_leadership_all', 'public_leadership_cabinet', 'public_leadership_council']);
+
         return response()->json(['message' => 'Leadership member added successfully', 'id' => $id], 201);
     }
 
@@ -1286,12 +1324,17 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]));
 
+        $this->clearPublicCaches(['public_leadership_all', 'public_leadership_cabinet', 'public_leadership_council']);
+
         return response()->json(['message' => 'Leadership member updated successfully']);
     }
 
     public function deleteLeadershipMember($id)
     {
         DB::table('leadership_members')->where('id', $id)->delete();
+
+        $this->clearPublicCaches(['public_leadership_all', 'public_leadership_cabinet', 'public_leadership_council']);
+
         return response()->json(['message' => 'Member deleted successfully']);
     }
 
@@ -1326,6 +1369,8 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]));
 
+        $this->clearPublicCaches(['public_offices_all']);
+
         return response()->json(['message' => 'Municipal office registered successfully', 'id' => $id], 201);
     }
 
@@ -1348,12 +1393,17 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]));
 
+        $this->clearPublicCaches(['public_offices_all']);
+
         return response()->json(['message' => 'Municipal office updated successfully']);
     }
 
     public function deleteOffice($id)
     {
         DB::table('offices')->where('id', $id)->delete();
+
+        $this->clearPublicCaches(['public_offices_all']);
+
         return response()->json(['message' => 'Office deleted successfully']);
     }
 
@@ -1390,6 +1440,8 @@ class AdminContentController extends Controller
             $data['created_at'] = now();
             DB::table('site_settings')->insert($data);
         }
+
+        $this->clearPublicCaches(['public_site_data', 'public_site_settings', 'portal_home_bundle_base']);
 
         $updated = DB::table('site_settings')->first();
         if ($updated) {
@@ -1719,6 +1771,8 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]);
 
+        $this->clearPublicCaches(['public_site_data', 'public_hero_slides', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Hero slide created successfully', 'id' => $id], 201);
     }
 
@@ -1749,12 +1803,17 @@ class AdminContentController extends Controller
             'updated_at' => now()
         ]);
 
+        $this->clearPublicCaches(['public_site_data', 'public_hero_slides', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Hero slide updated successfully']);
     }
 
     public function deleteHeroSlide($id)
     {
         DB::table('hero_slides')->where('id', $id)->delete();
+
+        $this->clearPublicCaches(['public_site_data', 'public_hero_slides', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Hero slide deleted']);
     }
 
@@ -1981,6 +2040,8 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        $this->clearPublicCaches(['public_site_data', 'public_emergency_contacts', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Emergency contact created', 'id' => $id]);
     }
 
@@ -2009,12 +2070,17 @@ class AdminContentController extends Controller
             'updated_at' => now(),
         ]);
 
+        $this->clearPublicCaches(['public_site_data', 'public_emergency_contacts', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Emergency contact updated successfully']);
     }
 
     public function deleteEmergencyContact($id)
     {
         DB::table('emergency_contacts')->where('id', $id)->delete();
+
+        $this->clearPublicCaches(['public_site_data', 'public_emergency_contacts', 'portal_home_bundle_base']);
+
         return response()->json(['message' => 'Emergency contact deleted successfully']);
     }
 

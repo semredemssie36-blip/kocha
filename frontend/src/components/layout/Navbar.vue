@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useLanguageStore } from '@/stores/language'
+import { useSiteStore } from '@/stores/site'
 import api from '@/services/api'
 import { 
   Building2, 
@@ -9,7 +10,7 @@ import {
   Globe, 
   Menu, 
   X, 
-  ChevronDown,
+  ChevronDown, 
   ExternalLink,
   ShieldCheck, 
   FileText, 
@@ -33,6 +34,7 @@ import {
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
+const siteStore = useSiteStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -63,8 +65,8 @@ const colorMap = {
   purple: 'text-purple-700 bg-purple-50/90 border-purple-200 hover:bg-purple-100'
 }
 
-const emergencyNumbers = ref([])
-const emergencyLoading = ref(true)
+const emergencyNumbers = computed(() => siteStore.emergencyContacts)
+const emergencyLoading = computed(() => siteStore.loading && !siteStore.isLoaded)
 
 const getEmergencyIcon = (icon) => {
   if (!icon) return PhoneCall
@@ -131,22 +133,9 @@ function handleClickOutside(e) {
   }
 }
 
-const fetchEmergencyContacts = async () => {
-  try {
-    const res = await api.getEmergencyContacts()
-    if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-      emergencyNumbers.value = res.data
-    }
-  } catch (err) {
-    console.error('Failed to load emergency contacts:', err)
-  } finally {
-    emergencyLoading.value = false
-  }
-}
-
 onMounted(() => {
   window.addEventListener('click', handleClickOutside)
-  fetchEmergencyContacts()
+  siteStore.fetchSiteData()
 })
 
 onUnmounted(() => {

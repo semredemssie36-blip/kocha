@@ -17,39 +17,49 @@ use App\Models\SubCity;
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class PortalContentService
 {
     /**
-     * Get unified homepage bundle using Eloquent models (<80ms single trip).
+     * Get unified homepage bundle using cached base snapshot (<15ms trip).
      */
     public function getHomeBundle(Request $request): array
     {
-        $heroSlides = HeroSlide::active()->get();
-        $mayor = Mayor::current()->first();
+        $base = Cache::remember('portal_home_bundle_base', 300, function () {
+            $heroSlides = HeroSlide::active()->get();
+            $mayor = Mayor::current()->first();
 
-        $news = NewsArticle::published()
-            ->with('author')
-            ->orderBy('published_at', 'desc')
-            ->limit(3)
-            ->get();
+            $news = NewsArticle::published()
+                ->with('author')
+                ->orderBy('published_at', 'desc')
+                ->limit(3)
+                ->get();
 
-        // Auto-close expired tenders
-        Tender::where('status', 'open')
-            ->where('closing_datetime', '<', Carbon::now())
-            ->update(['status' => 'closed']);
+            $tenders = Tender::whereIn('status', ['open', 'closed'])
+                ->orderByRaw("CASE WHEN status = 'open' AND closing_datetime > NOW() THEN 1 ELSE 2 END")
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->limit(2)
+                ->get();
 
-        $tenders = Tender::whereIn('status', ['open', 'closed'])
-            ->orderByRaw("CASE WHEN status = 'open' THEN 1 ELSE 2 END")
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->limit(2)
-            ->get();
+            $emergencyContacts = EmergencyContact::active()->get();
+            $subCities = SubCity::orderBy('order')->get();
+            $poll = Poll::with('options')->active()->latest()->first();
 
-        $emergencyContacts = EmergencyContact::active()->get();
+            return [
+                'hero_slides' => $heroSlides,
+                'mayor' => $mayor,
+                'news' => $news,
+                'tenders' => $tenders,
+                'emergency_contacts' => $emergencyContacts,
+                'sub_cities' => $subCities,
+                'poll' => $poll,
+            ];
+        });
 
-        $poll = Poll::with('options')->active()->latest()->first();
+        $poll = $base['poll'] ?? null;
         $pollData = null;
         if ($poll) {
             $isExpired = !empty($poll->expires_at) && Carbon::parse($poll->expires_at)->endOfDay()->isPast();
@@ -68,16 +78,14 @@ class PortalContentService
             ];
         }
 
-        $subCities = SubCity::orderBy('order')->get();
-
         return [
-            'hero_slides' => $heroSlides,
-            'mayor' => $mayor,
-            'news' => $news,
-            'tenders' => $tenders,
-            'emergency_contacts' => $emergencyContacts,
+            'hero_slides' => $base['hero_slides'],
+            'mayor' => $base['mayor'],
+            'news' => $base['news'],
+            'tenders' => $base['tenders'],
+            'emergency_contacts' => $base['emergency_contacts'],
             'poll' => $pollData,
-            'sub_cities' => $subCities,
+            'sub_cities' => $base['sub_cities'],
         ];
     }
 

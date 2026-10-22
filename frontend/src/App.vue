@@ -1,32 +1,25 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from './components/layout/Navbar.vue'
 import Footer from './components/layout/Footer.vue'
-import api from '@/services/api'
+import { useSiteStore } from '@/stores/site'
 import { Wrench, ShieldAlert, ArrowRight } from 'lucide-vue-next'
 
 const route = useRoute()
-const siteSettings = ref(null)
+const siteStore = useSiteStore()
 
 const isAdminRoute = computed(() => {
   return route.path.startsWith('/admin')
 })
 
 const isMaintenanceActive = computed(() => {
-  return !isAdminRoute.value && (siteSettings.value?.is_maintenance === 1 || siteSettings.value?.is_maintenance === true)
+  return !isAdminRoute.value && (siteStore.siteSettings?.is_maintenance === 1 || siteStore.siteSettings?.is_maintenance === true)
 })
 
-onMounted(async () => {
+onMounted(() => {
   if (isAdminRoute.value) return
-  try {
-    const res = await api.get('/site-data')
-    if (res.data?.settings) {
-      siteSettings.value = res.data.settings
-    }
-  } catch (e) {
-    // silent
-  }
+  siteStore.fetchSiteData()
 })
 </script>
 
@@ -46,9 +39,9 @@ onMounted(async () => {
       <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mb-6">
         The official Kombolcha City Metropolitan Administration digital portal is currently undergoing scheduled infrastructure upgrades.
       </p>
-      <div v-if="siteSettings?.emergency_notice_en" class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl max-w-lg mx-auto text-xs text-amber-300 mb-8 flex items-center gap-2">
+      <div v-if="siteStore.siteSettings?.emergency_notice_en" class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl max-w-lg mx-auto text-xs text-amber-300 mb-8 flex items-center gap-2">
         <ShieldAlert class="w-5 h-5 shrink-0 text-amber-400" />
-        <span>{{ siteSettings.emergency_notice_en }}</span>
+        <span>{{ siteStore.siteSettings.emergency_notice_en }}</span>
       </div>
       <div class="flex items-center gap-4">
         <router-link to="/admin" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-2">

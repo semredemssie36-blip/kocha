@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
-import { api } from '@/services/api'
+import { useSiteStore } from '@/stores/site'
 import { 
   Building2, 
   Phone, 
@@ -20,15 +20,11 @@ import {
 } from 'lucide-vue-next'
 
 const langStore = useLanguageStore()
-const settings = ref(null)
+const siteStore = useSiteStore()
+const settings = computed(() => siteStore.siteSettings)
 
-onMounted(async () => {
-  try {
-    const res = await api.getSettings()
-    settings.value = res.data || null
-  } catch (err) {
-    // fallback gracefully
-  }
+onMounted(() => {
+  siteStore.fetchSiteData()
 })
 
 const mapAddress = computed(() => {

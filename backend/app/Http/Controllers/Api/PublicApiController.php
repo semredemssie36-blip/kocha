@@ -5,80 +5,110 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 use App\Services\PortalContentService;
 use App\Models\SubCity;
 
 class PublicApiController extends Controller
 {
-    // Global Site Identity & Emergency Contacts
+    // Global Site Identity & Emergency Contacts (Cached for 1 hour)
     public function getSiteData()
     {
-        $emergencyContacts = DB::table('emergency_contacts')
-            ->where('is_active', true)
-            ->orderBy('order')
-            ->get();
+        $data = Cache::remember('public_site_data', 3600, function () {
+            $emergencyContacts = DB::table('emergency_contacts')
+                ->where('is_active', true)
+                ->orderBy('order')
+                ->get();
 
-        $heroSlides = DB::table('hero_slides')
-            ->where('is_active', true)
-            ->orderBy('order')
-            ->get();
+            $heroSlides = DB::table('hero_slides')
+                ->where('is_active', true)
+                ->orderBy('order')
+                ->get();
 
-        $subCities = DB::table('sub_cities')
-            ->orderBy('order')
-            ->get();
+            $subCities = DB::table('sub_cities')
+                ->orderBy('order')
+                ->get();
 
-        $settings = DB::table('site_settings')->first();
-        if ($settings) {
-            $settings->is_maintenance = (bool)$settings->is_maintenance;
-        }
+            $settings = DB::table('site_settings')->first();
+            if ($settings) {
+                $settings->is_maintenance = (bool)$settings->is_maintenance;
+            }
 
-        return response()->json([
-            'emergency_contacts' => $emergencyContacts,
-            'hero_slides' => $heroSlides,
-            'sub_cities' => $subCities,
-            'settings' => $settings,
-        ]);
+            return [
+                'emergency_contacts' => $emergencyContacts,
+                'hero_slides' => $heroSlides,
+                'sub_cities' => $subCities,
+                'settings' => $settings,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     public function getEmergencyContacts()
     {
-        $contacts = DB::table('emergency_contacts')
-            ->where('is_active', true)
-            ->orderBy('order')
-            ->get();
+        $contacts = Cache::remember('public_emergency_contacts', 3600, function () {
+            return DB::table('emergency_contacts')
+                ->where('is_active', true)
+                ->orderBy('order')
+                ->get();
+        });
         return response()->json($contacts);
     }
 
     // 4 Sub-Cities (ክፍለ ከተሞች)
     public function getSubCities()
     {
-        $subCities = SubCity::orderBy('order')->get();
+        $subCities = Cache::remember('public_sub_cities', 3600, function () {
+            return SubCity::orderBy('order')->get();
+        });
         return response()->json($subCities);
     }
 
     public function getSubCityDetail($slug)
     {
-        $subCity = SubCity::where('slug', $slug)->first();
-        if (!$subCity) {
+        $cacheKey = 'public_sub_city_' . $slug;
+        $data = Cache::remember($cacheKey, 3600, function () use ($slug) {
+            $subCity = SubCity::where('slug', $slug)->first();
+            if (!$subCity) {
+                return null;
+            }
+
+            $offices = DB::table('offices')
+                ->where('sub_city_id', $subCity->id)
+                ->where('is_active', true)
+                ->orderBy('order')
+                ->get();
+
+            return [
+                'sub_city' => $subCity,
+                'offices' => $offices
+            ];
+        });
+
+        if (!$data) {
             return response()->json(['message' => 'Sub-city not found'], 404);
         }
 
-        $offices = DB::table('offices')
-            ->where('sub_city_id', $subCity->id)
-            ->where('is_active', true)
-            ->orderBy('order')
-            ->get();
-
-        return response()->json([
-            'sub_city' => $subCity,
-            'offices' => $offices
-        ]);
+        return response()->json($data);
     }
 
-    // Municipal Offices with Search Filter and optional Pagination
+    // Municipal Offices with Search Filter and optional Pagination (Unfiltered calls cached)
     public function getOffices(Request $request)
     {
+        $hasFilters = $request->filled('search') || $request->filled('sub_city_id') || $request->filled('per_page');
+        
+        if (!$hasFilters) {
+            $offices = Cache::remember('public_offices_all', 3600, function () {
+                return \App\Models\Office::with('subCity')
+                    ->where('is_active', true)
+                    ->orderBy('order')
+                    ->get();
+            });
+            return response()->json($offices);
+        }
+
         $query = \App\Models\Office::with('subCity')->where('is_active', true);
 
         if ($request->has('search') && !empty($request->search)) {
@@ -449,31 +479,41 @@ class PublicApiController extends Controller
         ]);
     }
 
-    // Mayor & Executive Profile
+    // Mayor & Executive Profile (Cached)
     public function getMayor()
     {
-        $mayor = DB::table('mayors')->where('is_current', true)->first();
+        $mayor = Cache::remember('public_mayor', 3600, function () {
+            return DB::table('mayors')->where('is_current', true)->first();
+        });
         return response()->json($mayor);
     }
 
-    // Historical Mayors Timeline (Chronological Mayoral Hall of History)
+    // Historical Mayors Timeline (Chronological Mayoral Hall of History, Cached)
     public function getMayorsHistory()
     {
-        $mayors = DB::table('mayors')
-            ->orderBy('order', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
+        $mayors = Cache::remember('public_mayors_history', 3600, function () {
+            return DB::table('mayors')
+                ->orderBy('order', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+        });
         return response()->json($mayors);
     }
 
-    // Cabinet & City Council Leadership
+    // Cabinet & City Council Leadership (Cached by type)
     public function getLeadership(Request $request)
     {
-        $query = DB::table('leadership_members');
-        if ($request->has('type') && in_array($request->type, ['cabinet', 'council'])) {
-            $query->where('type', $request->type);
-        }
-        $members = $query->orderBy('order')->get();
+        $type = $request->query('type');
+        $cacheKey = $type ? 'public_leadership_' . $type : 'public_leadership_all';
+
+        $members = Cache::remember($cacheKey, 3600, function () use ($type) {
+            $query = DB::table('leadership_members');
+            if ($type && in_array($type, ['cabinet', 'council'])) {
+                $query->where('type', $type);
+            }
+            return $query->orderBy('order')->get();
+        });
+
         return response()->json($members);
     }
 
@@ -515,13 +555,15 @@ class PublicApiController extends Controller
         return response()->json($items);
     }
 
-    // Hero Carousel Slides
+    // Hero Carousel Slides (Cached)
     public function getHeroSlides()
     {
-        $slides = DB::table('hero_slides')
-            ->where('is_active', true)
-            ->orderBy('order', 'asc')
-            ->get();
+        $slides = Cache::remember('public_hero_slides', 3600, function () {
+            return DB::table('hero_slides')
+                ->where('is_active', true)
+                ->orderBy('order', 'asc')
+                ->get();
+        });
         return response()->json($slides);
     }
 
@@ -558,13 +600,16 @@ class PublicApiController extends Controller
         return response()->json($portalService->getHomeBundle($request));
     }
 
-    // Public Municipal Settings & Geo-Location Coordinates
+    // Public Municipal Settings & Geo-Location Coordinates (Cached)
     public function getPublicSettings()
     {
-        $settings = DB::table('site_settings')->first();
-        if ($settings) {
-            $settings->is_maintenance = (bool)$settings->is_maintenance;
-        }
+        $settings = Cache::remember('public_site_settings', 3600, function () {
+            $s = DB::table('site_settings')->first();
+            if ($s) {
+                $s->is_maintenance = (bool)$s->is_maintenance;
+            }
+            return $s;
+        });
         return response()->json($settings);
     }
 }
