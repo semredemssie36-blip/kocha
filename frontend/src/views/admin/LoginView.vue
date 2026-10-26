@@ -17,8 +17,8 @@ import {
 } from 'lucide-vue-next'
 
 const router = useRouter()
-const email = ref('admin@kombolchacity.gov.et')
-const password = ref('Admin@2026!')
+const email = ref('')
+const password = ref('')
 const showPassword = ref(false)
 const errorMessage = ref('')
 const loading = ref(false)

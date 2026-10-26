@@ -474,7 +474,7 @@ onUnmounted(() => {
                 <Building2 class="w-5 h-5" />
               </div>
               <h3 class="text-sm font-black text-slate-900 group-hover:text-emerald-700 transition-colors">
-                {{ langStore.currentLang === 'am' ? '22 የመምሪያ ቢሮዎች' : '22 Sector Bureaus' }}
+                {{ langStore.currentLang === 'am' ? '30 የመምሪያ ቢሮዎች' : '30 Sector Bureaus' }}
               </h3>
               <p class="text-xs text-slate-500 mt-1 leading-relaxed">
                 {{ langStore.currentLang === 'am' ? 'የቢሮዎች ስልክ፣ የክፍል ቁጥርና ኃላፊዎች ማውጫ' : 'Direct departmental hotlines & room directories' }}

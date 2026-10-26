@@ -186,6 +186,8 @@ onMounted(() => {
     
     <!-- Prestige Civic Header Strip -->
     <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+      <img src="/assets/industry_park_2.jpg" alt="Municipal Sector Bureaus" class="absolute inset-0 w-full h-full object-cover object-center" />
+      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
       <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
       
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
