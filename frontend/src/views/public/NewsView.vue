@@ -118,14 +118,15 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden min-h-[380px] flex items-center">
       <img src="/assets/earport.jpg" alt="Press & News" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/40 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'ይፋዊ የዜናና የመረጃ ማዕከል' : 'Official Press Briefings & Municipal Gazette' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-slate-100 text-sm sm:text-base max-w-3xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] font-medium">
           {{ langStore.currentLang === 'am'
             ? 'በኮምቦልቻ ከተማ አስተዳደርና መምሪያዎች የሚወጡ ይፋዊ የልማት ዜናዎች፣ የመንግስት ውሳኔዎች፣ የህዝብ ማስታወቂያዎችና የክንውን ሪፖርቶች።'
             : 'Official municipal press briefings, development milestones, mayoral executive orders, and community progress dispatches across Kombolcha.'
@@ -133,22 +134,22 @@ onMounted(() => {
         </p>
 
         <!-- Gazette Analytics Bar -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Total Published Articles</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ totalArticles }}</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Total Published Articles</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white drop-shadow">{{ totalArticles }}</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
             <span class="text-blue-400 text-xs block font-bold mb-1">Gazette Frequency</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-blue-300">Daily Updates</div>
+            <div class="text-xl sm:text-2xl font-black font-mono text-blue-300 drop-shadow">Daily Updates</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Press Coverage</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">4 Sub-Cities</div>
+            <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400 drop-shadow">4 Sub-Cities</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Official Verification</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-slate-300">City Press Bureau</div>
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Official Verification</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-slate-200 drop-shadow">City Press Bureau</div>
           </div>
         </div>
       </div>

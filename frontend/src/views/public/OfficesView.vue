@@ -185,21 +185,22 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
       <img src="/assets/industry_park_2.jpg" alt="Municipal Sector Bureaus" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
+      <!-- Subtle clear scrim just like home page -->
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/25"></div>
       
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-black uppercase tracking-wider mb-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-200 text-xs font-black uppercase tracking-wider mb-4 backdrop-blur-md">
           <Sparkles class="w-3.5 h-3.5 text-amber-400" />
           <span>{{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር ሴክተር መምሪያዎች ይፋዊ ማውጫ' : 'Official Municipal Sector Bureaus & Departmental Directory' }}</span>
         </div>
 
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'የከተማው 30 መምሪያዎችና ተቋማት ማውጫ' : '30 Municipal Sector Bureaus & Institutional Directory' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-white text-sm sm:text-base max-w-3xl leading-relaxed font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am'
             ? 'የኮምቦልቻ ከተማ አስተዳደር ዋና ማዘጋጃ ቤት፣ የሴክተር መ/ቤቶች ህንፃ፣ የፍትህና ፖሊስ ግቢዎች ይፋዊ ፎቅ፣ የክፍል ቁጥር፣ የቀጥታ ስልክ መስመሮች፣ የኃላፊዎች መረጃ እንዲሁም ራዕይና ተልዕኮ።'
             : 'Comprehensive departmental registry cataloging all 30 municipal sector bureaus, room and floor allocations, direct desk telephone extensions, executive leadership, and statutory mandates.'
@@ -207,22 +208,22 @@ onMounted(() => {
         </p>
 
         <!-- Directory Analytics Metrics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Cataloged Sector Bureaus</span>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Cataloged Sector Bureaus</span>
             <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ offices.length }} Bureaus</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-blue-500/40 shadow-xl">
             <span class="text-blue-400 text-xs block font-bold mb-1">Direct Extension Desks</span>
             <div class="text-2xl sm:text-3xl font-black font-mono text-blue-300">100% Direct Call</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/40 shadow-xl">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Floor & Room Locator</span>
             <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">Floors 1 - 5</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Public Office Hours</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-slate-300">8:00 AM - 5:30 PM</div>
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Public Office Hours</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-white">8:00 AM - 5:30 PM</div>
           </div>
         </div>
       </div>

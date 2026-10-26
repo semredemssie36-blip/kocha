@@ -177,18 +177,17 @@ const submitForm = async () => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
       <img src="/assets/hotel_2.jpg" alt="City Hall & Municipal Contact" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
+      <!-- Subtle clear scrim just like home page -->
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/25"></div>
       
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-       
-
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'የከተማው አስተዳደር ህዝብ ግንኙነትና አቤቱታ መቀበያ' : 'Citizen Inquiries, Emergency Dispatch & Grievance Desk' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-white text-sm sm:text-base max-w-3xl leading-relaxed font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am'
             ? 'ለኮምቦልቻ ከተማ ከንቲባ፣ ለ 4ቱ ክፍለ ከተሞች ወይም ለ 30ው ሴክተር መምሪያዎች በቀጥታ ጥያቄዎን፣ አቤቱታዎን ወይም አስተያየትዎን ያስገቡ፤ እንዲሁም የ 24 ሰዓት የውሃ፣ መብራትና ፖሊስ መስመሮችን ያግኙ።'
             : 'Submit official petitions, citizen grievances, or municipal inquiries directly to the Mayor’s Cabinet, 4 Sub-Cities, or 30 Sector Bureaus with guaranteed official tracking numbers.'
@@ -196,41 +195,41 @@ const submitForm = async () => {
         </p>
 
         <!-- Dispatch Hotlines Strip -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800 text-xs">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20 text-xs">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl flex items-center justify-between">
             <div>
-              <span class="text-slate-400 block font-bold mb-1">Police Dispatch</span>
+              <span class="text-slate-300 block font-bold mb-1">Police Dispatch</span>
               <a href="tel:991" class="text-xl sm:text-2xl font-black font-mono text-white hover:text-blue-400 transition-colors">991</a>
-              <span class="text-[10px] text-slate-400 block mt-0.5 font-mono">Zone: 033 551 56 89</span>
+              <span class="text-[10px] text-slate-300 block mt-0.5 font-mono">Zone: 033 551 56 89</span>
             </div>
-            <ShieldAlert class="w-7 h-7 text-blue-400 opacity-60" />
+            <ShieldAlert class="w-7 h-7 text-blue-400 opacity-80" />
           </div>
 
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-rose-500/30 flex items-center justify-between">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-rose-500/40 shadow-xl flex items-center justify-between">
             <div>
               <span class="text-rose-400 block font-bold mb-1">Fire & Rescue</span>
               <a href="tel:939" class="text-xl sm:text-2xl font-black font-mono text-rose-400 hover:text-rose-300 transition-colors">939 / 993</a>
-              <span class="text-[10px] text-slate-400 block mt-0.5">Municipal Fire Unit</span>
+              <span class="text-[10px] text-slate-300 block mt-0.5">Municipal Fire Unit</span>
             </div>
-            <Flame class="w-7 h-7 text-rose-400 opacity-60" />
+            <Flame class="w-7 h-7 text-rose-400 opacity-80" />
           </div>
 
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30 flex items-center justify-between">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/40 shadow-xl flex items-center justify-between">
             <div>
               <span class="text-emerald-400 block font-bold mb-1">Ambulance & Hospital</span>
               <a href="tel:0911639869" class="text-sm sm:text-base font-black font-mono text-emerald-400 hover:underline block">09 11 63 98 69</a>
-              <span class="text-[10px] text-slate-400 block font-mono">Hospital: 033 351 10 69</span>
+              <span class="text-[10px] text-slate-300 block font-mono">Hospital: 033 351 10 69</span>
             </div>
-            <Activity class="w-7 h-7 text-emerald-400 opacity-60" />
+            <Activity class="w-7 h-7 text-emerald-400 opacity-80" />
           </div>
 
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30 flex items-center justify-between">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-amber-500/40 shadow-xl flex items-center justify-between">
             <div>
               <span class="text-amber-400 block font-bold mb-1">Mayor Office Switchboard</span>
               <a href="tel:0335510216" class="text-sm sm:text-base font-black font-mono text-amber-400 hover:underline block truncate">033 551 02 16</a>
-              <span class="text-[10px] text-slate-400 block font-mono">Mayor: 033 551 40 62</span>
+              <span class="text-[10px] text-slate-300 block font-mono">Mayor: 033 551 40 62</span>
             </div>
-            <Landmark class="w-7 h-7 text-amber-400 opacity-60" />
+            <Landmark class="w-7 h-7 text-amber-400 opacity-80" />
           </div>
         </div>
       </div>

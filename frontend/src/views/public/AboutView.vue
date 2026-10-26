@@ -129,14 +129,16 @@ const getCoreValueTitle = (val) => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative  from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
       <img src="/assets/city_image.jpg" alt="About Kombolcha" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <!-- Subtle clear scrim just like home page -->
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/25"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'ስለ ኮምቦልቻ ከተማ አስተዳደር' : 'About Kombolcha Metropolitan City' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-white text-sm sm:text-base max-w-3xl leading-relaxed font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am'
             ? 'የከተማዋ አመሰራረት፣ ታሪክ፣ ራዕይና ተልዕኮ፣ የህዝብና ባህል አኗኗር፣ የመልክዓ ምድር ገጽታ እና የዘመናዊው አስተዳደር መዋቅር።'
             : 'Explore the founding history, geographic advantage, vision, cultural diversity, and public administration framework of Kombolcha.'

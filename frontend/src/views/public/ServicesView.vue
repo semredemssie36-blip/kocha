@@ -181,21 +181,19 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
       <img src="/assets/city_image_2.jpg" alt="Municipal Public Services" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:24px_24px] opacity-25"></div>
+      <!-- Subtle clear scrim just like home page -->
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/25"></div>
       
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-black uppercase tracking-wider mb-4">
-          <Sparkles class="w-3.5 h-3.5 text-amber-400" />
-          <span>{{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ አስተዳደር የህዝብ አገልግሎቶች መመሪያ' : 'Kombolcha City Administration Citizen Services Guide' }}</span>
-        </div>
+        
 
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'የዜጎች አገልግሎቶችና የመገልገያ መስፈርቶች' : 'Citizen E-Services & Procedural Manual' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-white text-sm sm:text-base max-w-3xl leading-relaxed font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am'
             ? 'የንፁህ መጠጥ ውሃ መስመር ዝርጋታ፣ የፍሳሽ ቦቴ ማስወገድ፣ የኤሌክትሪክ ኃይል ግንኙነትና ስም ዝውውር፣ የንግድ ምዝገባና እድሳት እንዲሁም የደንብ ማስከበር ደረጃ በደረጃ ህጋዊ ሂደቶች፣ መስፈርቶችና የጊዜ ሰሌዳ።'
             : 'Authoritative procedural steps, required documentary dossiers, guaranteed turnaround windows, and official municipal hotline contacts for utilities, trade licensing, and municipal enforcement.'
@@ -203,22 +201,22 @@ onMounted(() => {
         </p>
 
         <!-- Citizen Guarantee Metrics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Official Services Catalog</span>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Official Services Catalog</span>
             <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ services.length }} Procedures</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-blue-500/40 shadow-xl">
             <span class="text-blue-400 text-xs block font-bold mb-1">Standard Turnaround</span>
             <div class="text-xl sm:text-2xl font-black font-mono text-blue-300">24h - 5 Days</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/40 shadow-xl">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Direct Citizen Hotlines</span>
             <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">24/7 Leak & Grid</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Decentralized Centers</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-300">4 Sub-Cities</div>
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Decentralized Centers</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white">4 Sub-Cities</div>
           </div>
         </div>
       </div>

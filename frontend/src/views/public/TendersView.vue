@@ -158,14 +158,15 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden min-h-[380px] flex items-center">
       <img src="/assets/industry_parks.jpg" alt="Public Procurement Tenders" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/40 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'የመንግስት ግዥና ጨረታዎች መድረክ' : 'Public Procurement & Tenders Portal' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-slate-100 text-sm sm:text-base max-w-3xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] font-medium">
           {{ langStore.currentLang === 'am'
             ? 'በኮምቦልቻ ከተማ አስተዳደርና መምሪያዎች ስር የሚወጡ ህጋዊ የከተማ ልማት፣ የግንባታ፣ የእቃ አቅርቦትና የማማከር ጨረታዎች ይፋዊ የሰነድ ማውረጃና የጊዜ ቆጣሪ መድረክ።'
             : 'Official municipal procurement notice board. Transparent competitive bidding dossiers, civil works contracts, goods acquisition, and strict countdown schedules.'
@@ -173,24 +174,24 @@ onMounted(() => {
         </p>
 
         <!-- Live Bidding Analytics Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Total Published Bids</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ tenders.length }}</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Total Published Bids</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white drop-shadow">{{ tenders.length }}</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Active Live Bids</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{{ openTendersCount }}</div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-300 drop-shadow">{{ openTendersCount }}</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
             <span class="text-amber-400 text-xs block font-bold mb-1">Active Bid Bonds Guarantee</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-amber-400">
+            <div class="text-xl sm:text-2xl font-black font-mono text-amber-300 drop-shadow">
               ETB {{ (totalBondAmount / 1000).toLocaleString() }}K
             </div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Concluded RFPs</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-400">{{ closedTendersCount }}</div>
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Concluded RFPs</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-200 drop-shadow">{{ closedTendersCount }}</div>
           </div>
         </div>
       </div>

@@ -103,18 +103,19 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden min-h-[380px] flex items-center">
       <img src="/assets/city_image_2.jpg" alt="Sub-Cities" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/40 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/25"></div>
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 text-xs font-black uppercase tracking-wider mb-3">
-          <Layers class="w-3.5 h-3.5 text-blue-400" />
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/25 border border-blue-400/50 text-blue-200 text-xs font-black uppercase tracking-wider mb-3 backdrop-blur-md">
+          <Layers class="w-3.5 h-3.5 text-blue-300" />
           <span>{{ langStore.currentLang === 'am' ? 'የከተማው መዋቅራዊ አስተዳደር' : 'Metropolitan Governance Framework' }}</span>
         </div>
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'የኮምቦልቻ ከተማ ክፍለ ከተሞች አስተዳደር' : 'Metropolitan Sub-City Administrations' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-slate-100 text-sm sm:text-base max-w-3xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] font-medium">
           {{ langStore.currentLang === 'am'
             ? 'የኮምቦልቻ ከተማ አስተዳደር ህዝባዊ አገልግሎቶችን ለነዋሪዎች በቅርበት ለማድረስ በ 4 ራስ ገዝ ክፍለ ከተሞች (አቢሻገር፣ ቢራሮ፣ ሀሰን አገር፣ ቦርከና) እና በ 20 ቀበሌዎች (14 የከተማ እና 6 የገጠር ቀበሌዎች) የተዋቀረ ነው።'
             : 'Kombolcha is decentralized into 4 metropolitan sub-cities (Abishager, Biraro, Hassen Ager, Borkena) spanning 20 Kebeles (14 Urban & 6 Rural) delivering localized municipal services, licensing, civil status registrations, and local infrastructure.'
@@ -122,26 +123,26 @@ onMounted(() => {
         </p>
 
         <!-- Sub-City Overview Analytics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Autonomous Sub-Cities</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ subCities.length || 4 }} Zones</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Autonomous Sub-Cities</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white drop-shadow">{{ subCities.length || 4 }} Zones</div>
             <span class="text-[10px] text-amber-400 font-bold block mt-0.5">Regiopolitan Charter</span>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Total Constituent Kebeles</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-300">20 Kebeles</div>
-            <span class="text-[10px] text-slate-400 block mt-0.5">14 Urban • 6 Rural</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-emerald-300 drop-shadow">20 Kebeles</div>
+            <span class="text-[10px] text-slate-300 block mt-0.5">14 Urban • 6 Rural</span>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
             <span class="text-blue-400 text-xs block font-bold mb-1">Decentralized Services</span>
-            <div class="text-lg sm:text-xl font-black font-mono text-blue-300">IDs • Permits • Vital</div>
-            <span class="text-[10px] text-slate-400 block mt-0.5">Localized Citizen Access</span>
+            <div class="text-lg sm:text-xl font-black font-mono text-blue-300 drop-shadow">IDs • Permits • Vital</div>
+            <span class="text-[10px] text-slate-300 block mt-0.5">Localized Citizen Access</span>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Municipal Land Area</span>
-            <div class="text-2xl sm:text-3xl font-black font-mono text-slate-200">124.5 km²</div>
-            <span class="text-[10px] text-slate-400 block mt-0.5">15,550.25 Hectares</span>
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Municipal Land Area</span>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white drop-shadow">124.5 km²</div>
+            <span class="text-[10px] text-slate-300 block mt-0.5">15,550.25 Hectares</span>
           </div>
         </div>
       </div>

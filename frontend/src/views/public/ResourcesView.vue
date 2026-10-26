@@ -100,14 +100,17 @@ onMounted(() => {
   <div class="bg-slate-50 min-h-screen text-slate-900 font-sans pb-16">
     
     <!-- Prestige Civic Header Strip -->
-    <div class="relative bg-gradient-to-r from-[#071324] via-[#0B1E36] to-[#071324] text-white py-12 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
+    <div class="relative bg-slate-950 text-white py-14 px-4 sm:px-8 xl:px-12 border-b border-amber-500/20 shadow-xl overflow-hidden">
       <img src="/assets/Resources2.jpg" alt="Resources & Directives" class="absolute inset-0 w-full h-full object-cover object-center" />
-      <div class="absolute inset-0 bg-gradient-to-r from-[#071324]/90 via-[#0B1E36]/80 to-[#071324]/75"></div>
+      <!-- Subtle clear scrim just like home page -->
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/35 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/25"></div>
+      
       <div class="relative z-10 w-full max-w-[1700px] mx-auto">
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am' ? 'የሰነዶች፣ መመሪያዎችና የማመልከቻ ቅጾች ቤተ-መዛግብት' : 'Public Resources & Municipal Directives Library' }}
         </h1>
-        <p class="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+        <p class="text-white text-sm sm:text-base max-w-3xl leading-relaxed font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
           {{ langStore.currentLang === 'am'
             ? 'በምክር ቤቱ የጸደቁ ይፋዊ ደንቦች፣ የከተማ መሪ ማስተር ፕላን፣ ዓመታዊ በጀቶችና የዜጎች አገልግሎት መጠየቂያ ቅጾችን በነፃ ያውርዱ።'
             : 'Download approved municipal regulations, master spatial plans, annual fiscal budget declarations, and standardized citizen application forms.'
@@ -115,22 +118,22 @@ onMounted(() => {
         </p>
 
         <!-- Document Analytics Metrics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800">
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Cataloged Publications</span>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Cataloged Publications</span>
             <div class="text-2xl sm:text-3xl font-black font-mono text-white">{{ resources.length }} Documents</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-blue-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-blue-500/40 shadow-xl">
             <span class="text-blue-400 text-xs block font-bold mb-1">Access Protocol</span>
             <div class="text-xl sm:text-2xl font-black font-mono text-blue-300">Open Public Domain</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/30">
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-emerald-500/40 shadow-xl">
             <span class="text-emerald-400 text-xs block font-bold mb-1">Official Formats</span>
             <div class="text-xl sm:text-2xl font-black font-mono text-emerald-400">PDF • Gazette Form</div>
           </div>
-          <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <span class="text-slate-400 text-xs block font-bold mb-1">Archive Integrity</span>
-            <div class="text-xl sm:text-2xl font-black font-mono text-slate-300">Secretariat Verified</div>
+          <div class="bg-slate-950/50 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-xl">
+            <span class="text-slate-300 text-xs block font-bold mb-1">Archive Integrity</span>
+            <div class="text-xl sm:text-2xl font-black font-mono text-white">Secretariat Verified</div>
           </div>
         </div>
       </div>
